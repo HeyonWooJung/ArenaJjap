@@ -17,28 +17,9 @@ ModelImporter:
     removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
-    rigImportWarnings: "Avatar Rig Configuration mis-match. Inbetween bone rotation
-      in configuration does not match rotation in animation file:\n\t'L_KneeLower'
-      : rotation error = 35.845837 deg\n"
+    rigImportWarnings: 
     animationImportErrors: 
-    animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
-      might lower retargeting quality:\nNote: Activate translation DOF on avatar
-      to improve retargeting quality.\n\t'Spine1' has translation animation that
-      will be discarded.\n\t'Spine2' has translation animation that will be discarded.\n\t'Spine3'
-      has translation animation that will be discarded.\n\t'Tassel1' is inbetween
-      humanoid transforms and has rotation animation that will be discarded.\n\t'Tassel2'
-      has translation animation that will be discarded.\n\t'R_Shoulder' has translation
-      animation that will be discarded.\n\t'R_Elbow' has translation animation that
-      will be discarded.\n\t'R_Hand' has translation animation that will be discarded.\n\t'L_Elbow'
-      has translation animation that will be discarded.\n\t'L_Hand' has translation
-      animation that will be discarded.\n\t'Pelvis' has translation animation that
-      will be discarded.\n\t'Pelvis' is inbetween humanoid transforms and has rotation
-      animation that will be discarded.\n\t'R_KneeUpper' has translation animation
-      that will be discarded.\n\t'R_KneeLower' is inbetween humanoid transforms and
-      has rotation animation that will be discarded.\n\t'L_KneeUpper' has translation
-      animation that will be discarded.\n\t'L_KneeLower' is inbetween humanoid transforms
-      and has rotation animation that will be discarded.\n\t'L_Foot_Tip' has translation
-      animation that will be discarded.\n"
+    animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -52,7 +33,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: SionQSkill
+      name: SionQChrg
       takeName: Take 001
       internalID: 1827226128182048838
       firstFrame: 0
