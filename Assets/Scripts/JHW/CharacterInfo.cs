@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum State
@@ -23,7 +24,7 @@ public class Character : ScriptableObject
     [SerializeField]
     float _atk; //공격력
     int _lethality; //물관
-    int _armorPen; //방깎 (35%면 0.35f 이렇게 되게 할거)
+    float _armorPen; //방깎 (35%면 0.35f 이렇게 되게 할거)
     [SerializeField]
     float _def; //방어력
     [SerializeField]
@@ -99,7 +100,7 @@ public class Character : ScriptableObject
         }
     }
 
-    public int ArmorPenetration
+    public float ArmorPenetration
     {
         get
         {
@@ -177,6 +178,10 @@ public class Character : ScriptableObject
         {
             return qCurCool;
         }
+        set
+        {
+            qCurCool = value;
+        }
     }
 
     public float CurWCool
@@ -185,6 +190,10 @@ public class Character : ScriptableObject
         {
             return wCurCool;
         }
+        set
+        {
+            wCurCool = value;
+        }
     }
     public float CurECool
     {
@@ -192,12 +201,20 @@ public class Character : ScriptableObject
         {
             return eCurCool;
         }
+        set
+        {
+            eCurCool = value;
+        }
     }
     public float CurRCool
     {
         get
         {
             return rCurCool;
+        }
+        set
+        {
+            rCurCool = value;
         }
     }
     public State CurState
@@ -233,6 +250,8 @@ public class Character : ScriptableObject
     }
     #endregion
 
+    public event Action OnMoveSpeedChanged;
+
     public void InitCharacter()
     {
         _curHP = _HP;
@@ -254,37 +273,6 @@ public class Character : ScriptableObject
         canFlash = true;
         canRush = true;
     }
-
-    /*public Character(float HP, float hPRegen, float atk, float def, int moveSpeed, float baseAS, int range, float qCoolDown, float wCoolDown, float eCoolDown, float rCoolDown)
-    {
-        _HP = HP;
-        _curHP = _HP;
-        _HPRegen = hPRegen;
-        _atk = atk;
-        _lethality = 0;
-        _armorPen = 0;
-        _def = def;
-        _moveSpeed = moveSpeed;
-        _atkSpeed = baseAS;
-        _baseAS = baseAS;
-        _additionAS = 0;
-        _critChance = 0;
-        _critDamage = 1.7f;
-        _range = range;
-        _abilityHaste = 0;
-        _lifeSteal = 0;
-        _state = State.Neutral;
-
-        this.qCoolDown = qCoolDown;
-        this.wCoolDown = wCoolDown;
-        this.eCoolDown = eCoolDown;
-        this.rCoolDown = rCoolDown;
-
-        qCurCool = 0;
-        wCurCool = 0;
-        eCurCool = 0;
-        rCurCool = 0;
-    }*/
 
     //라운드 시작할때
     public void ResetState()
@@ -361,9 +349,14 @@ public class Character : ScriptableObject
         _def += def;
     }
 
-    public void AdjustMoveSpeed(int moveSpeed)
+    public virtual void AdjustMoveSpeed(int moveSpeed)
     {
         _moveSpeed += moveSpeed;
+
+        if (OnMoveSpeedChanged != null)
+        {
+            OnMoveSpeedChanged();
+        }
     }
 
     public void AdjustAtkSpeed(float addSpeed)
