@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviour
 
     public virtual void Move(Vector3 pos)
     {
-        //움직이다 sibal
+        //움직이다
         agent.SetDestination(pos);
     }
 

@@ -21,6 +21,7 @@ public class Character : ScriptableObject
     float _curHP; //현재 체력
     [SerializeField]
     float _HPRegen; //체젠
+    float _barrier; //보호막
     [SerializeField]
     float _atk; //공격력
     int _lethality; //물관
@@ -81,6 +82,14 @@ public class Character : ScriptableObject
         get
         {
             return _HPRegen;
+        }
+    }
+
+    public float Barrier
+    {
+        get
+        {
+            return _barrier;
         }
     }
 
@@ -292,14 +301,38 @@ public class Character : ScriptableObject
     {
         if (isTrueDmg)
         {
-            _curHP -= damage;
+            if (_barrier > 0)
+            {
+                _barrier -= damage;
+                if (_barrier <= 0)
+                {
+                    _curHP += _barrier;
+                    _barrier = 0;
+                }
+            }
+            else
+            {
+                _curHP -= damage;
+            }
         }
         else
         {
             damage -= damage * _damageResist;
             float tempDef = _def - lethal; //물관 적용
             tempDef -= tempDef * armorPen; //방관 적용
-            _curHP -= damage * (1 + tempDef * 0.01f);
+            if(_barrier > 0)
+            {
+                _barrier -= damage * (1 + tempDef * 0.01f);
+                if (_barrier <= 0)
+                {
+                    _curHP += _barrier;
+                    _barrier = 0;
+                }
+            }
+            else
+            {
+                _curHP -= damage * (1 + tempDef * 0.01f);
+            }
 
         }
 
@@ -327,6 +360,10 @@ public class Character : ScriptableObject
     public void AdjustHP(float hp)
     {
         _HP += hp;
+    }
+    public void AdjustBarrier(float barrier)
+    {
+        _barrier += barrier;
     }
 
     public void AdjustATK(float atk)
