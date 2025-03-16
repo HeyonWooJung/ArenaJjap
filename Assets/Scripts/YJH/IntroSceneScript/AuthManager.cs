@@ -5,11 +5,11 @@ using UnityEngine.UI;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
+using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 
 public class AuthManager : MonoBehaviour
 {
-    public Button startButton;
-
     public static FirebaseUser user; //인증된 유저 정보 기억
     public FirebaseAuth auth; //인증 진행을 위한 정보
 
@@ -22,12 +22,17 @@ public class AuthManager : MonoBehaviour
     public InputField verifyPW;
 
     public Text warningText;
+    public Text warningText2;
+    public Text successText;
 
     public static DatabaseReference dbRef; //DB용 레퍼런스
 
     public Button registerBtn;
     public Button loginBtn;
+    public Button creatBtn;
     public GameObject registerPanel;
+    public GameObject nickNamePanel; // 닉네임 입력창 패널
+    public Button saveNickBtn; // 닉네임 저장 버튼
     public void OnRegisterPanel()
     {
         registerPanel.SetActive(true);
@@ -53,9 +58,10 @@ public class AuthManager : MonoBehaviour
     void Start()
     {
         registerPanel.SetActive(false);
+        nickNamePanel.SetActive(false);
 
-        startButton.interactable = false;
         warningText.text = "";
+        warningText2.text = "";
     }
 
     public void Login()
@@ -71,14 +77,12 @@ public class AuthManager : MonoBehaviour
     IEnumerator LoginCor(string email, string pw)
     {
         var loginTask = auth.SignInWithEmailAndPasswordAsync(email, pw);
-
-        yield return new WaitUntil(predicate: () => loginTask.IsCompleted);
+        yield return new WaitUntil(() => loginTask.IsCompleted);
 
         if (loginTask.Exception != null)
         {
-            Debug.LogWarning("다음과 같은 이유로 로그인 실패 :" + loginTask.Exception);
+            Debug.LogWarning("로그인 실패 :" + loginTask.Exception);
 
-            //파이어베이스 에선 에러를 분석할 수 있는 형식을 제공
             FirebaseException firebaseEx = loginTask.Exception.GetBaseException() as FirebaseException;
             AuthError errorCode = (AuthError)firebaseEx.ErrorCode; // 좀 더 편하게 보려고 열거형으로 받아서 봄
 
@@ -87,13 +91,13 @@ public class AuthManager : MonoBehaviour
             switch (errorCode)
             {
                 case AuthError.MissingEmail:
-                    message = "이메일 누락";
+                    message = "이메일 누락되었습니다";
                     break;
                 case AuthError.MissingPassword:
-                    message = "패스워드 누락";
+                    message = "비밀번호가 누락되었습니다";
                     break;
                 case AuthError.WrongPassword:
-                    message = "패스워드 틀림";
+                    message = "비밀번호가 틀렸습니다";
                     break;
                 case AuthError.UserNotFound:
                     message = "아이디가 존재하지 않습니다";
@@ -109,21 +113,31 @@ public class AuthManager : MonoBehaviour
         }
         else
         {
-            user = loginTask.Result.User; //인증된 정보를 기억하고 있게 함
+            user = loginTask.Result.User;
             warningText.text = "";
-            nickField.text = user.DisplayName; //서버의 내 닉네임 가져와서 인풋필드에 역으로 뿌릴거임
-            startButton.interactable = true;
+            if (string.IsNullOrEmpty(user.DisplayName))
+            {
+                // 닉네임이 없는 경우 닉네임 입력 필드 활성화
+                nickNamePanel.SetActive(true);
+            }
+            else
+            {
+                SceneManager.LoadScene("Scene2");
+            }
         }
+
+
     }
     IEnumerator RegisterCor(string email, string pw, string verPw)
-    {
-        
+    {        
         if(pw != verPw)
         {
-        }        
-        var registerTask = auth.CreateUserWithEmailAndPasswordAsync(email, pw);
+            warningText2.text = "확인 비밀번호가 다릅니다.";
+            yield break;
+        }
 
-        yield return new WaitUntil(predicate: () => registerTask.IsCompleted);
+        var registerTask = auth.CreateUserWithEmailAndPasswordAsync(email, pw);
+        yield return new WaitUntil(() => registerTask.IsCompleted);
 
         if (registerTask.Exception != null)
         {
@@ -135,54 +149,62 @@ public class AuthManager : MonoBehaviour
             switch (errorCode)
             {
                 case AuthError.MissingEmail:
-                    message = "이메일 누락";
+                    message = "이메일이 누락되었습니다.";
                     break;
                 case AuthError.MissingPassword:
-                    message = "패스워드 누락";
+                    message = "비밀번호가 누락되었습니다.";
                     break;
                 case AuthError.WeakPassword:
                     message = "비밀번호는 6자 이상 입력해주세요";
                     break;
                 case AuthError.EmailAlreadyInUse:
-                    message = "중복 이메일";
+                    message = "중복된 이메일 입니다.";
                     break;
                 default:
                     message = "관리자에게 문의 바랍니다";
                     break;
             }
-
-            warningText.text = message;
+            warningText2.text = message;
+            yield break;
         }
-        //else
-        //{
-        //    user = registerTask.Result.User;
-
-        //    if (user != null)
-        //    {
-        //        UserProfile profile = new UserProfile { DisplayName = "geust" };// 임시 프로필 생성
-
-        //        var profileTask = user.UpdateUserProfileAsync(profile); //작성한 프로필 유저에게 세팅 보내버림
-
-        //        yield return new WaitUntil(predicate: () => profileTask.IsCompleted);
-
-        //        if (profileTask.Exception != null)
-        //        {
-        //            FirebaseException firebaseEx = profileTask.Exception.GetBaseException() as FirebaseException;
-        //            AuthError errorCode = (AuthError)firebaseEx.ErrorCode;
-        //            warningText.text = "닉네임 사용 실패";
-        //        }
-        //        else
-        //        {
-        //            warningText.text = "";
-        //            successText.text = "생성 완료. 반갑습니다" + user.DisplayName + "님";
-        //            startButton.interactable = true;
-        //        }
-        //    }
-        //}
-
-
+        if (registerTask.Result != null)
+        {
+            user = registerTask.Result.User;
+            warningText2.text = ""; // 회원가입 성공 시 오류 메시지 초기화
+            successText.text = "계정 생성이 완료되었습니다!";
+        }
         
-
     }
+    public void SaveNickName()
+    {
+        string newNick = nickField.text;
+
+        if (string.IsNullOrEmpty(newNick))
+        {
+            warningText.text = "닉네임을 입력해주세요.";
+            return;
+        }
+
+        UserProfile profile = new UserProfile { DisplayName = newNick };
+        var profileTask = user.UpdateUserProfileAsync(profile);
+
+        StartCoroutine(WaitForNickUpdate(profileTask));
+    }
+    IEnumerator WaitForNickUpdate(System.Threading.Tasks.Task profileTask)
+    {
+        yield return new WaitUntil(() => profileTask.IsCompleted);
+
+        if (profileTask.Exception != null)
+        {
+            warningText.text = "닉네임 저장 실패.";
+        }
+        else
+        {
+            warningText.text = "";
+            nickNamePanel.SetActive(false); // 닉네임 입력창 닫기
+            SceneManager.LoadScene("Scene2"); // 닉네임 설정 후 바로 RoomScene으로 이동
+        }
+    }
+
 }
 
