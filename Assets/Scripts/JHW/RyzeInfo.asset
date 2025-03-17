@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfb7e9af41516b6498099348e6483b0a, type: 3}
-  m_Name: CharacterInfo
+  m_Name: RyzeInfo
   m_EditorClassIdentifier: 
-  _HP: 123
-  _HPRegen: 12
-  _atk: 40
-  _def: 40
-  _moveSpeed: 355
-  _atkSpeed: 0.6
+  _HP: 2762
+  _HPRegen: 21.6
+  _atk: 109
+  _def: 93.4
+  _moveSpeed: 340
+  _atkSpeed: 0.849
   _range: 550
-  qCoolDown: 8
-  wCoolDown: 10
-  eCoolDown: 3
-  rCoolDown: 100
+  qCoolDown: 5
+  wCoolDown: 9
+  eCoolDown: 2.5
+  rCoolDown: 140

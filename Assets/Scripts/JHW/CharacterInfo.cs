@@ -284,7 +284,7 @@ public class Character : ScriptableObject
     }
 
     //라운드 시작할때
-    public void ResetState()
+    public virtual void ResetState()
     {
         _curHP = _HP;
 

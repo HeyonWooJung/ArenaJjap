@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     public Character character;
-    public Texture2D cursorTexture;
     NavMeshAgent agent;
 
     CommandBase toExecute;
@@ -26,7 +25,8 @@ public class PlayerController : MonoBehaviour
         agent.angularSpeed = 100000;
         agent.acceleration = 100000;
         character.OnMoveSpeedChanged += ApplyMoveSpeed;
-        Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+        //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+        StartCoroutine(HpRegen());
     }
 
     private void OnDestroy()
@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if((character.CurState == State.Stun && character.CurState == State.Airborne) == false)
         if(Input.GetMouseButton(1))
         {
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -72,7 +73,7 @@ public class PlayerController : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                toExecute = new SkillWCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                toExecute = new SkillWCommand(this, true, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
                 toExecute.Execute();
             }
         }
@@ -82,7 +83,7 @@ public class PlayerController : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                toExecute = new SkillECommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                toExecute = new SkillECommand(this, true, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
                 toExecute.Execute();
             }
         }
@@ -115,6 +116,15 @@ public class PlayerController : MonoBehaviour
                 toExecute = new FlashCommmand(this, hit.point);
                 toExecute.Execute();
             }
+        }
+    }
+
+    IEnumerator HpRegen()
+    {
+        while (character.CurHP > 0)
+        {
+            yield return new WaitForSeconds(1f);
+            character.Heal(character.HpRegen);
         }
     }
 
@@ -162,7 +172,10 @@ public class PlayerController : MonoBehaviour
     public virtual void Move(Vector3 pos)
     {
         //움직이다
-        agent.SetDestination(pos);
+        if (character.CurState != State.Root)
+        {
+            agent.SetDestination(pos);
+        }
     }
 
     public virtual void AutoAttack(Character target)
@@ -267,8 +280,15 @@ public class PlayerController : MonoBehaviour
         if (character.CanFlash)
         {
             pos.y = transform.position.y;
+            pos = transform.position + Vector3.ClampMagnitude(pos - transform.position, 4);
             agent.ResetPath();
-            transform.position += Vector3.ClampMagnitude(pos - transform.position, 4);
+            if(NavMesh.SamplePosition(pos, out NavMeshHit navhit, 3, NavMesh.AllAreas))
+            {
+                Debug.Log($"pos: {pos} | nHit: {navhit.position}");
+                agent.SetDestination(navhit.position);
+                transform.position = navhit.position;
+            }
+            //transform.position += Vector3.ClampMagnitude(pos - transform.position, 4);
         }
         else
         {
@@ -276,4 +296,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void ResetCharacter()
+    {
+        character.ResetState();
+        StartCoroutine(HpRegen());
+    }
+
+    public void ApplySlow(float percent, float time)
+    {
+        StartCoroutine(SlowDown(percent, time));
+    }
+
+    IEnumerator SlowDown(float percent, float time)
+    {
+        int tempSpeed = (int)(character.MoveSpeed * percent);
+        character.AdjustMoveSpeed(-tempSpeed);
+        yield return new WaitForSeconds(time);
+        character.AdjustMoveSpeed(tempSpeed);
+    }
 }
