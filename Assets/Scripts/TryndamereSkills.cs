@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class TryndamereSkills : MonoBehaviour
@@ -20,6 +21,9 @@ public class TryndamereSkills : MonoBehaviour
     private Vector3 eTargetPosition; // E 스킬 목표 위치
     private bool isDashing = false; // 돌진 중인지 여부
 
+    // R 스킬 관련 변수
+    private bool isImmortal = false; // 불멸 상태 여부
+
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -35,19 +39,24 @@ public class TryndamereSkills : MonoBehaviour
 
     void HandleSkills()
     {
-        if (Input.GetKeyDown(KeyCode.Q)) // Q 스킬 입력 감지
+        if (Input.GetKeyDown(KeyCode.Q)) // Q 스킬
         {
             anim.SetTrigger("UseQ"); // Q 스킬 애니메이션 실행
             UseQSkill(); // Q 스킬 기능 실행
         }
-        if (Input.GetKeyDown(KeyCode.W)) // W 스킬 입력 감지
+        if (Input.GetKeyDown(KeyCode.W)) // W 스킬 
         {
             anim.SetTrigger("UseW"); // W 스킬 애니메이션 실행
             UseWSkill(); // W 스킬 기능 실행
         }
-        if (Input.GetKeyDown(KeyCode.E)) //  E 스킬 입력 감지
+        if (Input.GetKeyDown(KeyCode.E)) //  E 스킬
         {
             StartDash();
+        }
+        if (Input.GetKeyDown(KeyCode.R)) //  R 스킬
+        {
+            anim.SetTrigger("UseR");
+            UseRSkill();
         }
     }
 
@@ -192,4 +201,51 @@ public class TryndamereSkills : MonoBehaviour
             }
         }
     }
+
+    //  R 스킬 (불사의 분노) - 5초 동안 무적 & 분노 증가
+    void UseRSkill()
+    {
+        if (isImmortal) return; // 이미 R 스킬이 활성화되어 있으면 실행 안 함
+
+        isImmortal = true; //  5초간 무적 상태
+        currentRage = Mathf.Min(currentRage + 50, maxRage); //  분노 50 추가 (최대 분노 초과 방지)
+
+        Debug.Log("R 스킬 활성화! 5초 동안 무적 상태");
+        StartCoroutine(EndRSkill()); //  5초 후 무적 해제
+    }
+
+    //  5초 후 R 스킬 해제
+     IEnumerator EndRSkill()
+    {
+        yield return new WaitForSeconds(5f);
+        isImmortal = false;
+        Debug.Log("R 스킬 종료! 이제 정상적으로 피해를 받음");
+    }
+
+    //  체력 감소 시 무적 상태 체크
+    public void TakeDamage(int damage)
+    {
+        if (isImmortal && currentHealth - damage <= 0)
+        {
+            currentHealth = 1; //  무적 상태일 때 최소 체력 유지
+            Debug.Log("무적 상태! 체력 1로 유지됨");
+        }
+        else
+        {
+            currentHealth -= damage;
+            if (currentHealth <= 0)
+            {
+                Die();
+            }
+        }
+    }
+
+    void Die()
+    {
+        Debug.Log("트린다미어 사망!");
+        Destroy(gameObject);
+    }
+
+
+
 }

@@ -39,6 +39,14 @@ public class TryndamereController : MonoBehaviour
                 anim.SetFloat("isMovingBlend", 1f); // 블렌드 트리 값 변경 (이동 애니메이션 실행)
             }
         }
+        if (Input.GetKeyDown(KeyCode.S)) //  S 키를 누르면 즉시 정지
+        {
+            isMoving = false;
+            targetPosition = transform.position; // 현재 위치를 목표로 설정하여 이동 중단
+            anim.SetFloat("isMovingBlend", 0f); // Idle 애니메이션으로 변경
+            Debug.Log("S 키 입력: 트린다미어 정지");
+            return;
+        }
     }
 
     void MoveCharacter()

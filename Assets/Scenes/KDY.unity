@@ -181,6 +181,8 @@ MonoBehaviour:
   ragePerAttack: 5
   ragePerCrit: 10
   critChance: 0.25
+  maxEDistance: 7
+  eSpeed: 20
 --- !u!1 &886105200
 GameObject:
   m_ObjectHideFlags: 0
