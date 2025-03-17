@@ -20,12 +20,17 @@ public class ServerConnecter : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        Debug.Log("서버 연결 완료");
-        PhotonNetwork.NickName = AuthManager.user.DisplayName;
+        Debug.Log("서버 연결");
 
-        PhotonNetwork.JoinLobby();//로비 입장
-        SceneManager.LoadScene("LobbyScene");
-
+        if (AuthManager.user != null)
+        {
+            PhotonNetwork.NickName = AuthManager.user.DisplayName;
+            Debug.Log("닉네임 설정");
+        }
+        else
+        {
+            PhotonNetwork.NickName = "";
+        }
         //씬 로딩이 더 오래 걸릴지 , 로비 입장이 더 오래걸릴 지 보장할 수 없습니다.
     }
 
