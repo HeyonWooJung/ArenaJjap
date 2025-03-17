@@ -3,12 +3,14 @@ using UnityEngine;
 
 public class TryndamereSkills : MonoBehaviour
 {
+
+    public GameObject healEffectPrefab;
     private Animator anim;
 
     // 체력 및 분노 시스템
     public int maxHealth = 100; // 최대 체력
     public int currentHealth; // 현재 체력
-    public int maxRage = 100; // 최대 분노
+    public int maxRage = 5000; // 최대 분노 100
     public int currentRage; // 현재 분노
     public int ragePerAttack = 5; // 기본 공격 시 분노 증가량
     public int ragePerCrit = 10; // 치명타 발생 시 추가 분노 증가량
@@ -28,7 +30,7 @@ public class TryndamereSkills : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         currentHealth = maxHealth; // 시작 시 최대 체력
-        currentRage = 0; // 시작 시 분노 0
+        currentRage = 5000; // 시작 시 분노 0
     }
 
     void Update()
@@ -68,6 +70,13 @@ public class TryndamereSkills : MonoBehaviour
             int healAmount = currentRage / 2; // 분노량의 절반만큼 체력 회복
             Heal(healAmount); // 체력 회복 적용
             currentRage = 0; // 분노 초기화
+            anim.SetTrigger("UseQ");
+
+            //  힐 이펙트 생성
+            GameObject healEffect = Instantiate(healEffectPrefab, transform.position, Quaternion.identity);
+            healEffect.transform.SetParent(transform); // 캐릭터를 부모로 설정하여 함께 이동하도록 함
+            Destroy(healEffect, 2f); // 2초 후 자동 삭제
+
             Debug.Log("Q사용 체력 회복량: " + healAmount);
         }
         else
