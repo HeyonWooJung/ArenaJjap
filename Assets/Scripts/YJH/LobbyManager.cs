@@ -16,6 +16,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI timerText; // 타이머 표시
 
     private int acceptCount = 0; // 수락한 플레이어 수
+    private int playerCount = 0;
     private bool isMatching = false;
     private float elapsedTime = 0f;
     Coroutine timerCoroutine;
@@ -28,9 +29,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         nickName.text = PhotonNetwork.NickName;
         nickName1.text = PhotonNetwork.NickName;
 
-        matchButton.onClick.AddListener(StartMatchmaking);
-        acceptButton.onClick.AddListener(AcceptMatch);
-
         acceptButton.gameObject.SetActive(false);
         matchPanel.gameObject.SetActive(false);
 
@@ -42,18 +40,22 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         matchButton.interactable = false;
         elapsedTime = 0f;
         timerCoroutine = StartCoroutine(TimerCountUp());
-        StartCoroutine(FindOrCreateRoom());
+
+        PhotonNetwork.JoinRandomRoom();
     }
 
-    IEnumerator FindOrCreateRoom()
+    public override void OnJoinRandomFailed(short returnCode, string message)
     {
-        PhotonNetwork.JoinRandomRoom();
-        yield return new WaitForSeconds(2);
+        PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 4 });
+    }
 
-        if (!PhotonNetwork.InRoom) 
+    public override void OnJoinedRoom()
+    {
+        playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+
+        if (playerCount == 4)
         {
-            Debug.Log("방생성");
-            PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 4 });
+            photonView.RPC("EnableAcceptButton", RpcTarget.All);
         }
     }
 
@@ -62,6 +64,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         isMatching = true;
         while (isMatching)
         {
+            Debug.Log(playerCount);
             elapsedTime += Time.deltaTime;
             int minutes = Mathf.FloorToInt(elapsedTime / 60);
             int seconds = Mathf.FloorToInt(elapsedTime % 60);
@@ -70,19 +73,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
-    public override void OnJoinedRoom()
-    {
-        if (PhotonNetwork.PlayerList.Length == 4)
-        {
-            photonView.RPC("EnableAcceptButton", RpcTarget.All);
-        }
-    }
      
     [PunRPC]
     public void EnableAcceptButton()
     {
         acceptButton.gameObject.SetActive(true);
-        Debug.Log("수락 대기 중");
     }
     
     public void AcceptMatch()
@@ -119,6 +114,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void CancelMatch()
     {
+        playerCount--;
         isMatching = false; 
         if (timerCoroutine != null)
         {
