@@ -133,18 +133,18 @@ public class TryndamereSkills : MonoBehaviour
 
         Debug.Log("W 스킬 사용! 적 탐색 중...");
 
-        //  OverlapSphere 디버깅 추가 (현재 위치 기준)
+        // 현재 위치를 기준으로 W 스킬 범위 내의 적 감지
         Collider[] enemies = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
 
         if (enemies.Length == 0)
         {
-            Debug.Log(" 범위 내 적 없음 → 감지 문제 확인 필요");
+            Debug.Log("범위 내 적 없음 → 감지 문제 확인 필요");
             return;
         }
 
         foreach (Collider enemyCollider in enemies)
         {
-            Debug.Log(" 감지된 적: " + enemyCollider.name); // 감지된 적 이름 출력
+            Debug.Log("감지된 적: " + enemyCollider.name); // 감지된 적 이름 출력
 
             EnemyController enemy = enemyCollider.GetComponent<EnemyController>();
             if (enemy == null)
@@ -153,18 +153,18 @@ public class TryndamereSkills : MonoBehaviour
                 continue;
             }
 
-            //  적의 공격력 감소
+            // 적의 공격력 감소 적용
             enemy.ReduceAttackPower(attackReduction);
-            Debug.Log(" " + enemy.name + "의 공격력이 감소");
+            Debug.Log(enemy.name + "의 공격력이 감소");
 
-            //  적이 등을 돌리고 있다면 추가 효과
+            // 적이 등을 돌리고 있다면 추가 효과 적용
             if (IsEnemyFacingAway(enemy.transform))
             {
-                Debug.Log(" " + enemy.name + "이 등을 돌림 이동 속도 감소 가능");
+                Debug.Log(enemy.name + "이 등을 돌림 → 이동 속도 감소");
             }
             else
             {
-                Debug.Log(" " + enemy.name + "이 정면을 보고 있음");
+                Debug.Log(enemy.name + "이 정면을 보고 있음");
             }
         }
     }
