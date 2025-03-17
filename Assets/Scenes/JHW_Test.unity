@@ -583,6 +583,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: f1a975db0b5613d4d9d7038d1ebbc79d, type: 2}
+  QObj: {fileID: 4778584851969424976, guid: eeeb389befc640b4083c4619333d93bc, type: 3}
+  WObj: {fileID: 7795432686161682868, guid: d27bc38b1f093db44b2e1df52d5571fa, type: 3}
+  EObj: {fileID: 4834872013967151757, guid: b48739ddc05b1eb4bad4dec97e878873, type: 3}
+  RObj: {fileID: 0}
 --- !u!1 &1586541613
 GameObject:
   m_ObjectHideFlags: 0

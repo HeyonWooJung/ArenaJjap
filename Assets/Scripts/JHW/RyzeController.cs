@@ -14,6 +14,9 @@ public class RyzeController : PlayerController
         {
             //대충 스킬쓰기
             character.SetQCooldown();
+            GameObject tempQ = Instantiate(QObj, transform.position, Quaternion.identity);
+            tempQ.transform.LookAt(location);
+            tempQ.transform.rotation = Quaternion.Euler(0, tempQ.transform.rotation.eulerAngles.y, tempQ.transform.rotation.eulerAngles.z);
             Debug.Log("Q사용");
         }
         else
@@ -26,9 +29,13 @@ public class RyzeController : PlayerController
     {
         if (character.CurWCool <= 0)
         {
-            //대충 스킬쓰기
-            character.SetWCooldown();
-            Debug.Log("W사용");
+            if (target != null)
+            {
+                //대충 스킬쓰기
+                character.SetWCooldown();
+                character.CurQCool = 0;
+                Debug.Log("W사용");
+            }
         }
         else
         {
@@ -40,9 +47,13 @@ public class RyzeController : PlayerController
     {
         if (character.CurECool <= 0)
         {
-            //대충 스킬쓰기
-            character.SetECooldown();
-            Debug.Log("E사용");
+            if (target != null)
+            {
+                //대충 스킬쓰기
+                character.SetECooldown();
+                character.CurQCool = 0;
+                Debug.Log("E사용");
+            }
         }
         else
         {
