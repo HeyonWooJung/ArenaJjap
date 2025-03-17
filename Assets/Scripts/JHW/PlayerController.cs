@@ -9,13 +9,13 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     public Character character;
-    public Texture2D cursorTexture;
     NavMeshAgent agent;
 
     CommandBase toExecute;
 
     Ray ray;
     RaycastHit hit;
+    bool canAA = true;
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +26,8 @@ public class PlayerController : MonoBehaviour
         agent.angularSpeed = 100000;
         agent.acceleration = 100000;
         character.OnMoveSpeedChanged += ApplyMoveSpeed;
-        Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+        //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+        StartCoroutine(HpRegen());
     }
 
     private void OnDestroy()
@@ -37,85 +38,107 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetMouseButton(1))
+        if ((character.CurState == State.Stun && character.CurState == State.Airborne) == false)
         {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
+            if (Input.GetMouseButton(1))
             {
-                if (hit.transform.gameObject.CompareTag("Enemy") && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new AutoAttackCommand(this, hit.transform.GetComponent<PlayerController>().character);
+                    if (hit.transform.gameObject.CompareTag("Enemy") && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
+                    {
+                        if (canAA)
+                        {
+                            toExecute = new AutoAttackCommand(this, hit.transform.GetComponent<PlayerController>().character);
+                            toExecute.Execute();
+                        }
+                    }
+                    else
+                    {
+                        toExecute = new MoveCommand(this, hit.point);
+                        toExecute.Execute();
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    toExecute = new SkillQCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
                     toExecute.Execute();
                 }
-                else
+            }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new MoveCommand(this, hit.point);
+                    toExecute = new SkillWCommand(this, true, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute.Execute();
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    toExecute = new SkillECommand(this, true, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute.Execute();
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    toExecute = new SkillRCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute.Execute();
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    toExecute = new RushCommand(this);
+                    toExecute.Execute();
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    toExecute = new FlashCommmand(this, hit.point);
                     toExecute.Execute();
                 }
             }
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.Q))
+    IEnumerator HpRegen()
+    {
+        while (character.CurHP > 0)
         {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                toExecute = new SkillQCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
-                toExecute.Execute();
-            }
+            yield return new WaitForSeconds(1f);
+            character.Heal(character.HpRegen);
         }
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+    }
 
-            if (Physics.Raycast(ray, out hit))
-            {
-                toExecute = new SkillWCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
-                toExecute.Execute();
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                toExecute = new SkillECommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
-                toExecute.Execute();
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                toExecute = new SkillRCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
-                toExecute.Execute();
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                toExecute = new RushCommand(this);
-                toExecute.Execute();
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                toExecute = new FlashCommmand(this, hit.point);
-                toExecute.Execute();
-            }
-        }
+    IEnumerator AAHandle()
+    {
+        canAA = false;
+        yield return new WaitForSeconds(1 / character.AttackSpeed);
+        canAA = true;
     }
 
     private void FixedUpdate()
@@ -161,12 +184,16 @@ public class PlayerController : MonoBehaviour
 
     public virtual void Move(Vector3 pos)
     {
-        //움직이다 sibal
-        agent.SetDestination(pos);
+        //움직이다
+        if (character.CurState != State.Root)
+        {
+            agent.SetDestination(pos);
+        }
     }
 
     public virtual void AutoAttack(Character target)
     {
+        StartCoroutine(AAHandle());
         Debug.Log("AA " + target.name);
         //평타
         float damage = character.ATK;
@@ -267,8 +294,15 @@ public class PlayerController : MonoBehaviour
         if (character.CanFlash)
         {
             pos.y = transform.position.y;
+            pos = transform.position + Vector3.ClampMagnitude(pos - transform.position, 4);
             agent.ResetPath();
-            transform.position += Vector3.ClampMagnitude(pos - transform.position, 4);
+            if (NavMesh.SamplePosition(pos, out NavMeshHit navhit, 3, NavMesh.AllAreas))
+            {
+                Debug.Log($"pos: {pos} | nHit: {navhit.position}");
+                agent.SetDestination(navhit.position);
+                transform.position = navhit.position;
+            }
+            //transform.position += Vector3.ClampMagnitude(pos - transform.position, 4);
         }
         else
         {
@@ -276,4 +310,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void ResetCharacter()
+    {
+        character.ResetState();
+        StartCoroutine(HpRegen());
+    }
+
+    public void ApplySlow(float percent, float time)
+    {
+        StartCoroutine(SlowDown(percent, time));
+    }
+
+    IEnumerator SlowDown(float percent, float time)
+    {
+        int tempSpeed = (int)(character.MoveSpeed * percent);
+        character.AdjustMoveSpeed(-tempSpeed);
+        yield return new WaitForSeconds(time);
+        character.AdjustMoveSpeed(tempSpeed);
+    }
 }
