@@ -7,8 +7,9 @@ using Firebase.Auth;
 using Firebase.Database;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
 
-public class AuthManager : MonoBehaviour
+public class AuthManager : MonoBehaviourPunCallbacks
 {
     public static FirebaseUser user; //인증된 유저 정보 기억
     public FirebaseAuth auth; //인증 진행을 위한 정보
@@ -33,6 +34,9 @@ public class AuthManager : MonoBehaviour
     public GameObject registerPanel;
     public GameObject nickNamePanel; // 닉네임 입력창 패널
     public Button saveNickBtn; // 닉네임 저장 버튼
+
+    public GameObject loadingPanel;// 로딩 판넬
+    public GameObject loadingSpinner;
     public void OnRegisterPanel()
     {
         registerPanel.SetActive(true);
@@ -40,6 +44,8 @@ public class AuthManager : MonoBehaviour
 
     private void Awake()
     {
+        PhotonNetwork.AutomaticallySyncScene = true;
+
         Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
         {
             var dependencyStatus = task.Result;
@@ -59,19 +65,23 @@ public class AuthManager : MonoBehaviour
     {
         registerPanel.SetActive(false);
         nickNamePanel.SetActive(false);
+        loadingPanel.SetActive(false);
 
         warningText.text = "";
         warningText2.text = "";
     }
-
+    private void Update()
+    {
+        loadingSpinner.transform.Rotate(0, 0, -200 * Time.deltaTime);
+    }
     public void Login()
     {
-        StartCoroutine(LoginCor(emailField.text, pwField.text));        
+        StartCoroutine(LoginCor(emailField.text, pwField.text));
     }
 
     public void Register()
     {
-        StartCoroutine(RegisterCor(registerEM.text, registerPW.text, verifyPW.text));        
+        StartCoroutine(RegisterCor(registerEM.text, registerPW.text, verifyPW.text));
     }
 
     IEnumerator LoginCor(string email, string pw)
@@ -122,15 +132,17 @@ public class AuthManager : MonoBehaviour
             }
             else
             {
-                SceneManager.LoadScene("Scene2");
+                PhotonNetwork.ConnectUsingSettings();
+
+                StartCoroutine(ConnectServer());
             }
         }
 
 
     }
     IEnumerator RegisterCor(string email, string pw, string verPw)
-    {        
-        if(pw != verPw)
+    {
+        if (pw != verPw)
         {
             warningText2.text = "확인 비밀번호가 다릅니다.";
             yield break;
@@ -173,7 +185,7 @@ public class AuthManager : MonoBehaviour
             warningText2.text = ""; // 회원가입 성공 시 오류 메시지 초기화
             successText.text = "계정 생성이 완료되었습니다!";
         }
-        
+
     }
     public void SaveNickName()
     {
@@ -202,9 +214,25 @@ public class AuthManager : MonoBehaviour
         {
             warningText.text = "";
             nickNamePanel.SetActive(false); // 닉네임 입력창 닫기
-            SceneManager.LoadScene("Scene2"); // 닉네임 설정 후 바로 RoomScene으로 이동
+
+            PhotonNetwork.ConnectUsingSettings();
+            StartCoroutine(ConnectServer());
         }
     }
+    public override void OnConnectedToMaster()
+    {
 
+        if (AuthManager.user != null)
+        {
+            PhotonNetwork.NickName = AuthManager.user.DisplayName;
+            SceneManager.LoadScene("Scene2");
+        }
+    }
+    IEnumerator ConnectServer()
+    {
+        loadingPanel.SetActive(true);
+
+        yield return new WaitUntil(() => PhotonNetwork.IsConnected);        
+    }
 }
 

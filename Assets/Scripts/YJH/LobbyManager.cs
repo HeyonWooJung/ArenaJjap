@@ -10,20 +10,23 @@ using TMPro;
 public class LobbyManager : MonoBehaviourPunCallbacks
 {    
     public TMP_Text nickName;
+    public Transform lobbyUser;
     public Text connectedUser;
     void Start()
     {
-        PhotonNetwork.JoinLobby();
-        if(AuthManager.user != null)
-        {
-            nickName.text = AuthManager.user.DisplayName;
-        }
-        else
-        {
-            nickName.text = "¼ÒÈ¯»ç";
-        }
+        PhotonNetwork.JoinLobby();        
+        nickName.text = PhotonNetwork.NickName;
     }
 
+    public override void OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)
+    {
+        foreach(TypedLobby lobby in lobbyStatistics)
+        {
+            Debug.Log("³ª¿È");
+            var userName = Instantiate(connectedUser, lobbyUser);
+            userName.text = nickName.text;
+        }
+    }
     public override void OnCreatedRoom()
     {
         base.OnCreatedRoom();
