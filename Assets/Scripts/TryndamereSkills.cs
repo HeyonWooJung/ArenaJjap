@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class TryndamereSkills : MonoBehaviour
 {
-
+    public TrailRenderer swordTrail; //  검의 Trail Renderer (Inspector에서 연결)
     public GameObject healEffectPrefab;
     private Animator anim;
 
@@ -192,7 +192,19 @@ public class TryndamereSkills : MonoBehaviour
 
             anim.SetTrigger("UseE"); // 애니메이션 실행
             isDashing = true; // 돌진 시작
+
+            //////////
+            //  트레일 효과 활성화
+            swordTrail.enabled = true;
+            StartCoroutine(DisableTrail()); // 일정 시간 후 비활성화 ////
         }
+    }
+
+    //  일정 시간 후 `Trail Renderer` 비활성화
+    IEnumerator DisableTrail()
+    {
+        yield return new WaitForSeconds(0.5f); // 잔상 지속 시간////////
+        swordTrail.enabled = false;
     }
 
     //  E 스킬 이동 처리
