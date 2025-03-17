@@ -202,6 +202,7 @@ public class AuthManager : MonoBehaviourPunCallbacks
 
         StartCoroutine(WaitForNickUpdate(profileTask));
     }
+
     IEnumerator WaitForNickUpdate(System.Threading.Tasks.Task profileTask)
     {
         yield return new WaitUntil(() => profileTask.IsCompleted);
@@ -221,7 +222,6 @@ public class AuthManager : MonoBehaviourPunCallbacks
     }
     public override void OnConnectedToMaster()
     {
-
         if (AuthManager.user != null)
         {
             PhotonNetwork.NickName = AuthManager.user.DisplayName;
