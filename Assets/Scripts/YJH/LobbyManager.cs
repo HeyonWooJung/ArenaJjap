@@ -12,7 +12,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public GameObject matchPanel;
     public Button matchButton;
 
+    public GameObject acceptPanel;
     public Button acceptButton; // 수락 버튼
+    public Image acceptTimer;
+
     public TextMeshProUGUI timerText; // 타이머 표시
 
     private int acceptCount = 0; // 수락한 플레이어 수
@@ -23,13 +26,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public TMP_Text nickName;
     public TMP_Text nickName1;
+
+    float duration = 15f; // 30초 동안 감소
     void Start()
     {
-        PhotonNetwork.JoinLobby();        
+        PhotonNetwork.JoinLobby();
         nickName.text = PhotonNetwork.NickName;
         nickName1.text = PhotonNetwork.NickName;
 
-        acceptButton.gameObject.SetActive(false);
+        acceptPanel.SetActive(false);
         matchPanel.gameObject.SetActive(false);
 
         timerText.text = "0:00";
@@ -64,7 +69,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         isMatching = true;
         while (isMatching)
         {
-            Debug.Log(playerCount);
             elapsedTime += Time.deltaTime;
             int minutes = Mathf.FloorToInt(elapsedTime / 60);
             int seconds = Mathf.FloorToInt(elapsedTime % 60);
@@ -73,15 +77,41 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
-     
+
     [PunRPC]
     public void EnableAcceptButton()
     {
-        acceptButton.gameObject.SetActive(true);
+        acceptPanel.SetActive(true);
+        acceptTimer.gameObject.SetActive(true);
+        acceptTimer.fillAmount = 1;
+        StartCoroutine(TimerImageFill());
+
+        isMatching = false;
+        if (timerCoroutine != null)
+        {
+            StopCoroutine(timerCoroutine);
+        }
     }
-    
+
+    IEnumerator TimerImageFill()
+    {
+        while (elapsedTime < duration)
+        {
+            acceptTimer.fillAmount = 1 - (elapsedTime / duration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        acceptTimer.fillAmount = 0; // 최종적으로 0으로 설정
+        if (acceptTimer.fillAmount <= 0)
+        {
+            CancelMatch();
+        }
+    }
+
     public void AcceptMatch()
     {
+        acceptTimer.gameObject.SetActive(false);
         photonView.RPC("PlayerAccepted", RpcTarget.All);
         acceptButton.interactable = false;
     }
@@ -91,13 +121,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         acceptCount++;
 
-        if (acceptCount == 4) // 모든 플레이어가 수락하면 게임 시작
+        if (acceptCount == 4)
         {
-            isMatching = false; // 타이머 정지
-            if (timerCoroutine != null)
-            {
-                StopCoroutine(timerCoroutine);
-            }
             photonView.RPC("StartGame", RpcTarget.All);
         }
     }
@@ -109,21 +134,27 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             StopCoroutine(timerCoroutine);
         }
-        PhotonNetwork.LoadLevel("Scene3"); 
+        PhotonNetwork.LoadLevel("Scene3");
     }
 
+    [PunRPC]
     public void CancelMatch()
     {
         playerCount--;
-        isMatching = false; 
+        isMatching = false;
         if (timerCoroutine != null)
         {
             StopCoroutine(timerCoroutine);
+        }
+        if (acceptPanel != null)
+        {
+            acceptPanel.SetActive(false);
         }
 
         PhotonNetwork.LeaveRoom();
         matchPanel.gameObject.SetActive(false);
         matchButton.interactable = true;
-        timerText.text = "0:00"; 
+        timerText.text = "0:00";
     }
+
 }
