@@ -119,3 +119,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startPos: {x: 0, y: 0, z: 0}
+  addQObj: {fileID: 4778584851969424976, guid: 4368eaf225a6e3045b63e72b2b340d6e, type: 3}

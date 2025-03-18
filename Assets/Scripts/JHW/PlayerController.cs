@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     public Character character;
+    public string enemyTag;
     NavMeshAgent agent;
 
     CommandBase toExecute;
@@ -20,7 +21,9 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        character.InitCharacter();
+        Character temp = character;
+        character = ScriptableObject.CreateInstance<Character>();
+        character.InitCharacter(temp);
         agent = GetComponent<NavMeshAgent>();
         agent.speed = character.MoveSpeed * 0.01f;
         agent.angularSpeed = 100000;
@@ -46,11 +49,11 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    if (hit.transform.gameObject.CompareTag("Enemy") && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
+                    if (hit.transform.gameObject.CompareTag(enemyTag) && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
                     {
                         if (canAA)
                         {
-                            toExecute = new AutoAttackCommand(this, hit.transform.GetComponent<PlayerController>().character);
+                            toExecute = new AutoAttackCommand(this, hit.transform.GetComponent<PlayerController>());
                             toExecute.Execute();
                         }
                     }
@@ -68,7 +71,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillQCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute = new SkillQCommand(this, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
                     toExecute.Execute();
                 }
             }
@@ -78,7 +81,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillWCommand(this, true, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute = new SkillWCommand(this, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
                     toExecute.Execute();
                 }
             }
@@ -88,7 +91,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillECommand(this, true, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute = new SkillECommand(this, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
                     toExecute.Execute();
                 }
             }
@@ -98,7 +101,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillRCommand(this, false, false, hit.transform.GetComponent<PlayerController>()?.character, hit.point);
+                    toExecute = new SkillRCommand(this, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
                     toExecute.Execute();
                 }
             }
@@ -123,6 +126,10 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+        else if (character.CurState == State.Root)
+        {
+            agent.ResetPath();
+        }
     }
 
     IEnumerator HpRegen()
@@ -134,7 +141,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator AAHandle()
+    public IEnumerator AAHandle()
     {
         canAA = false;
         yield return new WaitForSeconds(1 / character.AttackSpeed);
@@ -191,7 +198,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public virtual void AutoAttack(Character target)
+    public virtual void AutoAttack(PlayerController target)
     {
         StartCoroutine(AAHandle());
         Debug.Log("AA " + target.name);
@@ -203,10 +210,10 @@ public class PlayerController : MonoBehaviour
             damage *= character.CritDamage;
         }
 
-        target.TakeDamage(damage, false, character.Lethality, character.ArmorPenetration);
+        target.character.TakeDamage(damage, false, character.Lethality, character.ArmorPenetration);
     }
 
-    public virtual void SkillQ(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    public virtual void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurQCool <= 0)
         {
@@ -221,7 +228,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public virtual void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    public virtual void SkillW(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurWCool <= 0)
         {
@@ -236,7 +243,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public virtual void SkillE(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    public virtual void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurECool <= 0)
         {
@@ -251,7 +258,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public virtual void SkillR(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    public virtual void SkillR(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurRCool <= 0)
         {

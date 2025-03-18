@@ -35,8 +35,8 @@ public class MoveCommand : CommandBase //움직임
 
 public class AutoAttackCommand : CommandBase //평타
 {
-    Character target;
-    public AutoAttackCommand(PlayerController controller, Character target) : base(controller)
+    PlayerController target;
+    public AutoAttackCommand(PlayerController controller, PlayerController target) : base(controller)
     {
         this.target = target;
     }
@@ -80,10 +80,10 @@ public class SKillCommands : CommandBase //스킬들 베이스
 {
     protected bool isTargeting;
     protected bool isChanneling;
-    protected Character target;
+    protected PlayerController target;
     protected Vector3 location;
 
-    public SKillCommands(PlayerController controller, bool isTargeting, bool isChanneling, Character target, Vector3 location) : base(controller)
+    public SKillCommands(PlayerController controller, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller)
     {
         this.isTargeting = isTargeting;
         this.isChanneling = isChanneling;
@@ -94,7 +94,7 @@ public class SKillCommands : CommandBase //스킬들 베이스
 
 public class SkillQCommand : SKillCommands //Q스킬
 {
-    public SkillQCommand(PlayerController controller, bool isTargeting, bool isChanneling, Character target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
+    public SkillQCommand(PlayerController controller, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
     {
 
     }
@@ -107,7 +107,7 @@ public class SkillQCommand : SKillCommands //Q스킬
 
 public class SkillWCommand : SKillCommands //W스킬
 {
-    public SkillWCommand(PlayerController controller, bool isTargeting, bool isChanneling, Character target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
+    public SkillWCommand(PlayerController controller, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
     {
 
     }
@@ -120,7 +120,7 @@ public class SkillWCommand : SKillCommands //W스킬
 
 public class SkillECommand : SKillCommands //E스킬
 {
-    public SkillECommand(PlayerController controller, bool isTargeting, bool isChanneling, Character target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
+    public SkillECommand(PlayerController controller, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
     {
 
     }
@@ -133,7 +133,7 @@ public class SkillECommand : SKillCommands //E스킬
 
 public class SkillRCommand : SKillCommands //R스킬
 {
-    public SkillRCommand(PlayerController controller, bool isTargeting, bool isChanneling, Character target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
+    public SkillRCommand(PlayerController controller, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, isTargeting, isChanneling, target, location)
     {
 
     }
