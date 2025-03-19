@@ -11,6 +11,12 @@ public class CommandBase
 
     }
 
+
+    public virtual void Cancel()
+    {
+        controller.Stop();
+    }
+
     public CommandBase(PlayerController controller)
     {
         this.controller = controller;

@@ -184,6 +184,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void Stop()
+    {
+        agent.ResetPath();
+        toExecute = null;
+    }
+
     public void ApplyMoveSpeed()
     {
         agent.speed = character.MoveSpeed * 0.01f;
