@@ -83,6 +83,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         acceptPanel.SetActive(true);
         acceptTimer.gameObject.SetActive(true);
+        acceptButton.interactable = true;
+        
         acceptTimer.fillAmount = 1;
         StartCoroutine(TimerImageFill());
 
@@ -105,13 +107,13 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         acceptTimer.fillAmount = 0; // 최종적으로 0으로 설정
         if (acceptTimer.fillAmount <= 0)
         {
+            yield return new WaitForSeconds(3);
             CancelMatch();
         }
     }
 
     public void AcceptMatch()
     {
-        acceptTimer.gameObject.SetActive(false);
         photonView.RPC("PlayerAccepted", RpcTarget.All);
         acceptButton.interactable = false;
     }
@@ -137,10 +139,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.LoadLevel("Scene3");
     }
 
-    [PunRPC]
+    
     public void CancelMatch()
     {
         playerCount--;
+        acceptCount--;
         isMatching = false;
         if (timerCoroutine != null)
         {
