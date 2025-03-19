@@ -74,23 +74,91 @@ public class TryndamereController : PlayerController
                 healEffect.SetActive(true); // 비활성화되어 있다면 활성화
                 Destroy(healEffect, 2f); //  2초 후 삭제
             }
-
         }
 
         if (anim == null) anim = GetComponentInChildren<Animator>();
         anim.SetTrigger("UseQ");
     }
-    
 
-    
+
     public override void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        Debug.Log("W 스킬 사용! 적 공격력 감소");
-        if (anim == null) anim = GetComponentInChildren<Animator>(); //  필요할 때만 애니메이터 가져오기
-        anim.SetTrigger("UseW");
+        float skillRange = 50.5f;
+        float attackReductionPercent = 0.2f; // ✅ 공격력 감소율 (20%)
+        float moveSlowAmount = 0.4f;
+        float effectDuration = 4f; // ✅ 효과 지속 시간 (공격력 & 이속 복구 시간)
 
+        Collider[] targets = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
+        Debug.Log($"W 스킬 사용! 대상 검색 중... 감지된 개수: {targets.Length}");
 
+        foreach (Collider targetCollider in targets)
+        {
+
+            PlayerController targetPlayer = targetCollider.GetComponent<PlayerController>();
+
+            if (targetPlayer == null || targetPlayer == this) continue;
+
+            // ✅ 공격력 감소 적용
+            float attackReduction = targetPlayer.character.ATK * attackReductionPercent;
+            targetPlayer.character.AdjustATK(-attackReduction);
+            StartCoroutine(RestoreAttackPower(targetPlayer, attackReduction, effectDuration));
+
+            // ✅ 적이 등을 돌린 경우 이동 속도 감소
+            if (IsEnemyFacingAway(targetPlayer.transform))
+                StartCoroutine(SlowCharacter(targetPlayer, moveSlowAmount, effectDuration));
+                Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");  
+        }
+
+        anim?.SetTrigger("UseW");
     }
+
+    // ✅ 공격력 4초 후 복구
+    private IEnumerator RestoreAttackPower(PlayerController target, float amount, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        target.character.AdjustATK(amount);
+        Debug.Log($"{target.name} ATK 복구 완료! (+{amount})");
+    }
+
+    // ✅ 이동 속도 4초 후 복구
+    private IEnumerator SlowCharacter(PlayerController target, float slowAmount, float duration)
+    {
+        if (target == null) yield break;
+
+        target.character.SetCanRush(false);
+        int tempSpeed = (int)(target.character.MoveSpeed * slowAmount);
+        target.character.AdjustMoveSpeed(-tempSpeed);
+        Debug.Log($"{target.name} 이동 속도 감소 시작! (-{tempSpeed})");
+
+        yield return new WaitForSeconds(duration);
+
+        target.character.AdjustMoveSpeed(tempSpeed);
+        target.character.SetCanRush(true);
+        Debug.Log($"{target.name} 이동 속도 복구 완료!");
+    }
+
+    // ✅ 적이 등을 돌렸는지 확인
+    private bool IsEnemyFacingAway(Transform target)
+    {
+        Vector3 directionToEnemy = (transform.position - target.position).normalized;
+        directionToEnemy.y = 0;
+        return Vector3.Dot(target.forward, directionToEnemy) < 0;
+    }
+
+
+
+
+
+
+
+    //public override void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    //{
+    //    Debug.Log("W 스킬 사용! 적 공격력 감소");
+    //    if (anim == null) anim = GetComponentInChildren<Animator>(); //  필요할 때만 애니메이터 가져오기
+    //    anim.SetTrigger("UseW");
+
+
+    //}
 
     public override void SkillE(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
