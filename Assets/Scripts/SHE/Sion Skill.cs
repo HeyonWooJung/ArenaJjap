@@ -1,7 +1,9 @@
+using Photon.Pun.Demo.PunBasics;
 using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -9,8 +11,12 @@ public class SionSkill : MonoBehaviour
 {
     Animator anim;
     [SerializeField] LayerMask hitLayer;
+    [SerializeField] LayerMask wallLayer;
     [SerializeField] bool debuggingMode;
- 
+    readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
+    [SerializeField] PlayerController playerController;
+    [SerializeField] GameObject skillCanvas;
+    [Header("Q스킬")]
     [SerializeField] float qSkillMinFixedDamage = 120;
     [SerializeField] float qSkillMaxFixedDamage = 350;
     [SerializeField] float qSkillMinAddDamage = 0.8f;
@@ -31,27 +37,53 @@ public class SionSkill : MonoBehaviour
     [SerializeField] float qSkillMinLength;
     [SerializeField] float qSkillMaxLength;
     [SerializeField] float qSkillWidth;
+    float chargeRatio;
+    float skillLength;
     //[SerializeField] Vector3 qSkillOriginalCenterPos;
-   
 
+    [Header("W스킬")]
     [SerializeField] float wBarrier;
     [SerializeField] float wTimer;
+    [SerializeField] float wExlosiveWidth;
     [SerializeField] float wTimerMax = 8f;
     [SerializeField] float wBoomMinTime = 3f;
+    [SerializeField] bool wSkillOn = false;
+    [Header("E스킬")]
+    [SerializeField] GameObject eSkillPrefab;
+    [SerializeField] float eSkillDamage;
+    [SerializeField] float eSkillSlowPercent;
+    [SerializeField] float eSkillArmorDownPercent;
+    [SerializeField] float eSkillSpeed;
+    [SerializeField] float eSkillTimer;
+    [Header("R스킬")]
+    [SerializeField] float rSkillFixedMinDamage = 700;
+    [SerializeField] float rSkillFixedMaxDamage = 1400;
+    [SerializeField] float rSkillAddMinDamage = 0.4f;
+    [SerializeField] float rSkillAddMaxDamage = 0.8f;
+    [SerializeField] float rSkillSlowPercent = 0.75f;
+    [SerializeField] float rSkillAirborneTime = 0.2f;
+    [SerializeField] float rSkillMinStun = 0.75f;
+    [SerializeField] float rSkillMaxStun = 1.75f;
+    [SerializeField] bool rSkillOn = false;
+    [SerializeField] float rSkillRotationSpeed;
+    [SerializeField] float rSkillTimer;
+    [SerializeField] float rSkillCheckDistance;
+
 
 
 
     [SerializeField]Character character;
     //[SerializeField] BoxCollider qSkillcol;
     
-    Dictionary<string, Character> characterDictionary = new Dictionary<string, Character>();
+    Dictionary<string, PlayerController> characterDictionary = new Dictionary<string, PlayerController>();
     void Start()
     {
         //Red Blue tag 찾고
         //characterDictionary.Add("Blue", charcter);
         //qSkillcol = GetComponent<BoxCollider>();
         //qSkillOriginalCenterPos = qSkillcol.center;
-        anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
+        playerController = GetComponent<PlayerController>();
     }
 
     // Update is called once per frame
@@ -61,6 +93,30 @@ public class SionSkill : MonoBehaviour
         {
             QSkill();
         }
+        if(Input.GetKeyDown(KeyCode.W))
+        {
+            WSkill();
+        }
+        if( Input.GetKeyDown(KeyCode.E))
+        {
+            ESkill();
+        }
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            if (!rSkillOn)
+            {
+                RSkill();
+                GetMouseCursorPos();
+            }
+            
+        }
+        if (rSkillOn)
+        {
+            RSkillCheckingHit();
+            RSkillRotation();
+            rSkillTimer += Time.deltaTime;
+        }
+        
     }
 
     public void UpdateEnemyDictionary()
@@ -69,14 +125,12 @@ public class SionSkill : MonoBehaviour
         if(this.gameObject.tag == "Blue1" || this.gameObject.tag == "Blue2")
         {
             characterDictionary.Clear();
-            characterDictionary.Add("Red1", character);
-            characterDictionary.Add("Red2", character);
+            
         }
         else
         {
             characterDictionary.Clear();
-            characterDictionary.Add("Blue1", character);
-            characterDictionary.Add("Blue2", character);
+
         }
     }
 
@@ -89,6 +143,7 @@ public class SionSkill : MonoBehaviour
             GetMouseCursorPos();
             StartCoroutine(QSkillCharge());
         }
+       
         
     }
 
@@ -141,9 +196,9 @@ public class SionSkill : MonoBehaviour
     void CastQSkill()
     {
         //비율 0~1
-        float chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
+        chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
         //스킬 넓이
-        float skillLength = Mathf.Lerp(qSkillMinLength, qSkillMaxLength, chargeRatio);
+        skillLength = Mathf.Lerp(qSkillMinLength, qSkillMaxLength, chargeRatio);
 
         Vector3 boxCenter = transform.position + transform.forward * (skillLength / 2f);
         Vector3 halfExtents = new Vector3(qSkillWidth / 2f, 0.5f, skillLength / 2f);
@@ -165,25 +220,25 @@ public class SionSkill : MonoBehaviour
 
         foreach(Collider hit in hits)
         {
-            if (characterDictionary.TryGetValue(hit.tag, out Character enemy) == true)
+            if (characterDictionary.TryGetValue(hit.tag, out PlayerController enemy) == true)
             {
                 if (qSkillTimer >= 1)
                 {
                     //에어본 + 기절
 
 
-                    enemy.SetState(State.Airborne);
-                    enemy.SetState(State.Stun);
+                    //enemy.SetState(State.Airborne);
+                    //enemy.SetState(State.Stun);
                    
                 }
                 
             }
             else
             {
-                    enemy.SetState(State.Slow);
+                    //enemy.SetState(State.Slow);
             }
             Debug.Log(hit.tag);
-            enemy.TakeDamage(qSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
+            //enemy.TakeDamage(qSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
         }
         
 
@@ -203,6 +258,173 @@ public class SionSkill : MonoBehaviour
 
 
     }
+
+    public void WSkill()
+    {
+        if (!wSkillOn)
+        {
+            wBarrier = (character.HP * 0.16f) + 120 + (character.ATK * 0.4f);
+            character.AdjustBarrier(wBarrier);
+            wSkillOn = true;
+            StartCoroutine(CastWSkill());
+        }
+        
+    }
+
+    IEnumerator CastWSkill()
+    {
+        wTimer = 0;
+        while(wSkillOn == true && wTimer <= wTimerMax && character.Barrier > 0)
+        {
+            wTimer += Time.deltaTime;
+            if(wTimer >= 3 && Input.GetKeyDown(KeyCode.W))
+            {
+                WSkillExplosion();
+            }
+            yield return null;
+        }
+        if(wSkillOn == true && wTimer >= wTimerMax && character.Barrier > 0)
+        {
+            WSkillExplosion();
+            yield break;
+        }
+        else
+        {
+            wSkillOn = false;
+            yield break;
+        }
+    }
+
+    public void WSkillExplosion()
+    {
+        wSkillOn = false;
+        Collider[] hits = Physics.OverlapSphere(transform.position, wExlosiveWidth, hitLayer);
+        foreach(Collider enemy in hits)
+        {
+            if(characterDictionary.TryGetValue(enemy.tag, out PlayerController x))
+            {
+                //Debug.Log(x.name);
+            }
+            Debug.Log(enemy);
+        }
+        anim.SetTrigger("WBoom");
+
+
+    }
+
+
+    public void ESkill()
+    {
+        if (eSkillPrefab.activeSelf) return;
+        GetMouseCursorPos();
+        eSkillPrefab.gameObject.SetActive(true);
+        StartCoroutine(CastESkill());
+    }
+
+    IEnumerator CastESkill()
+    {
+        eSkillPrefab.transform.position = transform.position;
+        eSkillTimer = 0;
+        Collider[] hits = Physics.OverlapSphere(eSkillPrefab.transform.position, 1, hitLayer);
+        while (eSkillPrefab.gameObject.activeSelf && eSkillTimer < 0.7f)
+        {
+            eSkillTimer += Time.deltaTime;
+            eSkillPrefab.transform.Translate((transform.forward * eSkillSpeed) * Time.deltaTime);
+            hits = Physics.OverlapSphere(eSkillPrefab.transform.position, 1, hitLayer);
+            yield return skillCheckTime;
+        }
+        eSkillPrefab.SetActive(false);
+        //대충 계속한다는 말
+        //if(hits != null)
+        //{
+        //    hits[0].tag
+        //}
+    }
+
+    public void RSkill()
+    {
+        rSkillOn = true;
+        StartCoroutine(CastRSkill());
+        
+    }
+
+    IEnumerator CastRSkill()
+    {
+        rSkillTimer = 0;
+        while(rSkillOn == true || rSkillTimer < 8)
+        {
+            
+            // 사이온의 현재 위치 + 전방 방향으로 박스 중심 설정
+            Vector3 boxCenter = transform.position + transform.forward * 0.5f; // 적절한 거리 조정
+
+            // 박스 크기 설정
+            Vector3 halfExtents = new Vector3(0.8f, 1.5f, 0.8f); //반절 크기를 사용하니 반절
+
+            // 박스 방향 설정
+            Quaternion boxRotation = transform.rotation;
+
+            // OverlapBox 실행
+            Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, boxRotation, hitLayer);
+            anim.SetTrigger("R");
+            if (hits.Length > 0)
+            {
+                foreach (Collider hit in hits)
+                {
+                    Debug.Log($"R 스킬 적중: {hit.gameObject.name}");
+                    
+                }
+                rSkillOn = false;
+                if (anim.GetBool("RRunning") == true)
+                {
+                    anim.SetBool("RRunning", false);
+                }
+                anim.SetTrigger("RHit");
+
+            }
+           
+            if(rSkillTimer >= 2 && anim.GetBool("RRunning") == false)
+            {
+                anim.SetBool("RRunning", true);
+            }
+
+            int increaseMoveSpeed = 20;
+            if(character.MoveSpeed <= 950)
+            {
+                character.AdjustMoveSpeed(increaseMoveSpeed);
+               
+            }
+            playerController.Move(skillCanvas.transform.position);
+            yield return skillCheckTime;
+        }
+    }
+
+    void RSkillCheckingHit()
+    {
+        if(Physics.Raycast(transform.position, transform.forward, rSkillCheckDistance, wallLayer))
+        {
+            Debug.Log("벽에 박았당");
+            rSkillOn = false;
+            if(anim.GetBool("RRunning") == true)
+            {
+                anim.SetBool("RRunning",false);
+            }
+            anim.SetTrigger("RHit");
+        }
+    }
+    void RSkillRotation()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+        {
+            Vector3 targetDirection = (hit.point - transform.position).normalized;
+            targetDirection.y = 0; // Y축 회전 방지(수평 회전만 적용)
+
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rSkillRotationSpeed * Time.deltaTime);
+        }
+    }
+
+
 
     void GetMouseCursorPos()
     {
@@ -243,7 +465,20 @@ public class SionSkill : MonoBehaviour
             Gizmos.matrix = Matrix4x4.TRS(boxCenter, boxOrientation, Vector3.one);
             Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2f);
             Gizmos.matrix = oldMatrix;
-        
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, wExlosiveWidth);
+
+        Vector3 rSkillBoxCenter = transform.position + transform.forward * 0.5f;
+        Vector3 rSkillhalfExtents = new Vector3(0.8f, 1.5f, 0.8f);
+        Quaternion boxRotation = transform.rotation;
+
+        Gizmos.color = Color.red;
+        Matrix4x4 rSkilloldMatrix = Gizmos.matrix;
+        Gizmos.matrix = Matrix4x4.TRS(rSkillBoxCenter, boxRotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, rSkillhalfExtents * 2); // 원래 크기로 표시
+        Gizmos.matrix = rSkilloldMatrix;
+
     }
 
 
