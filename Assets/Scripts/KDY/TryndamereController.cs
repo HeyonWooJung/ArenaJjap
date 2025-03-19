@@ -4,15 +4,41 @@ using UnityEngine.AI;
 
 public class TryndamereController : PlayerController
 {
-    public GameObject healEffectPrefab;
-    private TryndamereSkills skills;
-    private bool isMoving = false;
+    // 애니메이션 및 상태 관련 변수
+    public GameObject healEffectPrefab; // Q 스킬 사용 시 힐 이펙트 프리팹
+    private bool isMoving = false; // 이동 상태 확인
+    private Animator anim; // 애니메이터
 
-    private Animator anim;
-    public int rage = 0; //  분노 시스템 추가
-    public int maxRage = 100; // 분노 최대값 설정
-    private float critChance = 0.25f; //  기본 치명타 확률 (25%)
+    // 전투 관련 변수
+    public int rage = 0; // 현재 분노 수치
+    public int maxRage = 100; // 최대 분노 수치
+    private float critChance = 0.25f; // 기본 치명타 확률 (25%)
 
+    // E 스킬 관련 변수
+    private bool isDashing = false; // 돌진 여부
+    private Vector3 eTargetPosition; // 목표 위치 저장
+    public float eSpeed = 10f; // 이동 속도
+
+    // R 스킬 관련 변수
+    private bool isImmortal = false; // 무적 상태 여부
+    public float rDuration = 5f; // R 스킬 지속 시간
+
+    // W 스킬 관련 변수
+    float skillRange = 50.5f; // W 스킬 범위
+    float attackReductionPercent = 0.2f; // 공격력 감소율 (20%)
+    float moveSlowAmount = 0.4f; // 이동 속도 감소율
+    float effectDuration = 4f; // 효과 지속 시간 (공격력 & 이동 속도 복구 시간)
+
+    // 네비게이션 에이전트 (이동 관련)
+    private NavMeshAgent navMeshAgent;
+
+
+    private void Awake()
+    {
+        navMeshAgent = GetComponent<NavMeshAgent>();
+    }
+
+    // 이동 처리 함수
     public override void Move(Vector3 pos)
     {
         base.Move(pos);
@@ -23,6 +49,7 @@ public class TryndamereController : PlayerController
         StartCoroutine(CheckIfStopped());
     }
 
+    // 이동 멈춤 감지
     private IEnumerator CheckIfStopped()
     {
         yield return new WaitForSeconds(0.1f); // 이동이 시작된 후 잠시 대기
@@ -45,7 +72,7 @@ public class TryndamereController : PlayerController
         }
     }
 
-
+    //기본 공격 실행
     public override void AutoAttack(Character target)
     {
         base.AutoAttack(target);
@@ -57,7 +84,7 @@ public class TryndamereController : PlayerController
         anim.SetTrigger("Attack"); //  공격 애니메이션 실행
     }
 
-    // 트린다미어 Q스킬
+    // 트린다미어 Q스킬 - 체력회복
     public override void SkillQ(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
         if (rage > 0)
@@ -80,13 +107,9 @@ public class TryndamereController : PlayerController
         anim.SetTrigger("UseQ");
     }
 
-
+    // 트린다미어 W스킬 - 적 공격력이랑 이속 감소
     public override void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        float skillRange = 50.5f;
-        float attackReductionPercent = 0.2f; // ✅ 공격력 감소율 (20%)
-        float moveSlowAmount = 0.4f;
-        float effectDuration = 4f; // ✅ 효과 지속 시간 (공격력 & 이속 복구 시간)
 
         Collider[] targets = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
         Debug.Log($"W 스킬 사용! 대상 검색 중... 감지된 개수: {targets.Length}");
@@ -98,12 +121,12 @@ public class TryndamereController : PlayerController
 
             if (targetPlayer == null || targetPlayer == this) continue;
 
-            // ✅ 공격력 감소 적용
+            //  공격력 감소 적용
             float attackReduction = targetPlayer.character.ATK * attackReductionPercent;
             targetPlayer.character.AdjustATK(-attackReduction);
             StartCoroutine(RestoreAttackPower(targetPlayer, attackReduction, effectDuration));
 
-            // ✅ 적이 등을 돌린 경우 이동 속도 감소
+            //  적이 등을 돌린 경우 이동 속도 감소
             if (IsEnemyFacingAway(targetPlayer.transform))
                 StartCoroutine(SlowCharacter(targetPlayer, moveSlowAmount, effectDuration));
                 Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");  
@@ -112,7 +135,7 @@ public class TryndamereController : PlayerController
         anim?.SetTrigger("UseW");
     }
 
-    // ✅ 공격력 4초 후 복구
+    //  공격력 4초 후 감소 해제
     private IEnumerator RestoreAttackPower(PlayerController target, float amount, float duration)
     {
         yield return new WaitForSeconds(duration);
@@ -120,7 +143,7 @@ public class TryndamereController : PlayerController
         Debug.Log($"{target.name} ATK 복구 완료! (+{amount})");
     }
 
-    // ✅ 이동 속도 4초 후 복구
+    //  이동 속도 4초 후 감소 해제
     private IEnumerator SlowCharacter(PlayerController target, float slowAmount, float duration)
     {
         if (target == null) yield break;
@@ -137,7 +160,7 @@ public class TryndamereController : PlayerController
         Debug.Log($"{target.name} 이동 속도 복구 완료!");
     }
 
-    // ✅ 적이 등을 돌렸는지 확인
+    // 적이 등을 돌렸는지 확인
     private bool IsEnemyFacingAway(Transform target)
     {
         Vector3 directionToEnemy = (transform.position - target.position).normalized;
@@ -145,71 +168,118 @@ public class TryndamereController : PlayerController
         return Vector3.Dot(target.forward, directionToEnemy) < 0;
     }
 
-
-
-
-
-
-
-    //public override void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
-    //{
-    //    Debug.Log("W 스킬 사용! 적 공격력 감소");
-    //    if (anim == null) anim = GetComponentInChildren<Animator>(); //  필요할 때만 애니메이터 가져오기
-    //    anim.SetTrigger("UseW");
-
-
-    //}
-
+    // 트린다미어 E 스킬 (돌진 공격)
     public override void SkillE(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        Debug.Log($"E 스킬 사용! {location} 방향으로 돌진");
-        transform.position = Vector3.MoveTowards(transform.position, location, 5f); //  간단한 이동
-        if (anim == null) anim = GetComponentInChildren<Animator>(); //  필요할 때만 애니메이터 가져오기
+        if (isDashing) return; // 이미 돌진 중이면 실행 안 함
+
+        eTargetPosition = location; // 목표 위치 설정
+        isDashing = true; // 돌진 시작
+
+        // NavMeshAgent가 있다면 일시적으로 비활성화하여 충돌 방지
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.isStopped = true;
+            navMeshAgent.updatePosition = false;
+            navMeshAgent.enabled = false;
+        }
+
+        if (anim == null) anim = GetComponentInChildren<Animator>();
         anim.SetTrigger("UseE");
+
+        StartCoroutine(DashMovement()); // 이동 처리 코루틴 실행
     }
 
+    // E 스킬 이동 처리 (목표 지점까지 자연스럽게 이동)
+    private IEnumerator DashMovement()
+    {
+        while (isDashing)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, eTargetPosition, eSpeed * Time.deltaTime);
+
+            // 목표 지점에 도달하면 돌진 종료
+            if (Vector3.Distance(transform.position, eTargetPosition) < 0.1f)
+            {
+                isDashing = false;
+
+                // NavMeshAgent를 다시 활성화하여 정상적인 이동 가능하도록 설정
+                if (navMeshAgent != null)
+                {
+                    navMeshAgent.enabled = true;
+                    navMeshAgent.Warp(transform.position);
+                    navMeshAgent.isStopped = false;
+                    navMeshAgent.updatePosition = true;
+                }
+            }
+            yield return null;
+        }
+    }
+
+    // R 스킬 (불사의 분노) - 일정 시간 동안 무적 상태 유지
     public override void SkillR(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        Debug.Log("R 스킬 사용! 5초간 무적");
-        StartCoroutine(BecomeImmortal());
-        if (anim == null) anim = GetComponentInChildren<Animator>(); //  필요할 때만 애니메이터 가져오기
+        if (isImmortal) return; // 이미 무적이면 실행 안 함
+
+        isImmortal = true; // 무적 상태 활성화
+        character.SetState(State.Invincible); // 캐릭터 상태를 무적으로 설정
+
+        if (anim == null) anim = GetComponentInChildren<Animator>();
         anim.SetTrigger("UseR");
+
+        StartCoroutine(EndRSkill()); // 일정 시간 후 무적 해제
     }
 
-    private void GainRage(bool isCritical)
+    // 일정 시간 후 R 스킬 효과 해제
+    private IEnumerator EndRSkill()
     {
-        int rageGain = isCritical ? 10 : 5; //  치명타 시 추가 분노 증가
-        rage += rageGain;
+        yield return new WaitForSeconds(5f);
+        isImmortal = false; // 무적 상태 해제
+        character.SetState(State.Neutral); // 캐릭터 상태를 원래대로 복구
+    }
 
-        if (rage > maxRage)
+    // 피해 처리 (무적 상태일 경우 피해를 받지 않음)
+    public void TakeDamage(float damage, bool isTrueDamage, float lethality, float armorPenetration)
+    {
+        if (isImmortal)
         {
-            rage = maxRage; //  최대값 초과 방지
+            return; // 무적 상태일 경우 피해 무시
         }
-        Debug.Log($" 분노 증가: {rage}");
+
+        // 체력 감소 처리
+        character.AdjustHP(-damage);
+
+        // 무적 상태일 경우 최소 체력 1 유지
+        if (isImmortal && character.CurHP <= 1)
+        {
+            character.AdjustHP(1 - character.CurHP);
+        }
     }
 
-    private IEnumerator BecomeImmortal()
-    {
-        character.SetState(State.Invincible);
-        yield return new WaitForSeconds(5);
-        character.SetState(State.Neutral);
-        Debug.Log("R 스킬 효과 종료!");
-    }
-
+    // 기본 공격 실행 (치명타 여부 확인 및 애니메이션 실행)
     public void PerformAttack()
     {
-        bool isCritical = Random.value < critChance; //  치명타 확률 체크
+        bool isCritical = Random.value < critChance; // 치명타 확률 판정
         GainRage(isCritical); // 치명타 여부에 따라 분노 증가
 
         if (isCritical)
         {
-            Debug.Log(" 치명타 발생!");
-            anim.SetTrigger("CriticalHit"); //  치명타 애니메이션 실행
+            anim.SetTrigger("CriticalHit"); // 치명타 발생 시 애니메이션 실행
         }
         else
         {
-            anim.SetTrigger("Attack"); //  일반 공격 애니메이션 실행
+            anim.SetTrigger("Attack"); // 일반 공격 애니메이션 실행
         }
     }
 
+    // 분노 증가 처리 (치명타 발생 시 추가 증가)
+    private void GainRage(bool isCritical)
+    {
+        int rageGain = isCritical ? 10 : 5; // 치명타 발생 시 +10, 일반 공격 시 +5
+        rage += rageGain;
+
+        if (rage > maxRage)
+        {
+            rage = maxRage; // 최대 분노 초과 방지
+        }
+    }
 }
