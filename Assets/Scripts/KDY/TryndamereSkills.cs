@@ -236,7 +236,7 @@ public class TryndamereSkills : MonoBehaviour
     }
 
     //  5초 후 R 스킬 해제
-     IEnumerator EndRSkill()
+    IEnumerator EndRSkill()
     {
         yield return new WaitForSeconds(5f);
         isImmortal = false;

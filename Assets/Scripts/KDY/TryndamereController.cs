@@ -1,116 +1,229 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
-public class TryndamereController : MonoBehaviour
+public class TryndamereController : PlayerController
 {
-    private Animator anim; // ¾Ö´Ï¸ŞÀÌÅÍ ÄÄÆ÷³ÍÆ®
-    private bool isMoving; // ÀÌµ¿ ¿©ºÎ
-    private float attackCooldown = 0.5f; // °ø°İ °£ µô·¹ÀÌ
-    private float lastAttackTime; // ¸¶Áö¸· °ø°İ ½Ã°£
-    private Vector3 targetPosition; // ÀÌµ¿ ¸ñÇ¥ À§Ä¡
-    public float moveSpeed = 5f; // ÀÌµ¿ ¼Óµµ
+    private bool isMoving = false;
 
-    void Start()
+    private Animator anim;
+    private int rage = 0; //  ë¶„ë…¸ ì‹œìŠ¤í…œ ì¶”ê°€
+
+    public override void Move(Vector3 pos)
     {
-        anim = GetComponent<Animator>(); // Animator °¡Á®¿À±â
+        base.Move(pos);
+        if (anim == null) anim = GetComponentInChildren<Animator>(); //  ì• ë‹ˆë©”ì´í„° ê°€ì ¸ì˜¤ê¸° (í•„ìš”í•  ë•Œë§Œ)
+        anim.SetFloat("isMovingBlend", 1f); //  ì´ë™ ì• ë‹ˆë©”ì´ì…˜ ì ìš©
+
+        isMoving = true;
+        StartCoroutine(CheckIfStopped());
     }
 
-    void Update()
+    private IEnumerator CheckIfStopped()
     {
-        TrynMovement(); // ÀÌµ¿ Ã³¸®
-        TrynAttack(); // °ø°İ Ã³¸®
-        MoveCharacter(); // ½ÇÁ¦ ÀÌµ¿ Àû¿ë
-        TrynSkills(); // QWER ½ºÅ³ ½ÇÇà 
-    }
+        yield return new WaitForSeconds(0.1f); // ì´ë™ì´ ì‹œì‘ëœ í›„ ì ì‹œ ëŒ€ê¸°
 
-    void TrynMovement()
-    {
-        if (Input.GetMouseButtonDown(1)) // ¸¶¿ì½º ¿ìÅ¬¸¯ °¨Áö
+        Vector3 lastPosition = transform.position;
+
+        while (isMoving)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+            yield return new WaitForSeconds(0.1f); //  ì¼ì • ì‹œê°„ë§ˆë‹¤ ì´ë™ ì—¬ë¶€ í™•ì¸
 
-            // Raycast¸¦ »ç¿ëÇÏ¿© Å¬¸¯ÇÑ À§Ä¡ Ã£±â
-            if (Physics.Raycast(ray, out hit))
+            //  ìºë¦­í„°ì˜ ìœ„ì¹˜ê°€ ë³€í•˜ì§€ ì•Šìœ¼ë©´ ì´ë™ ì¢…ë£Œ (ì¦‰, Idle ìƒíƒœë¡œ ì „í™˜)
+            if (Vector3.Distance(lastPosition, transform.position) < 0.01f)
             {
-                targetPosition = hit.point; // ¸ñÇ¥ À§Ä¡ ¼³Á¤
-                isMoving = true;
-                anim.SetFloat("isMovingBlend", 1f); // ºí·»µå Æ®¸® °ª º¯°æ (ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà)
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.S)) //  S Å°¸¦ ´©¸£¸é Áï½Ã Á¤Áö
-        {
-            isMoving = false;
-            targetPosition = transform.position; // ÇöÀç À§Ä¡¸¦ ¸ñÇ¥·Î ¼³Á¤ÇÏ¿© ÀÌµ¿ Áß´Ü
-            anim.SetFloat("isMovingBlend", 0f); // Idle ¾Ö´Ï¸ŞÀÌ¼ÇÀ¸·Î º¯°æ
-            Debug.Log("S Å° ÀÔ·Â: Æ®¸°´Ù¹Ì¾î Á¤Áö");
-            return;
-        }
-    }
-
-    void MoveCharacter()
-    {
-        if (isMoving)
-        {
-            // ¸ñÇ¥ À§Ä¡¸¦ ÇâÇÏ´Â ¹æÇâ °è»ê
-            Vector3 direction = (targetPosition - transform.position).normalized;
-
-            // Ä³¸¯ÅÍ°¡ ÇØ´ç ¹æÇâÀ» ¹Ù¶óº¸µµ·Ï È¸Àü
-            if (direction != Vector3.zero)
-            {
-                anim.SetTrigger("Idle");
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
-            }
-
-            // ÇöÀç À§Ä¡¿¡¼­ ¸ñÇ¥ À§Ä¡·Î ÀÌµ¿
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-
-            // ¾Ö´Ï¸ŞÀÌ¼Ç ºí·»µåÆ®¸® °ª ºÎµå·´°Ô Áõ°¡
-            float blendValue = Mathf.Lerp(anim.GetFloat("isMovingBlend"), 1f, Time.deltaTime * 5f);
-            anim.SetFloat("isMovingBlend", blendValue);
-
-            // ¸ñÇ¥ À§Ä¡¿¡ µµ´ŞÇÏ¸é ÀÌµ¿ Á¾·á
-            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-            {
+                anim.SetFloat("isMovingBlend", 0f); //  Idle ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
                 isMoving = false;
+                yield break;
             }
+
+            lastPosition = transform.position; //  ì´ì „ ìœ„ì¹˜ ì—…ë°ì´íŠ¸
+        }
+    }
+
+
+    public override void AutoAttack(Character target)
+    {
+        base.AutoAttack(target);
+
+        Debug.Log($" AutoAttack ì‹¤í–‰! ëŒ€ìƒ: {target?.name}");
+
+        GainRage(); //  ë¶„ë…¸ ì¦ê°€
+        if (anim == null) anim = GetComponentInChildren<Animator>(); //  í•„ìš”í•  ë•Œë§Œ ì• ë‹ˆë©”ì´í„° ê°€ì ¸ì˜¤ê¸°
+        anim.SetTrigger("Attack"); //  ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+    }
+
+
+    public override void SkillQ(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    {
+        if (rage > 0)
+        {
+            int healAmount = rage / 2;
+            character.Heal(healAmount);
+            rage = 0;
+            Debug.Log($"Q ìŠ¤í‚¬ ì‚¬ìš©! ì²´ë ¥ {healAmount} íšŒë³µ");
         }
         else
         {
-            // ÀÌµ¿ÀÌ ³¡³ª¸é ¾Ö´Ï¸ŞÀÌ¼Ç °ªÀ» ºÎµå·´°Ô °¨¼Ò (Idle·Î ÀüÈ¯)
-            float blendValue = Mathf.Lerp(anim.GetFloat("isMovingBlend"), 0f, Time.deltaTime * 5f);
-            anim.SetFloat("isMovingBlend", blendValue);
+            Debug.Log("Q ìŠ¤í‚¬ ì‚¬ìš© ë¶ˆê°€: ë¶„ë…¸ ë¶€ì¡±");
         }
+        if (anim == null) anim = GetComponentInChildren<Animator>(); //  í•„ìš”í•  ë•Œë§Œ ì• ë‹ˆë©”ì´í„° ê°€ì ¸ì˜¤ê¸°
+        anim.SetTrigger("UseQ");
     }
 
-    void TrynAttack()
+    public override void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        if (Input.GetMouseButtonDown(0) && Time.time - lastAttackTime >= attackCooldown) // °ø°İ ÄğÅ¸ÀÓ Ã¼Å©
-        {
-            anim.SetTrigger("Attack"); // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà
-            lastAttackTime = Time.time; // ¸¶Áö¸· °ø°İ ½Ã°£ ¾÷µ¥ÀÌÆ®
-        }
+        Debug.Log("W ìŠ¤í‚¬ ì‚¬ìš©! ì  ê³µê²©ë ¥ ê°ì†Œ");
+        if (anim == null) anim = GetComponentInChildren<Animator>(); //  í•„ìš”í•  ë•Œë§Œ ì• ë‹ˆë©”ì´í„° ê°€ì ¸ì˜¤ê¸°
+        anim.SetTrigger("UseW");
     }
 
-    void TrynSkills()
+    public override void SkillE(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        if (Input.GetKeyDown(KeyCode.Q)) // Q ½ºÅ³ ÀÔ·Â
-        {
-            anim.SetTrigger("UseQ");
-        }
-        if (Input.GetKeyDown(KeyCode.W)) // W ½ºÅ³ ÀÔ·Â
-        {
-            anim.SetTrigger("UseW");
-        }
-        if (Input.GetKeyDown(KeyCode.E)) // E ½ºÅ³ ÀÔ·Â
-        {
-            anim.SetTrigger("UseE");
-        }
-        if (Input.GetKeyDown(KeyCode.R)) // R ½ºÅ³ ÀÔ·Â
-        {
-            anim.SetTrigger("UseR");
-        }
+        Debug.Log($"E ìŠ¤í‚¬ ì‚¬ìš©! {location} ë°©í–¥ìœ¼ë¡œ ëŒì§„");
+        transform.position = Vector3.MoveTowards(transform.position, location, 5f); //  ê°„ë‹¨í•œ ì´ë™
+        if (anim == null) anim = GetComponentInChildren<Animator>(); //  í•„ìš”í•  ë•Œë§Œ ì• ë‹ˆë©”ì´í„° ê°€ì ¸ì˜¤ê¸°
+        anim.SetTrigger("UseE");
+    }
+
+    public override void SkillR(bool isTargeting, bool isChanneling, Character target, Vector3 location)
+    {
+        Debug.Log("R ìŠ¤í‚¬ ì‚¬ìš©! 5ì´ˆê°„ ë¬´ì ");
+        StartCoroutine(BecomeImmortal());
+        if (anim == null) anim = GetComponentInChildren<Animator>(); //  í•„ìš”í•  ë•Œë§Œ ì• ë‹ˆë©”ì´í„° ê°€ì ¸ì˜¤ê¸°
+        anim.SetTrigger("UseR");
+    }
+
+    private void GainRage()
+    {
+        rage += 5;
+        Debug.Log($" ë¶„ë…¸ ì¦ê°€: {rage}");
+    }
+
+    private IEnumerator BecomeImmortal()
+    {
+        character.SetState(State.Invincible);
+        yield return new WaitForSeconds(5);
+        character.SetState(State.Neutral);
+        Debug.Log("R ìŠ¤í‚¬ íš¨ê³¼ ì¢…ë£Œ!");
     }
 }
+
+
+
+
+//using UnityEngine;
+
+//public class TryndamereController : MonoBehaviour
+//{
+//    private Animator anim; // ì• ë‹ˆë©”ì´í„° ì»´í¬ë„ŒíŠ¸
+//    private bool isMoving; // ì´ë™ ì—¬ë¶€
+//    private float attackCooldown = 0.5f; // ê³µê²© ê°„ ë”œë ˆì´
+//    private float lastAttackTime; // ë§ˆì§€ë§‰ ê³µê²© ì‹œê°„
+//    private Vector3 targetPosition; // ì´ë™ ëª©í‘œ ìœ„ì¹˜
+//    public float moveSpeed = 5f; // ì´ë™ ì†ë„
+//    public CharacterInfo character;
+
+//    void Start()
+//    {
+//        anim = GetComponent<Animator>();
+//    }
+
+//    void Update()
+//    {
+//        TrynMovement(); // ì´ë™ ì²˜ë¦¬
+//        TrynAttack(); // ê³µê²© ì²˜ë¦¬
+//        MoveCharacter(); // ì‹¤ì œ ì´ë™ ì ìš©
+//        TrynSkills(); // QWER ìŠ¤í‚¬ ì‹¤í–‰ 
+//    }
+
+//    void TrynMovement()
+//    {
+//        if (Input.GetMouseButtonDown(1)) // ë§ˆìš°ìŠ¤ ìš°í´ë¦­ ê°ì§€
+//        {
+//            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+//            RaycastHit hit;
+
+//            // Raycastë¥¼ ì‚¬ìš©í•˜ì—¬ í´ë¦­í•œ ìœ„ì¹˜ ì°¾ê¸°
+//            if (Physics.Raycast(ray, out hit))
+//            {
+//                targetPosition = hit.point; // ëª©í‘œ ìœ„ì¹˜ ì„¤ì •
+//                isMoving = true;
+//                anim.SetFloat("isMovingBlend", 1f); // ë¸”ë Œë“œ íŠ¸ë¦¬ ê°’ ë³€ê²½ (ì´ë™ ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰)
+//            }
+//        }
+//        if (Input.GetKeyDown(KeyCode.S)) //  S í‚¤ë¥¼ ëˆ„ë¥´ë©´ ì¦‰ì‹œ ì •ì§€
+//        {
+//            isMoving = false;
+//            targetPosition = transform.position; // í˜„ì¬ ìœ„ì¹˜ë¥¼ ëª©í‘œë¡œ ì„¤ì •í•˜ì—¬ ì´ë™ ì¤‘ë‹¨
+//            anim.SetFloat("isMovingBlend", 0f); // Idle ì• ë‹ˆë©”ì´ì…˜ìœ¼ë¡œ ë³€ê²½
+//            Debug.Log("S í‚¤ ì…ë ¥: íŠ¸ë¦°ë‹¤ë¯¸ì–´ ì •ì§€");
+//            return;
+//        }
+//    }
+
+//    void MoveCharacter()
+//    {
+//        if (isMoving)
+//        {
+//            // ëª©í‘œ ìœ„ì¹˜ë¥¼ í–¥í•˜ëŠ” ë°©í–¥ ê³„ì‚°
+//            Vector3 direction = (targetPosition - transform.position).normalized;
+
+//            // ìºë¦­í„°ê°€ í•´ë‹¹ ë°©í–¥ì„ ë°”ë¼ë³´ë„ë¡ íšŒì „
+//            if (direction != Vector3.zero)
+//            {
+//                anim.SetTrigger("Idle");
+//                Quaternion targetRotation = Quaternion.LookRotation(direction);
+//                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+//            }
+
+//            // í˜„ì¬ ìœ„ì¹˜ì—ì„œ ëª©í‘œ ìœ„ì¹˜ë¡œ ì´ë™
+//            transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+
+//            // ì• ë‹ˆë©”ì´ì…˜ ë¸”ë Œë“œíŠ¸ë¦¬ ê°’ ë¶€ë“œëŸ½ê²Œ ì¦ê°€
+//            float blendValue = Mathf.Lerp(anim.GetFloat("isMovingBlend"), 1f, Time.deltaTime * 5f);
+//            anim.SetFloat("isMovingBlend", blendValue);
+
+//            // ëª©í‘œ ìœ„ì¹˜ì— ë„ë‹¬í•˜ë©´ ì´ë™ ì¢…ë£Œ
+//            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+//            {
+//                isMoving = false;
+//            }
+//        }
+//        else
+//        {
+//            // ì´ë™ì´ ëë‚˜ë©´ ì• ë‹ˆë©”ì´ì…˜ ê°’ì„ ë¶€ë“œëŸ½ê²Œ ê°ì†Œ (Idleë¡œ ì „í™˜)
+//            float blendValue = Mathf.Lerp(anim.GetFloat("isMovingBlend"), 0f, Time.deltaTime * 5f);
+//            anim.SetFloat("isMovingBlend", blendValue);
+//        }
+//    }
+
+//    void TrynAttack()
+//    {
+//        if (Input.GetMouseButtonDown(0) && Time.time - lastAttackTime >= attackCooldown) // ê³µê²© ì¿¨íƒ€ì„ ì²´í¬
+//        {
+//            anim.SetTrigger("Attack"); // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+//            lastAttackTime = Time.time; // ë§ˆì§€ë§‰ ê³µê²© ì‹œê°„ ì—…ë°ì´íŠ¸
+//        }
+//    }
+
+//    void TrynSkills()
+//    {
+//        if (Input.GetKeyDown(KeyCode.Q)) // Q ìŠ¤í‚¬ ì…ë ¥
+//        {
+//            anim.SetTrigger("UseQ");
+//        }
+//        if (Input.GetKeyDown(KeyCode.W)) // W ìŠ¤í‚¬ ì…ë ¥
+//        {
+//            anim.SetTrigger("UseW");
+//        }
+//        if (Input.GetKeyDown(KeyCode.E)) // E ìŠ¤í‚¬ ì…ë ¥
+//        {
+//            anim.SetTrigger("UseE");
+//        }
+//        if (Input.GetKeyDown(KeyCode.R)) // R ìŠ¤í‚¬ ì…ë ¥
+//        {
+//            anim.SetTrigger("UseR");
+//        }
+//    }
+//}
