@@ -63,7 +63,7 @@ public class TryndamereSkills : MonoBehaviour
     }
 
     // Q 스킬 (피의 갈망) - 체력 회복
-    void UseQSkill()
+    public void UseQSkill()
     {
         if (currentRage > 0) // 분노가 있을 때만 사용 가능
         {
@@ -86,7 +86,7 @@ public class TryndamereSkills : MonoBehaviour
     }
 
     // 체력 회복 함수
-    void Heal(int amount)
+    public void Heal(int amount)
     {
         currentHealth += amount;
         if (currentHealth > maxHealth)
@@ -126,7 +126,7 @@ public class TryndamereSkills : MonoBehaviour
     }
 
     // W 스킬 (비웃음) - 적 공격력 감소 및 방향 체크
-    void UseWSkill()
+    public void UseWSkill()
     {
         float skillRange = 18.5f; // W 스킬 범위
         int attackReduction = 10; // 공격력 감소량
@@ -180,7 +180,7 @@ public class TryndamereSkills : MonoBehaviour
 
 
     //  E 스킬 (대회전 베기) - 돌진 시작
-    void StartDash()
+    public void StartDash()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -208,7 +208,7 @@ public class TryndamereSkills : MonoBehaviour
     }
 
     //  E 스킬 이동 처리
-    void HandleDash()
+    public void HandleDash()
     {
         if (isDashing)
         {
@@ -224,7 +224,7 @@ public class TryndamereSkills : MonoBehaviour
     }
 
     //  R 스킬 (불사의 분노) - 5초 동안 무적 & 분노 증가
-    void UseRSkill()
+   public void UseRSkill()
     {
         if (isImmortal) return; // 이미 R 스킬이 활성화되어 있으면 실행 안 함
 
@@ -261,7 +261,7 @@ public class TryndamereSkills : MonoBehaviour
         }
     }
 
-    void Die()
+    public void Die()
     {
         Debug.Log("트린다미어 사망!");
         Destroy(gameObject);
