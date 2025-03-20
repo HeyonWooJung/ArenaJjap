@@ -18,8 +18,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public TextMeshProUGUI timerText; // 타이머 표시
 
-    private int acceptCount = 0; // 수락한 플레이어 수
-    private int playerCount = 0;
+    private int acceptCount; // 수락한 플레이어 수
+    private int playerCount;
     private bool isMatching = false;
     private float elapsedTime = 0f;
     Coroutine timerCoroutine;
@@ -30,6 +30,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     float duration = 15f; // 30초 동안 감소
     void Start()
     {
+        acceptCount = 0;
+        playerCount = 0;
         PhotonNetwork.JoinLobby();
         nickName.text = PhotonNetwork.NickName;
         nickName1.text = PhotonNetwork.NickName;
@@ -123,7 +125,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         acceptCount++;
 
-        if (acceptCount == 4)
+        if (acceptCount == 4 && PhotonNetwork.IsMasterClient)
         {
             photonView.RPC("StartGame", RpcTarget.All);
         }

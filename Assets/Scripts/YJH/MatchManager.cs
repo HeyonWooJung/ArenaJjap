@@ -9,6 +9,8 @@ using TMPro;
 
 public class MatchManager : MonoBehaviourPunCallbacks
 {
+    public GameObject championPanel;
+    public Button readyBtn;
 
     [SerializeField, Header("프로필 이미지")]
     public Image[] ProfileImgs;
@@ -32,7 +34,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     private List<Player> redteam = new List<Player>();
 
     private Dictionary<Player, int> playerChampion = new Dictionary<Player, int>();
-    
+    private int readyCount = 0;
     
 
     private void Awake()
@@ -78,7 +80,6 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
     }
 
-    [PunRPC] public void StartGame() { }
 
     private void Start()
     {
@@ -107,7 +108,6 @@ public class MatchManager : MonoBehaviourPunCallbacks
         Player localPlayer = PhotonNetwork.LocalPlayer;
         List<Player> myTeam = blueteam.Contains(localPlayer) ? blueteam : redteam;
 
-        // 이전 선택한 챔피언 해제
         if (currentIndex != -1)
         {
             championBtns[currentIndex].interactable = true;
@@ -118,15 +118,16 @@ public class MatchManager : MonoBehaviourPunCallbacks
         championBtns[index].interactable = false;
         playerChampion[localPlayer] = index;
 
-
-        // 모든 클라이언트에게 동기화
+        
         photonView.RPC("SyncChampionSelection", RpcTarget.All, localPlayer.ActorNumber, index);
 
         // 현재 선택된 인덱스 업데이트
         currentIndex = index;
+
+        readyBtn.interactable = true;
+
     }
 
-    // 랜덤 버튼 클릭 시 실행
     private void OnRandomChampionClick()
     {
         Player localPlayer = PhotonNetwork.LocalPlayer;
@@ -156,12 +157,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
             {
                 playerChampion[p] = championIndex;
 
-                // **본인에게만 배경 이미지 표시**
                 if (p == PhotonNetwork.LocalPlayer)
                 {
                     BackgroundImgs[championIndex].SetActive(true);
                 }
-                // 같은 팀원도 챔피언 선택 반영 (버튼 비활성화)
                 List<Player> myTeam = blueteam.Contains(p) ? blueteam : redteam;
 
                 return;
@@ -179,6 +178,35 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public void OnReadyClick()
+    {
+        Player localPlayer = PhotonNetwork.LocalPlayer;
+
+        if (playerChampion.ContainsKey(localPlayer))
+        {
+            championPanel.SetActive(false);
+            readyBtn.interactable = false; // 준비 버튼 비활성화
+            photonView.RPC("PlayerReady", RpcTarget.All, localPlayer.ActorNumber, playerChampion[localPlayer]);
+        }
+    }
+
+    [PunRPC]
+    public void PickChampion(int actorNumber, int championIndex)
+    {
+        // 해당 챔피언 선택 버튼 비활성화
+        if (championIndex >= 0 && championIndex < championBtns.Length)
+        {
+            championBtns[championIndex].interactable = false;
+        }
+
+        readyCount++;
+
+        // 모든 플레이어가 준비 완료되면 Scene4로 이동
+        if (readyCount == PhotonNetwork.PlayerList.Length)
+        {
+            photonView.RPC("StartGame", RpcTarget.All);
+        }
+    }
     
 
 }

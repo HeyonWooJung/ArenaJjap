@@ -315,7 +315,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -3.149109}
+  m_AnchoredPosition: {x: 0, y: -3.14917}
   m_SizeDelta: {x: -1097.4603, y: -371.3519}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &148749007
@@ -2706,6 +2706,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c87bd760d2a49954ca243e43ebc7ffa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  championPanel: {fileID: 148749005}
+  readyBtn: {fileID: 2080015284}
   ProfileImgs:
   - {fileID: 1758522642}
   - {fileID: 475583604}
@@ -5028,7 +5030,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2080015285}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1316181711}
+        m_TargetAssemblyTypeName: MatchManager, Assembly-CSharp
+        m_MethodName: OnReadyClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2080015285
 MonoBehaviour:
   m_ObjectHideFlags: 0
