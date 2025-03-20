@@ -6,8 +6,9 @@ public class TryndamereController : PlayerController
 {
     // 애니메이션 및 상태 관련 변수
     public GameObject healEffectPrefab; // Q 스킬 사용 시 힐 이펙트 프리팹
-    private bool isMoving = false; // 이동 상태 확인
+    public GameObject rEffectObject; // R스킬 사용 시 파티클 
     private Animator anim; // 애니메이터
+    private bool isMoving = false; // 이동 상태 확인
 
     // 전투 관련 변수
     public int rage = 0; // 현재 분노 수치
@@ -226,16 +227,47 @@ public class TryndamereController : PlayerController
         if (anim == null) anim = GetComponentInChildren<Animator>();
         anim.SetTrigger("UseR");
 
-        StartCoroutine(EndRSkill()); // 일정 시간 후 무적 해제
+        // 파티클 이펙트 활성화
+        if (rEffectObject != null)
+        {
+            rEffectObject.SetActive(true); // 궁극기 이펙트 활성화
+        }
+
+        StartCoroutine(DelayedEffectActivation());
+        StartCoroutine(EndRSkill()); // 5초 후 무적 해제 및 이펙트 제거
     }
 
-    // 일정 시간 후 R 스킬 효과 해제
+    // 2.5초 후 R 스킬 이펙트 활성화
+    private IEnumerator DelayedEffectActivation()
+    {
+        yield return new WaitForSeconds(6f); // 2.5초 대기
+        if (rEffectObject != null)
+        {
+            rEffectObject.SetActive(true); // 궁극기 이펙트 활성화
+        }
+    }
+
     private IEnumerator EndRSkill()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(5f); // 지속 시간 유지
+
         isImmortal = false; // 무적 상태 해제
-        character.SetState(State.Neutral); // 캐릭터 상태를 원래대로 복구
+        character.SetState(State.Neutral); // 원래 상태 복구
+
+        // 파티클 이펙트 비활성화
+        if (rEffectObject != null)
+        {
+            rEffectObject.SetActive(false); // 궁극기 이펙트 종료
+        }
     }
+
+    //// 일정 시간 후 R 스킬 효과 해제
+    //private IEnumerator EndRSkill()
+    //{
+    //    yield return new WaitForSeconds(5f);
+    //    isImmortal = false; // 무적 상태 해제
+    //    character.SetState(State.Neutral); // 캐릭터 상태를 원래대로 복구
+    //}
 
     // 피해 처리 (무적 상태일 경우 피해를 받지 않음)
     public void TakeDamage(float damage, bool isTrueDamage, float lethality, float armorPenetration)
