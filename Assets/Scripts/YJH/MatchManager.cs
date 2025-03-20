@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using System.Linq;
 
 public class MatchManager : MonoBehaviourPunCallbacks
 {
@@ -28,7 +29,6 @@ public class MatchManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI[] nickNameTexts;
 
 
-    private int currentIndex = -1;
     private List<Player> playerList = new List<Player>();    
     private List<Player> blueteam = new List<Player>();
     private List<Player> redteam = new List<Player>();
@@ -62,7 +62,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     private void SyncTeams(int p1, int p2, int p3, int p4)
     {
         Player[] players = PhotonNetwork.PlayerList;
-
+        
         blueteam.Clear();
         redteam.Clear();
 
@@ -71,12 +71,26 @@ public class MatchManager : MonoBehaviourPunCallbacks
             if (p.ActorNumber == p1 || p.ActorNumber == p2)
                 blueteam.Add(p);
             else if (p.ActorNumber == p3 || p.ActorNumber == p4)
-                redteam.Add(p);            
+                redteam.Add(p);
         }
 
-        for(int i=0; i< players.Length; i++)
+        // 모든 플레이어 닉네임을 정확한 위치에 설정
+        foreach (Player p in players)
         {
-            nickNameTexts[i].text = players[i].NickName;
+            int playerIndex;
+            if (blueteam.Contains(p))
+            {
+                playerIndex = blueteam.IndexOf(p); // 블루팀 내에서 위치 찾기
+            }
+            else
+            {
+                playerIndex = redteam.IndexOf(p) + blueteam.Count; // 레드팀이면 블루팀 개수만큼 추가한 위치
+            }
+
+            if (playerIndex >= 0 && playerIndex < nickNameTexts.Length)
+            {
+                nickNameTexts[playerIndex].text = p.NickName;
+            }
         }
     }
 
@@ -101,31 +115,36 @@ public class MatchManager : MonoBehaviourPunCallbacks
             }            
         }
 
+        readyBtn.interactable = false; // 준비 버튼 초기 비활성화
     }
 
     private void OnChampionClick(int index)
     {
         Player localPlayer = PhotonNetwork.LocalPlayer;
+
         List<Player> myTeam = blueteam.Contains(localPlayer) ? blueteam : redteam;
-
-        if (currentIndex != -1)
-        {
-            championBtns[currentIndex].interactable = true;
-            photonView.RPC("HideBackgroundImage", RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentIndex);
-        }
-
-        // 선택한 챔피언 적용
-        championBtns[index].interactable = false;
+        int playerIndex = myTeam.IndexOf(localPlayer);
+                
         playerChampion[localPlayer] = index;
 
-        
-        photonView.RPC("SyncChampionSelection", RpcTarget.All, localPlayer.ActorNumber, index);
+        foreach (var bg in BackgroundImgs)
+        {
+            bg.SetActive(false);
+        }
 
-        // 현재 선택된 인덱스 업데이트
-        currentIndex = index;
+        BackgroundImgs[index].SetActive(true);
 
+        if (playerIndex >= 0 && playerIndex < summoners.Length)
+        {
+            summoners[playerIndex].sprite = ProfileImgs[index].sprite;
+            nickNameTexts[playerIndex].text = localPlayer.NickName; // 닉네임 UI 적용
+        }
+
+        // 챔피언 선택 동기화
+        photonView.RPC("SyncChampionSelection", RpcTarget.All, localPlayer.ActorNumber, index, localPlayer.NickName);
+
+        // 챔피언 선택 후 준비 버튼 활성화
         readyBtn.interactable = true;
-
     }
 
     private void OnRandomChampionClick()
@@ -147,53 +166,37 @@ public class MatchManager : MonoBehaviourPunCallbacks
         OnChampionClick(randomIndex);
     }
 
-    // 모든 클라이언트에서 챔피언 선택 정보 동기화
     [PunRPC]
-    private void SyncChampionSelection(int actorNumber, int championIndex)
+    private void SyncChampionSelection(int actorNumber, int championIndex, string nickName)
     {
         foreach (Player p in PhotonNetwork.PlayerList)
         {
             if (p.ActorNumber == actorNumber)
             {
-                playerChampion[p] = championIndex;
+                List<Player> team = blueteam.Contains(p) ? blueteam : redteam;
+                int playerIndex = team.IndexOf(p) + (redteam.Contains(p) ? blueteam.Count : 0);
 
-                if (p == PhotonNetwork.LocalPlayer)
+                if (playerIndex >= 0 && playerIndex < summoners.Length)
                 {
-                    BackgroundImgs[championIndex].SetActive(true);
+                    summoners[playerIndex].sprite = ProfileImgs[championIndex].sprite;
+                    nickNameTexts[playerIndex].text = nickName; // 닉네임 동기화
                 }
-                List<Player> myTeam = blueteam.Contains(p) ? blueteam : redteam;
-
                 return;
             }
         }
     }
-
-    // 배경 이미지 숨기기 (본인이 선택 변경 시)
-    [PunRPC]
-    private void HideBackgroundImage(int actorNumber, int championIndex)
-    {
-        if (PhotonNetwork.LocalPlayer.ActorNumber == actorNumber)
-        {
-            BackgroundImgs[championIndex].SetActive(false);
-        }
-    }
-
     public void OnReadyClick()
     {
         Player localPlayer = PhotonNetwork.LocalPlayer;
 
-        if (playerChampion.ContainsKey(localPlayer))
-        {
-            championPanel.SetActive(false);
-            readyBtn.interactable = false; // 준비 버튼 비활성화
-            photonView.RPC("PlayerReady", RpcTarget.All, localPlayer.ActorNumber, playerChampion[localPlayer]);
-        }
+        championPanel.SetActive(false);
+        readyBtn.gameObject.SetActive(false);
+        photonView.RPC("PlayerReady", RpcTarget.All, localPlayer.ActorNumber, playerChampion[localPlayer]);        
     }
 
     [PunRPC]
-    public void PickChampion(int actorNumber, int championIndex)
+    private void PlayerReady(int actorNumber, int championIndex)
     {
-        // 해당 챔피언 선택 버튼 비활성화
         if (championIndex >= 0 && championIndex < championBtns.Length)
         {
             championBtns[championIndex].interactable = false;
@@ -201,12 +204,15 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
         readyCount++;
 
-        // 모든 플레이어가 준비 완료되면 Scene4로 이동
-        if (readyCount == PhotonNetwork.PlayerList.Length)
+        if (readyCount == PhotonNetwork.PlayerList.Length && PhotonNetwork.IsMasterClient)
         {
             photonView.RPC("StartGame", RpcTarget.All);
         }
     }
-    
 
+    [PunRPC]
+    public void StartGame()
+    {
+        PhotonNetwork.LoadLevel("Scene4");
+    }
 }
