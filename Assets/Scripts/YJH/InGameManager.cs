@@ -17,8 +17,6 @@ public class InGameManager : MonoBehaviourPunCallbacks
     {
         int champIndex = MatchManager.myChampionIndex;
 
-        Debug.Log(champIndex);
-
         if (champIndex < 0 || champIndex >= championNames.Length)
         {
             return;
@@ -26,10 +24,8 @@ public class InGameManager : MonoBehaviourPunCallbacks
 
         string prefabName = championNames[champIndex];
 
-        Debug.Log(prefabName);
-
         int actorIndex = PhotonNetwork.LocalPlayer.ActorNumber - 1;
-        Vector3 spawnPos = spawnPoints[actorIndex % spawnPoints.Length].position;
+        Vector3 spawnPos = spawnPoints[actorIndex].position;
 
         PhotonNetwork.Instantiate(prefabName, spawnPos, Quaternion.identity);
     }
