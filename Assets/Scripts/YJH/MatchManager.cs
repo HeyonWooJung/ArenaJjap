@@ -35,8 +35,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private Dictionary<Player, int> playerChampion = new Dictionary<Player, int>();
     private int readyCount = 0;
-    
 
+    public static int myChampionIndex = -1; // <- 여기에 저장
+
+    
     private void Awake()
     {
         if(PhotonNetwork.IsMasterClient)
@@ -124,8 +126,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
         List<Player> myTeam = blueteam.Contains(localPlayer) ? blueteam : redteam;
         int playerIndex = myTeam.IndexOf(localPlayer);
-                
         playerChampion[localPlayer] = index;
+
+
+        myChampionIndex = index;
 
         foreach (var bg in BackgroundImgs)
         {
@@ -188,6 +192,15 @@ public class MatchManager : MonoBehaviourPunCallbacks
     public void OnReadyClick()
     {
         Player localPlayer = PhotonNetwork.LocalPlayer;
+
+        if (playerChampion.TryGetValue(localPlayer, out int champIndex))
+        {
+            ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
+            {
+                { "selectedChampion", champIndex }
+            };
+            localPlayer.SetCustomProperties(props);
+        }
 
         championPanel.SetActive(false);
         readyBtn.gameObject.SetActive(false);
