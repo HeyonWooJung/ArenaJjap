@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UIElements;
 
 public class SionSkill : MonoBehaviour
@@ -16,6 +17,7 @@ public class SionSkill : MonoBehaviour
     readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
     [SerializeField] PlayerController playerController;
     [SerializeField] GameObject skillCanvas;
+    NavMeshAgent agent;
     [Header("Q스킬")]
     [SerializeField] float qSkillMinFixedDamage = 120;
     [SerializeField] float qSkillMaxFixedDamage = 350;
@@ -68,6 +70,8 @@ public class SionSkill : MonoBehaviour
     [SerializeField] float rSkillRotationSpeed;
     [SerializeField] float rSkillTimer;
     [SerializeField] float rSkillCheckDistance;
+    [SerializeField] int rSkillBeforeMovementSpeed;
+    
 
 
 
@@ -84,6 +88,7 @@ public class SionSkill : MonoBehaviour
         //qSkillOriginalCenterPos = qSkillcol.center;
         anim = GetComponentInChildren<Animator>();
         playerController = GetComponent<PlayerController>();
+        agent = GetComponentInParent<NavMeshAgent>();
     }
 
     // Update is called once per frame
@@ -140,6 +145,7 @@ public class SionSkill : MonoBehaviour
     {
         if(!qSkillCharging)
         {
+            agent.SetDestination(transform.position);
             GetMouseCursorPos();
             StartCoroutine(QSkillCharge());
         }
@@ -326,10 +332,11 @@ public class SionSkill : MonoBehaviour
         eSkillPrefab.transform.position = transform.position;
         eSkillTimer = 0;
         Collider[] hits = Physics.OverlapSphere(eSkillPrefab.transform.position, 1, hitLayer);
+        Vector3 targetPos = transform.forward;
         while (eSkillPrefab.gameObject.activeSelf && eSkillTimer < 0.7f)
         {
             eSkillTimer += Time.deltaTime;
-            eSkillPrefab.transform.Translate((transform.forward * eSkillSpeed) * Time.deltaTime);
+            eSkillPrefab.transform.Translate((targetPos * eSkillSpeed) * Time.deltaTime);
             hits = Physics.OverlapSphere(eSkillPrefab.transform.position, 1, hitLayer);
             yield return skillCheckTime;
         }
@@ -345,13 +352,14 @@ public class SionSkill : MonoBehaviour
     {
         rSkillOn = true;
         StartCoroutine(CastRSkill());
-        
+        rSkillBeforeMovementSpeed = character.MoveSpeed;
     }
 
     IEnumerator CastRSkill()
     {
+        anim.SetTrigger("R");
         rSkillTimer = 0;
-        while(rSkillOn == true || rSkillTimer < 8)
+        while(rSkillOn == true && rSkillTimer < 8)
         {
             
             // 사이온의 현재 위치 + 전방 방향으로 박스 중심 설정
@@ -365,7 +373,7 @@ public class SionSkill : MonoBehaviour
 
             // OverlapBox 실행
             Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, boxRotation, hitLayer);
-            anim.SetTrigger("R");
+            
             if (hits.Length > 0)
             {
                 foreach (Collider hit in hits)
@@ -387,7 +395,7 @@ public class SionSkill : MonoBehaviour
                 anim.SetBool("RRunning", true);
             }
 
-            int increaseMoveSpeed = 20;
+            int increaseMoveSpeed = 10;
             if(character.MoveSpeed <= 950)
             {
                 character.AdjustMoveSpeed(increaseMoveSpeed);
@@ -396,6 +404,7 @@ public class SionSkill : MonoBehaviour
             playerController.Move(skillCanvas.transform.position);
             yield return skillCheckTime;
         }
+        character.AdjustMoveSpeed(rSkillBeforeMovementSpeed);
     }
 
     void RSkillCheckingHit()
@@ -409,6 +418,7 @@ public class SionSkill : MonoBehaviour
                 anim.SetBool("RRunning",false);
             }
             anim.SetTrigger("RHit");
+
         }
     }
     void RSkillRotation()
