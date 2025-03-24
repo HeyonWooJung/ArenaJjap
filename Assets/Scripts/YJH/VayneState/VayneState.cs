@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.FilePathAttribute;
-using static UnityEngine.GraphicsBuffer;
 
 public interface IVayneState
 {
@@ -18,13 +16,21 @@ public class VayneState : PlayerController
 
     IVayneState currentState;
 
-    [Header("¾Ö´Ï¸ŞÀÌ¼Ç")]
+    [Header("ì• ë‹ˆë©”ì´ì…˜")]
     public Animator anim;
 
-    private void Start()
+    public override void Start()
     {
+        base.Start();
         ChangeState(new DefaultState());
     }
+
+    public override void Update()
+    {
+        base.Update();
+        currentState.UpdateState();
+    }
+
     public void ChangeState(IVayneState newState)
     {
         if(currentState != null)
@@ -35,9 +41,23 @@ public class VayneState : PlayerController
         currentState.EnterState(this);
     }
 
+    public override void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
+    {
+        if (character.CurQCool <= 0)
+        {
+            character.SetQCooldown();
+            ChangeState(new TumbleState(location));
+        }
+    }
+   
     public override void AutoAttack(PlayerController target)
     {
-        OnAutoAttackGlobal?.Invoke(); // Àü¿ª ÀÌº¥Æ® È£Ãâ
-        base.AutoAttack(target); // ½ÇÁ¦ ÆòÅ¸ Ã³¸®
+        if(currentState is TumbleState)
+        {
+            character.AdjustATK(115.14f);
+        }
+
+        OnAutoAttackGlobal?.Invoke();
+        base.AutoAttack(target); 
     }
 }

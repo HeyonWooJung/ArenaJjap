@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class TumbleState : IVayneState
 {
@@ -17,13 +18,12 @@ public class TumbleState : IVayneState
     {
         state = VS;
 
-        Vector3 dir = (targetLocation - state.transform.position).normalized;        
-        state.Move(state.transform.position + dir * 3);
+        Vector3 dir = (targetLocation - state.transform.position).normalized;
+
+        state.Move(state.transform.position + dir * 2);
         state.anim.SetTrigger("Tumble");
-
-
+        
         VayneState.OnAutoAttackGlobal += OnAutoAttack;
-
         revertRoutine = state.StartCoroutine(RevertAfterDelay());
     }
 
@@ -35,15 +35,16 @@ public class TumbleState : IVayneState
             state.StopCoroutine(revertRoutine);
         }
 
-
         VayneState.OnAutoAttackGlobal -= OnAutoAttack;
     }
-
-    public void UpdateState() { }
+    
+    public void UpdateState() 
+    {
+        
+    }
 
     void OnAutoAttack()
     {
-        Debug.Log("ÆòÅ¸ °¨ÁöµÊ ¡æ DefaultState º¹±Í");
         state.ChangeState(new DefaultState());
     }
 

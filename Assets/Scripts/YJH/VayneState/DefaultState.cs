@@ -8,7 +8,9 @@ public class DefaultState: IVayneState
     public void EnterState(VayneState VS)
     { }
     public void UpdateState()
-    { }
+    {
+
+    }
     public void ExitState()
     { }
 
