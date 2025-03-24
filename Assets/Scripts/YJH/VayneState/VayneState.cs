@@ -1,16 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.FilePathAttribute;
+using static UnityEngine.GraphicsBuffer;
 
 public interface IVayneState
 {
     public void EnterState(VayneState VS) { }
     public void UpdateState() { }
     public void ExitState() { }
+        
 }
 
 public class VayneState : PlayerController
 {
+    public static event System.Action OnAutoAttackGlobal;
+
     IVayneState currentState;
 
     [Header("애니메이션")]
@@ -18,8 +23,7 @@ public class VayneState : PlayerController
 
     private void Start()
     {
-        //처음 상태
-        //ChangeState();
+        ChangeState(new DefaultState());
     }
     public void ChangeState(IVayneState newState)
     {
@@ -29,5 +33,11 @@ public class VayneState : PlayerController
         }
         currentState = newState;
         currentState.EnterState(this);
+    }
+
+    public override void AutoAttack(PlayerController target)
+    {
+        OnAutoAttackGlobal?.Invoke(); // 전역 이벤트 호출
+        base.AutoAttack(target); // 실제 평타 처리
     }
 }
