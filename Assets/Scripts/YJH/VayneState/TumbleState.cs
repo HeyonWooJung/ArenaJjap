@@ -6,8 +6,12 @@ using UnityEngine.TextCore.Text;
 public class TumbleState : IVayneState
 {
     VayneState state;
-    Vector3 targetLocation;
     Coroutine revertRoutine;
+        
+    Vector3 targetLocation;
+    Vector3 dir;
+    Vector3 lastPosition;
+    float speed;
 
     public TumbleState(Vector3 location)
     {
@@ -18,13 +22,21 @@ public class TumbleState : IVayneState
     {
         state = VS;
 
-        Vector3 dir = (targetLocation - state.transform.position).normalized;
-
-        state.Move(state.transform.position + dir * 2);
-        state.anim.SetTrigger("Tumble");
+        dir = (targetLocation - state.transform.position).normalized;
+        state.Move(state.transform.position + dir * 4f);
         
+        state.anim.SetTrigger("Tumble");
+        state.anim.SetTrigger("TumbleIdle");
         VayneState.OnAutoAttackGlobal += OnAutoAttack;
-        revertRoutine = state.StartCoroutine(RevertAfterDelay());
+        revertRoutine = state.StartCoroutine(TumbleDelay());
+    }       
+
+    public void UpdateState()
+    {
+        speed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
+        lastPosition = state.transform.position;
+        state.anim?.SetFloat("TumbleWalk", speed, 0.1f, Time.deltaTime);
+        state.anim?.SetFloat("Walk", 0f);
     }
 
     public void ExitState()
@@ -37,18 +49,11 @@ public class TumbleState : IVayneState
 
         VayneState.OnAutoAttackGlobal -= OnAutoAttack;
     }
-    
-    public void UpdateState() 
-    {
-        
-    }
-
     void OnAutoAttack()
     {
         state.ChangeState(new DefaultState());
     }
-
-    IEnumerator RevertAfterDelay()
+    IEnumerator TumbleDelay()
     {
         yield return new WaitForSeconds(3f);
         state.ChangeState(new DefaultState());
