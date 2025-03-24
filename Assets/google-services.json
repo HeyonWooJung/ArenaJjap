@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "43094108673",
+    "firebase_url": "https://arenajjap-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "arenajjap",
+    "storage_bucket": "arenajjap.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:43094108673:android:13b4fc1c3b14ed9e97ae00",
+        "android_client_info": {
+          "package_name": "com.ainpc.ArenaJjap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7wXtjHW9o_hNGCVD-QCEHXYh5rHTUWDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
