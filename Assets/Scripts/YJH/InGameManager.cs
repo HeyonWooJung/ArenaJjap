@@ -3,9 +3,9 @@ using Photon.Pun;
 
 public class InGameManager : MonoBehaviourPunCallbacks
 {
-    public Transform[] spawnPoints; // ÀÎ¿ø ¼ö ¸¸Å­ À§Ä¡ ¼³Á¤
+    public Transform[] spawnPoints; // ì¸ì› ìˆ˜ ë§Œí¼ ìœ„ì¹˜ ì„¤ì •
 
-    // ÀÎµ¦½º¿¡ ´ëÀÀÇÏ´Â ÇÁ¸®ÆÕ ÀÌ¸§ ¸®½ºÆ®
+    // ì¸ë±ìŠ¤ì— ëŒ€ì‘í•˜ëŠ” í”„ë¦¬íŒ¹ ì´ë¦„ ë¦¬ìŠ¤íŠ¸
     private readonly string[] championNames = { "Ryze1", "Sion1", "Tryn1", "Vayne1" };
 
     void Start()

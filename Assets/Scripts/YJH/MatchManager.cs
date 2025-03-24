@@ -13,35 +13,35 @@ public class MatchManager : MonoBehaviourPunCallbacks
     public GameObject championPanel;
     public Button readyBtn;
 
-    [SerializeField, Header("ÇÁ·ÎÇÊ ÀÌ¹ÌÁö")]
+    [SerializeField, Header("í”„ë¡œí•„ ì´ë¯¸ì§€")]
     public Image[] ProfileImgs;
 
-    [SerializeField, Header("µŞ »çÁø")]
+    [SerializeField, Header("ë’· ì‚¬ì§„")]
     public GameObject[] BackgroundImgs;
 
-    [SerializeField, Header("Ã¨ÇÇ¾ğ ¹öÆ°")]
+    [SerializeField, Header("ì±”í”¼ì–¸ ë²„íŠ¼")]
     public Button[] championBtns;
 
-    [Header("¼ÒÈ¯»çµé")]
+    [Header("ì†Œí™˜ì‚¬ë“¤")]
     public Image[] summoners;
 
-    [Header("´Ğ³×ÀÓ UI")]
+    [Header("ë‹‰ë„¤ì„ UI")]
     public TextMeshProUGUI[] nickNameTexts;
 
 
-    private List<Player> playerList = new List<Player>();    
+    private List<Player> playerList = new List<Player>();
     private List<Player> blueteam = new List<Player>();
     private List<Player> redteam = new List<Player>();
 
     private Dictionary<Player, int> playerChampion = new Dictionary<Player, int>();
     private int readyCount = 0;
 
-    public static int myChampionIndex = -1; // <- ¿©±â¿¡ ÀúÀå
+    public static int myChampionIndex = -1; // <- ì—¬ê¸°ì— ì €ì¥
 
-    
+
     private void Awake()
     {
-        if(PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.IsMasterClient)
         {
             AssignTeams();
         }
@@ -64,7 +64,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     private void SyncTeams(int p1, int p2, int p3, int p4)
     {
         Player[] players = PhotonNetwork.PlayerList;
-        
+
         blueteam.Clear();
         redteam.Clear();
 
@@ -76,17 +76,17 @@ public class MatchManager : MonoBehaviourPunCallbacks
                 redteam.Add(p);
         }
 
-        // ¸ğµç ÇÃ·¹ÀÌ¾î ´Ğ³×ÀÓÀ» Á¤È®ÇÑ À§Ä¡¿¡ ¼³Á¤
+        // ëª¨ë“  í”Œë ˆì´ì–´ ë‹‰ë„¤ì„ì„ ì •í™•í•œ ìœ„ì¹˜ì— ì„¤ì •
         foreach (Player p in players)
         {
             int playerIndex;
             if (blueteam.Contains(p))
             {
-                playerIndex = blueteam.IndexOf(p); // ºí·çÆÀ ³»¿¡¼­ À§Ä¡ Ã£±â
+                playerIndex = blueteam.IndexOf(p); // ë¸”ë£¨íŒ€ ë‚´ì—ì„œ ìœ„ì¹˜ ì°¾ê¸°
             }
             else
             {
-                playerIndex = redteam.IndexOf(p) + blueteam.Count; // ·¹µåÆÀÀÌ¸é ºí·çÆÀ °³¼ö¸¸Å­ Ãß°¡ÇÑ À§Ä¡
+                playerIndex = redteam.IndexOf(p) + blueteam.Count; // ë ˆë“œíŒ€ì´ë©´ ë¸”ë£¨íŒ€ ê°œìˆ˜ë§Œí¼ ì¶”ê°€í•œ ìœ„ì¹˜
             }
 
             if (playerIndex >= 0 && playerIndex < nickNameTexts.Length)
@@ -114,10 +114,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
             {
                 int index = i;
                 championBtns[i].onClick.AddListener(() => OnChampionClick(index));
-            }            
+            }
         }
 
-        readyBtn.interactable = false; // ÁØºñ ¹öÆ° ÃÊ±â ºñÈ°¼ºÈ­
+        readyBtn.interactable = false; // ì¤€ë¹„ ë²„íŠ¼ ì´ˆê¸° ë¹„í™œì„±í™”
     }
 
     private void OnChampionClick(int index)
@@ -141,13 +141,13 @@ public class MatchManager : MonoBehaviourPunCallbacks
         if (playerIndex >= 0 && playerIndex < summoners.Length)
         {
             summoners[playerIndex].sprite = ProfileImgs[index].sprite;
-            nickNameTexts[playerIndex].text = localPlayer.NickName; // ´Ğ³×ÀÓ UI Àû¿ë
+            nickNameTexts[playerIndex].text = localPlayer.NickName; // ë‹‰ë„¤ì„ UI ì ìš©
         }
 
-        // Ã¨ÇÇ¾ğ ¼±ÅÃ µ¿±âÈ­
+        // ì±”í”¼ì–¸ ì„ íƒ ë™ê¸°í™”
         photonView.RPC("SyncChampionSelection", RpcTarget.All, localPlayer.ActorNumber, index, localPlayer.NickName);
 
-        // Ã¨ÇÇ¾ğ ¼±ÅÃ ÈÄ ÁØºñ ¹öÆ° È°¼ºÈ­
+        // ì±”í”¼ì–¸ ì„ íƒ í›„ ì¤€ë¹„ ë²„íŠ¼ í™œì„±í™”
         readyBtn.interactable = true;
     }
 
@@ -156,7 +156,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         Player localPlayer = PhotonNetwork.LocalPlayer;
         List<Player> myTeam = blueteam.Contains(localPlayer) ? blueteam : redteam;
 
-        // »ç¿ë °¡´ÉÇÑ Ã¨ÇÇ¾ğ Ã£±â
+        // ì‚¬ìš© ê°€ëŠ¥í•œ ì±”í”¼ì–¸ ì°¾ê¸°
         List<int> availableChampions = new List<int> { 0, 1, 2, 3 };
         foreach (var member in myTeam)
         {
@@ -183,7 +183,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
                 if (playerIndex >= 0 && playerIndex < summoners.Length)
                 {
                     summoners[playerIndex].sprite = ProfileImgs[championIndex].sprite;
-                    nickNameTexts[playerIndex].text = nickName; // ´Ğ³×ÀÓ µ¿±âÈ­
+                    nickNameTexts[playerIndex].text = nickName; // ë‹‰ë„¤ì„ ë™ê¸°í™”
                 }
                 return;
             }
@@ -204,7 +204,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
         championPanel.SetActive(false);
         readyBtn.gameObject.SetActive(false);
-        photonView.RPC("PlayerReady", RpcTarget.All, localPlayer.ActorNumber, playerChampion[localPlayer]);        
+        photonView.RPC("PlayerReady", RpcTarget.All, localPlayer.ActorNumber, playerChampion[localPlayer]);
     }
 
     [PunRPC]

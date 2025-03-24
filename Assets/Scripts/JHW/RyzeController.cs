@@ -15,6 +15,9 @@ public class RyzeController : PlayerController
     public override void AutoAttack(PlayerController target)
     {
         StartCoroutine(AAHandle());
+        Vector3 look = target.transform.position;
+        look.y = transform.position.y;
+        transform.LookAt(look, transform.forward);
         Debug.Log("AA " + target.name);
         //평타
         float damage = character.ATK;
@@ -35,6 +38,9 @@ public class RyzeController : PlayerController
         {
             //대충 스킬쓰기 ?? : 그러니까 못맞추지
             character.SetQCooldown();
+            Vector3 look = location;
+            look.y = transform.position.y;
+            transform.LookAt(look, transform.forward);
             GameObject tempQ = Instantiate(QObj, transform.position, Quaternion.identity);
             tempQ.GetComponent<RyzeQScript>().GetDmg(155 + (0.55f * character.ATK), character.Lethality, character.ArmorPenetration, enemyTag);
             tempQ.transform.LookAt(location);
@@ -57,6 +63,9 @@ public class RyzeController : PlayerController
             {
                 GameObject tempW = Instantiate(WObj, target.transform);
                 Destroy(tempW, 1.5f);
+                Vector3 look = target.transform.position;
+                look.y = transform.position.y;
+                transform.LookAt(look, transform.forward);
                 //대충 스킬쓰기
 
                 character.SetWCooldown();
@@ -101,6 +110,9 @@ public class RyzeController : PlayerController
         {
             if (target != null && target.CompareTag(enemyTag))
             {
+                Vector3 look = target.transform.position;
+                look.y = transform.position.y;
+                transform.LookAt(look, transform.forward);
                 RyzeEScrpit preE = target?.GetComponentInChildren<RyzeEScrpit>();
                 if (preE != null)
                 {
