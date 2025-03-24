@@ -6,7 +6,7 @@ using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class SionSkill : MonoBehaviour
 {
@@ -36,11 +36,15 @@ public class SionSkill : MonoBehaviour
     float qSkillTimer;
     float maxChargeTime = 2f;
     bool qSkillCharging = false;
-    [SerializeField] float qSkillMinLength;
-    [SerializeField] float qSkillMaxLength;
-    [SerializeField] float qSkillWidth;
+    [SerializeField] float qSkillMinLength = 2;
+    [SerializeField] float qSkillMaxLength = 8;
+    [SerializeField] float qSkillWidth = 4;
     float chargeRatio;
     float skillLength;
+    [SerializeField] Image qSKillImage;
+    [SerializeField] Color qSkillOriginalPanelA;
+    [SerializeField] float qSkillMaxAlphaFloat = 0.98f;
+    [SerializeField] Image qSkillPanel;
     //[SerializeField] Vector3 qSkillOriginalCenterPos;
 
     [Header("W스킬")]
@@ -70,7 +74,8 @@ public class SionSkill : MonoBehaviour
     [SerializeField] float rSkillRotationSpeed;
     [SerializeField] float rSkillTimer;
     [SerializeField] float rSkillCheckDistance;
-    [SerializeField] int rSkillBeforeMovementSpeed;
+    [SerializeField] int rSkillIncreasedSpeed;
+    [SerializeField] int rSkillIncreasing = 10;
     
 
 
@@ -159,10 +164,12 @@ public class SionSkill : MonoBehaviour
         qSkillCharging = true;
         
         anim.SetTrigger("Q");
-
-        while(Input.GetKey(KeyCode.Q) && qSkillTimer <= 2f)
+       
+        while (Input.GetKey(KeyCode.Q) && qSkillTimer <= 2f)
         {
+            chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
             qSkillTimer += Time.deltaTime;
+            qSKillImage.fillAmount = chargeRatio;
             yield return null;
         }
 
@@ -202,16 +209,17 @@ public class SionSkill : MonoBehaviour
     void CastQSkill()
     {
         //비율 0~1
-        chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
+        //chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
         //스킬 넓이
         skillLength = Mathf.Lerp(qSkillMinLength, qSkillMaxLength, chargeRatio);
 
         Vector3 boxCenter = transform.position + transform.forward * (skillLength / 2f);
         Vector3 halfExtents = new Vector3(qSkillWidth / 2f, 0.5f, skillLength / 2f);
         Quaternion boxOrientation = transform.rotation;
+        
 
 
-
+        //if(CC걸림 == true) 밑에 실행 X
         qSkillCurDamage = Mathf.Lerp(qSkillMinFixedDamage, qSkillMaxFixedDamage, qSkillTimer) + Mathf.Lerp(qSkillMinAddDamage, qSkillMaxAddDamage, qSkillChargeTime);
         if(qSkillTimer >= 1)
         {
@@ -261,7 +269,7 @@ public class SionSkill : MonoBehaviour
             anim.SetTrigger("QShort");
         }
 
-
+        qSKillImage.fillAmount = 0;
 
     }
 
@@ -352,14 +360,14 @@ public class SionSkill : MonoBehaviour
     {
         rSkillOn = true;
         StartCoroutine(CastRSkill());
-        rSkillBeforeMovementSpeed = character.MoveSpeed;
     }
 
     IEnumerator CastRSkill()
     {
         anim.SetTrigger("R");
         rSkillTimer = 0;
-        while(rSkillOn == true && rSkillTimer < 8)
+        rSkillIncreasedSpeed = 0;
+        while (rSkillOn == true && rSkillTimer < 8)
         {
             
             // 사이온의 현재 위치 + 전방 방향으로 박스 중심 설정
@@ -387,7 +395,7 @@ public class SionSkill : MonoBehaviour
                     anim.SetBool("RRunning", false);
                 }
                 anim.SetTrigger("RHit");
-
+                character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
             }
            
             if(rSkillTimer >= 2 && anim.GetBool("RRunning") == false)
@@ -395,16 +403,17 @@ public class SionSkill : MonoBehaviour
                 anim.SetBool("RRunning", true);
             }
 
-            int increaseMoveSpeed = 10;
+            
             if(character.MoveSpeed <= 950)
             {
-                character.AdjustMoveSpeed(increaseMoveSpeed);
+                character.AdjustMoveSpeed(rSkillIncreasing);
+                rSkillIncreasedSpeed += rSkillIncreasing;
                
             }
             playerController.Move(skillCanvas.transform.position);
             yield return skillCheckTime;
         }
-        character.AdjustMoveSpeed(rSkillBeforeMovementSpeed);
+        
     }
 
     void RSkillCheckingHit()
@@ -418,6 +427,7 @@ public class SionSkill : MonoBehaviour
                 anim.SetBool("RRunning",false);
             }
             anim.SetTrigger("RHit");
+            character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
 
         }
     }
@@ -448,15 +458,7 @@ public class SionSkill : MonoBehaviour
     }
 
 
-    //QWR 적중시 어쩌구 해주세요 감사합니다 ^^
-    private void OnTriggerEnter(Collider other)
-    {
-         
-
-
-
-    }
-
+   
     void OnDrawGizmos()
     {
         if (!debuggingMode) return;
