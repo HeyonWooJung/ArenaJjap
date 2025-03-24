@@ -20,6 +20,7 @@ public class DefaultState : IVayneState
         lastPosition = state.transform.position;
         state.anim?.SetFloat("Walk", speed, 0.1f, Time.deltaTime);
         state.anim?.SetFloat("TumbleWalk", 0f);
+        
     }
 
     public void ExitState() { }

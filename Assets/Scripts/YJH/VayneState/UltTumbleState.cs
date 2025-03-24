@@ -31,6 +31,7 @@ public class UltTumbleState : IVayneState
         lastPosition = state.transform.position;
         state.anim?.SetFloat("TumbleWalk", speed, 0.1f, Time.deltaTime);
         state.anim?.SetFloat("Walk", 0f);
+        
     }
     public void ExitState()
     {
