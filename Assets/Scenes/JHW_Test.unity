@@ -859,6 +859,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ryze
       objectReference: {fileID: 0}
+    - target: {fileID: 1703957794433250074, guid: cf6c25c58cf4a3c4bb6885ac4c4075ff, type: 3}
+      propertyPath: image
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1703957794433250074, guid: cf6c25c58cf4a3c4bb6885ac4c4075ff, type: 3}
+      propertyPath: sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: a5247839ff5f889498b79fce5b4b7fb5, type: 3}
     - target: {fileID: 1890176589823791909, guid: cf6c25c58cf4a3c4bb6885ac4c4075ff, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

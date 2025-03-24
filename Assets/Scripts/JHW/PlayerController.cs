@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class PlayerController : MonoBehaviour
@@ -12,15 +13,19 @@ public class PlayerController : MonoBehaviour
     public string enemyTag;
     NavMeshAgent agent;
 
-    CommandBase toExecute;
+    Queue<CommandBase> toExecute;
+    CommandBase curCommand;
 
     Ray ray;
     RaycastHit hit;
     bool canAA = true;
 
+    bool canCancel = true;
+
     // Start is called before the first frame update
     void Start()
     {
+        toExecute = new Queue<CommandBase>();
         Character temp = character;
         character = ScriptableObject.CreateInstance<Character>();
         character.InitCharacter(temp);
@@ -31,11 +36,45 @@ public class PlayerController : MonoBehaviour
         character.OnMoveSpeedChanged += ApplyMoveSpeed;
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         StartCoroutine(HpRegen());
+        StartCoroutine(Execution());
     }
 
     private void OnDestroy()
     {
         character.OnMoveSpeedChanged -= ApplyMoveSpeed;
+    }
+
+    IEnumerator Execution()
+    {
+        while(true)
+        {
+            yield return new WaitUntil(() => canCancel);
+            yield return new WaitUntil(() => toExecute.Count > 0);
+            Debug.Log("tete: " + toExecute.Count);
+            if (curCommand != null)
+            {
+                curCommand.Cancel();
+            }
+            if (toExecute.Count > 0)
+            {
+                curCommand = toExecute?.Dequeue();
+            }
+            if (curCommand != null)
+            {
+                curCommand.Execute();
+                if (curCommand.Delay > 0)
+                {
+                    StartCoroutine(Delay(curCommand.Delay));
+                }
+            }
+        }
+    }
+
+    IEnumerator Delay(float time)
+    {
+        canCancel = false;
+        yield return new WaitForSeconds(time);
+        canCancel = true;
     }
 
     // Update is called once per frame
@@ -53,14 +92,13 @@ public class PlayerController : MonoBehaviour
                     {
                         if (canAA)
                         {
-                            toExecute = new AutoAttackCommand(this, hit.transform.GetComponent<PlayerController>());
-                            toExecute.Execute();
+                            toExecute.Enqueue(new AutoAttackCommand(this, 0, hit.transform.GetComponent<PlayerController>()));
                         }
                     }
                     else
                     {
-                        toExecute = new MoveCommand(this, hit.point);
-                        toExecute.Execute();
+                        //toExecute.Enqueue(new MoveCommand(this, 0, hit.point));
+                        Move(hit.point);
                     }
                 }
             }
@@ -71,8 +109,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillQCommand(this, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
-                    toExecute.Execute();
+                    toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
                 }
             }
             if (Input.GetKeyDown(KeyCode.W))
@@ -81,8 +118,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillWCommand(this, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
-                    toExecute.Execute();
+                    toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
                 }
             }
             if (Input.GetKeyDown(KeyCode.E))
@@ -91,8 +127,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillECommand(this, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
-                    toExecute.Execute();
+                    toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
                 }
             }
             if (Input.GetKeyDown(KeyCode.R))
@@ -101,8 +136,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new SkillRCommand(this, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point);
-                    toExecute.Execute();
+                    toExecute.Enqueue(new SkillRCommand(this, 0, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
                 }
             }
             if (Input.GetKeyDown(KeyCode.D))
@@ -111,8 +145,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new RushCommand(this);
-                    toExecute.Execute();
+                    toExecute.Enqueue(new RushCommand(this, 0));
                 }
             }
             if (Input.GetKeyDown(KeyCode.F))
@@ -121,9 +154,13 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    toExecute = new FlashCommmand(this, hit.point);
-                    toExecute.Execute();
+                    toExecute.Enqueue(new FlashCommmand(this, 0, hit.point));
                 }
+            }
+            if(Input.GetKeyDown(KeyCode.S))
+            {
+                Stop();
+                toExecute.Clear();
             }
         }
         else if (character.CurState == State.Root)
@@ -187,7 +224,6 @@ public class PlayerController : MonoBehaviour
     public void Stop()
     {
         agent.ResetPath();
-        toExecute = null;
     }
 
     public void ApplyMoveSpeed()
