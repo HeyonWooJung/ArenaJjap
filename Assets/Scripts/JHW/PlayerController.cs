@@ -5,9 +5,10 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using Photon.Pun;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IPunObservable
 {
     public Character character;
     public string enemyTag;
@@ -23,7 +24,7 @@ public class PlayerController : MonoBehaviour
     bool canCancel = true;
 
     // Start is called before the first frame update
-    void Start()
+    public virtual void Start()
     {
         toExecute = new Queue<CommandBase>();
         Character temp = character;
@@ -78,7 +79,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public virtual void Update()
     {
         if ((character.CurState == State.Stun && character.CurState == State.Airborne) == false)
         {
@@ -231,6 +232,7 @@ public class PlayerController : MonoBehaviour
         agent.speed = character.MoveSpeed * 0.01f;
     }
 
+    [PunRPC]
     public virtual void Move(Vector3 pos)
     {
         //움직이다
@@ -376,5 +378,10 @@ public class PlayerController : MonoBehaviour
         character.AdjustMoveSpeed(-tempSpeed);
         yield return new WaitForSeconds(time);
         character.AdjustMoveSpeed(tempSpeed);
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+
     }
 }
