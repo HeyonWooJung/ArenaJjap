@@ -13,12 +13,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public Button matchButton;
 
     public GameObject acceptPanel;
-    public Button acceptButton; // ¼ö¶ô ¹öÆ°
+    public Button acceptButton; // ìˆ˜ë½ ë²„íŠ¼
     public Image acceptTimer;
 
-    public TextMeshProUGUI timerText; // Å¸ÀÌ¸Ó Ç¥½Ã
+    public TextMeshProUGUI timerText; // íƒ€ì´ë¨¸ í‘œì‹œ
 
-    private int acceptCount; // ¼ö¶ôÇÑ ÇÃ·¹ÀÌ¾î ¼ö
+    private int acceptCount; // ìˆ˜ë½í•œ í”Œë ˆì´ì–´ ìˆ˜
     private int playerCount;
     private bool isMatching = false;
     private float elapsedTime = 0f;
@@ -27,7 +27,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public TMP_Text nickName;
     public TMP_Text nickName1;
 
-    float duration = 15f; // 30ÃÊ µ¿¾È °¨¼Ò
+    float duration = 15f; // 30ì´ˆ ë™ì•ˆ ê°ì†Œ
     void Start()
     {
         acceptCount = 0;
@@ -74,7 +74,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             elapsedTime += Time.deltaTime;
             int minutes = Mathf.FloorToInt(elapsedTime / 60);
             int seconds = Mathf.FloorToInt(elapsedTime % 60);
-            timerText.text = $"{minutes}:{seconds:D2}"; // "0:01", "0:02" ÇüÅÂ·Î Ç¥½Ã
+            timerText.text = $"{minutes}:{seconds:D2}"; // "0:01", "0:02" í˜•íƒœë¡œ í‘œì‹œ
             yield return null;
         }
     }
@@ -86,7 +86,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         acceptPanel.SetActive(true);
         acceptTimer.gameObject.SetActive(true);
         acceptButton.interactable = true;
-        
+
         acceptTimer.fillAmount = 1;
         StartCoroutine(TimerImageFill());
 
@@ -106,7 +106,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             yield return null;
         }
 
-        acceptTimer.fillAmount = 0; // ÃÖÁ¾ÀûÀ¸·Î 0À¸·Î ¼³Á¤
+        acceptTimer.fillAmount = 0; // ìµœì¢…ì ìœ¼ë¡œ 0ìœ¼ë¡œ ì„¤ì •
         if (acceptTimer.fillAmount <= 0)
         {
             yield return new WaitForSeconds(3);
@@ -141,7 +141,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.LoadLevel("Scene3");
     }
 
-    
+
     public void CancelMatch()
     {
         playerCount--;

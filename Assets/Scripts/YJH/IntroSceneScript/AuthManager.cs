@@ -11,8 +11,8 @@ using Photon.Pun;
 
 public class AuthManager : MonoBehaviourPunCallbacks
 {
-    public static FirebaseUser user; //ÀÎÁõµÈ À¯Àú Á¤º¸ ±â¾ï
-    public FirebaseAuth auth; //ÀÎÁõ ÁøÇàÀ» À§ÇÑ Á¤º¸
+    public static FirebaseUser user; //ì¸ì¦ëœ ìœ ì € ì •ë³´ ê¸°ì–µ
+    public FirebaseAuth auth; //ì¸ì¦ ì§„í–‰ì„ ìœ„í•œ ì •ë³´
 
     public InputField emailField;
     public InputField pwField;
@@ -26,16 +26,16 @@ public class AuthManager : MonoBehaviourPunCallbacks
     public Text warningText2;
     public Text successText;
 
-    public static DatabaseReference dbRef; //DB¿ë ·¹ÆÛ·±½º
+    public static DatabaseReference dbRef; //DBìš© ë ˆí¼ëŸ°ìŠ¤
 
     public Button registerBtn;
     public Button loginBtn;
     public Button creatBtn;
     public GameObject registerPanel;
-    public GameObject nickNamePanel; // ´Ð³×ÀÓ ÀÔ·ÂÃ¢ ÆÐ³Î
-    public Button saveNickBtn; // ´Ð³×ÀÓ ÀúÀå ¹öÆ°
+    public GameObject nickNamePanel; // ë‹‰ë„¤ìž„ ìž…ë ¥ì°½ íŒ¨ë„
+    public Button saveNickBtn; // ë‹‰ë„¤ìž„ ì €ìž¥ ë²„íŠ¼
 
-    public GameObject loadingPanel;// ·Îµù ÆÇ³Ú
+    public GameObject loadingPanel;// ë¡œë”© íŒë„¬
     public GameObject loadingSpinner;
     public void OnRegisterPanel()
     {
@@ -57,7 +57,7 @@ public class AuthManager : MonoBehaviourPunCallbacks
             }
             else
             {
-                Debug.Log("ÆÄÀÌ¾îº£ÀÌ½º ¹®Á¦ÀÖÀ½");
+                Debug.Log("íŒŒì´ì–´ë² ì´ìŠ¤ ë¬¸ì œìžˆìŒ");
             }
         });
     }
@@ -91,32 +91,32 @@ public class AuthManager : MonoBehaviourPunCallbacks
 
         if (loginTask.Exception != null)
         {
-            Debug.LogWarning("·Î±×ÀÎ ½ÇÆÐ :" + loginTask.Exception);
+            Debug.LogWarning("ë¡œê·¸ì¸ ì‹¤íŒ¨ :" + loginTask.Exception);
 
             FirebaseException firebaseEx = loginTask.Exception.GetBaseException() as FirebaseException;
-            AuthError errorCode = (AuthError)firebaseEx.ErrorCode; // Á» ´õ ÆíÇÏ°Ô º¸·Á°í ¿­°ÅÇüÀ¸·Î ¹Þ¾Æ¼­ º½
+            AuthError errorCode = (AuthError)firebaseEx.ErrorCode; // ì¢€ ë” íŽ¸í•˜ê²Œ ë³´ë ¤ê³  ì—´ê±°í˜•ìœ¼ë¡œ ë°›ì•„ì„œ ë´„
 
             string message = "";
 
             switch (errorCode)
             {
                 case AuthError.MissingEmail:
-                    message = "ÀÌ¸ÞÀÏ ´©¶ôµÇ¾ú½À´Ï´Ù";
+                    message = "ì´ë©”ì¼ ëˆ„ë½ë˜ì—ˆìŠµë‹ˆë‹¤";
                     break;
                 case AuthError.MissingPassword:
-                    message = "ºñ¹Ð¹øÈ£°¡ ´©¶ôµÇ¾ú½À´Ï´Ù";
+                    message = "ë¹„ë°€ë²ˆí˜¸ê°€ ëˆ„ë½ë˜ì—ˆìŠµë‹ˆë‹¤";
                     break;
                 case AuthError.WrongPassword:
-                    message = "ºñ¹Ð¹øÈ£°¡ Æ²·È½À´Ï´Ù";
+                    message = "ë¹„ë°€ë²ˆí˜¸ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤";
                     break;
                 case AuthError.UserNotFound:
-                    message = "¾ÆÀÌµð°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù";
+                    message = "ì•„ì´ë””ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤";
                     break;
                 case AuthError.InvalidEmail:
-                    message = "ÀÌ¸ÞÀÏ ÇüÅÂ°¡ ¸ÂÁö ¾Ê½À´Ï´Ù";
+                    message = "ì´ë©”ì¼ í˜•íƒœê°€ ë§žì§€ ì•ŠìŠµë‹ˆë‹¤";
                     break;
                 default:
-                    message = "°ü¸®ÀÚ¿¡°Ô ¹®ÀÇ ¹Ù¶ø´Ï´Ù";
+                    message = "ê´€ë¦¬ìžì—ê²Œ ë¬¸ì˜ ë°”ëžë‹ˆë‹¤";
                     break;
             }
             warningText.text = message;
@@ -127,7 +127,7 @@ public class AuthManager : MonoBehaviourPunCallbacks
             warningText.text = "";
             if (string.IsNullOrEmpty(user.DisplayName))
             {
-                // ´Ð³×ÀÓÀÌ ¾ø´Â °æ¿ì ´Ð³×ÀÓ ÀÔ·Â ÇÊµå È°¼ºÈ­
+                // ë‹‰ë„¤ìž„ì´ ì—†ëŠ” ê²½ìš° ë‹‰ë„¤ìž„ ìž…ë ¥ í•„ë“œ í™œì„±í™”
                 nickNamePanel.SetActive(true);
             }
             else
@@ -144,7 +144,7 @@ public class AuthManager : MonoBehaviourPunCallbacks
     {
         if (pw != verPw)
         {
-            warningText2.text = "È®ÀÎ ºñ¹Ð¹øÈ£°¡ ´Ù¸¨´Ï´Ù.";
+            warningText2.text = "í™•ì¸ ë¹„ë°€ë²ˆí˜¸ê°€ ë‹¤ë¦…ë‹ˆë‹¤.";
             yield break;
         }
 
@@ -161,19 +161,19 @@ public class AuthManager : MonoBehaviourPunCallbacks
             switch (errorCode)
             {
                 case AuthError.MissingEmail:
-                    message = "ÀÌ¸ÞÀÏÀÌ ´©¶ôµÇ¾ú½À´Ï´Ù.";
+                    message = "ì´ë©”ì¼ì´ ëˆ„ë½ë˜ì—ˆìŠµë‹ˆë‹¤.";
                     break;
                 case AuthError.MissingPassword:
-                    message = "ºñ¹Ð¹øÈ£°¡ ´©¶ôµÇ¾ú½À´Ï´Ù.";
+                    message = "ë¹„ë°€ë²ˆí˜¸ê°€ ëˆ„ë½ë˜ì—ˆìŠµë‹ˆë‹¤.";
                     break;
                 case AuthError.WeakPassword:
-                    message = "ºñ¹Ð¹øÈ£´Â 6ÀÚ ÀÌ»ó ÀÔ·ÂÇØÁÖ¼¼¿ä";
+                    message = "ë¹„ë°€ë²ˆí˜¸ëŠ” 6ìž ì´ìƒ ìž…ë ¥í•´ì£¼ì„¸ìš”";
                     break;
                 case AuthError.EmailAlreadyInUse:
-                    message = "Áßº¹µÈ ÀÌ¸ÞÀÏ ÀÔ´Ï´Ù.";
+                    message = "ì¤‘ë³µëœ ì´ë©”ì¼ ìž…ë‹ˆë‹¤.";
                     break;
                 default:
-                    message = "°ü¸®ÀÚ¿¡°Ô ¹®ÀÇ ¹Ù¶ø´Ï´Ù";
+                    message = "ê´€ë¦¬ìžì—ê²Œ ë¬¸ì˜ ë°”ëžë‹ˆë‹¤";
                     break;
             }
             warningText2.text = message;
@@ -182,8 +182,8 @@ public class AuthManager : MonoBehaviourPunCallbacks
         if (registerTask.Result != null)
         {
             user = registerTask.Result.User;
-            warningText2.text = ""; // È¸¿ø°¡ÀÔ ¼º°ø ½Ã ¿À·ù ¸Þ½ÃÁö ÃÊ±âÈ­
-            successText.text = "°èÁ¤ »ý¼ºÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù!";
+            warningText2.text = ""; // íšŒì›ê°€ìž… ì„±ê³µ ì‹œ ì˜¤ë¥˜ ë©”ì‹œì§€ ì´ˆê¸°í™”
+            successText.text = "ê³„ì • ìƒì„±ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤!";
         }
 
     }
@@ -193,7 +193,7 @@ public class AuthManager : MonoBehaviourPunCallbacks
 
         if (string.IsNullOrEmpty(newNick))
         {
-            warningText.text = "´Ð³×ÀÓÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä.";
+            warningText.text = "ë‹‰ë„¤ìž„ì„ ìž…ë ¥í•´ì£¼ì„¸ìš”.";
             return;
         }
 
@@ -209,12 +209,12 @@ public class AuthManager : MonoBehaviourPunCallbacks
 
         if (profileTask.Exception != null)
         {
-            warningText.text = "´Ð³×ÀÓ ÀúÀå ½ÇÆÐ.";
+            warningText.text = "ë‹‰ë„¤ìž„ ì €ìž¥ ì‹¤íŒ¨.";
         }
         else
         {
             warningText.text = "";
-            nickNamePanel.SetActive(false); // ´Ð³×ÀÓ ÀÔ·ÂÃ¢ ´Ý±â
+            nickNamePanel.SetActive(false); // ë‹‰ë„¤ìž„ ìž…ë ¥ì°½ ë‹«ê¸°
 
             PhotonNetwork.ConnectUsingSettings();
             StartCoroutine(ConnectServer());
@@ -232,7 +232,6 @@ public class AuthManager : MonoBehaviourPunCallbacks
     {
         loadingPanel.SetActive(true);
 
-        yield return new WaitUntil(() => PhotonNetwork.IsConnected);        
+        yield return new WaitUntil(() => PhotonNetwork.IsConnected);
     }
 }
-
