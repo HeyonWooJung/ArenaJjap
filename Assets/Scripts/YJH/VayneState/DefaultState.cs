@@ -5,23 +5,24 @@ using UnityEngine;
 public class DefaultState : IVayneState
 {
     VayneState state;
+    float defaultSpeed;
     Vector3 lastPosition;
-    float speed;
-
     public void EnterState(VayneState VS)
     {
         state = VS;
-        lastPosition = state.transform.position;
+        Debug.Log("DefaultState");
     }
 
     public void UpdateState()
-    {
-        speed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
-        lastPosition = state.transform.position;
-        state.anim?.SetFloat("Walk", speed, 0.1f, Time.deltaTime);
-        state.anim?.SetFloat("TumbleWalk", 0f);
-        
+    {        
+        //lastPosition = state.transform.position;
+        //defaultSpeed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
+        //state.anim?.SetFloat("Walk", defaultSpeed, 0.1f, Time.deltaTime);
+        //state.anim?.SetFloat("TumbleWalk", 0f);     
     }
 
-    public void ExitState() { }
+    public void ExitState() 
+    {
+        Debug.Log("DefaultState Exit");
+    }
 }

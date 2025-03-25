@@ -14,15 +14,16 @@ public class VayneState : PlayerController
 {
     public static event System.Action OnAutoAttackGlobal;
 
-    Vector3 lastPosition;
     IVayneState currentState;
 
     public bool IsUlt = false;
+
+    public float ultTime = 12;
     [Header("애니메이션")]
     public Animator anim;
 
     public override void Start()
-    {   
+    {
         ChangeState(new DefaultState());
         base.Start();
     }
@@ -31,6 +32,12 @@ public class VayneState : PlayerController
     {
         base.Update();
         currentState.UpdateState();
+
+        //if(IsUlt)
+        //{
+        //    ultTime -= Time.time;
+        //    Debug.Log(ultTime);
+        //}
     }
 
     public void ChangeState(IVayneState newState)
@@ -57,6 +64,7 @@ public class VayneState : PlayerController
     {
         if (character.CurQCool <= 0 && !IsUlt)
         {
+            Debug.Log("q눌림");
             character.SetQCooldown();
             ChangeState(new TumbleState(location));
         }

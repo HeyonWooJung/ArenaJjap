@@ -6,8 +6,8 @@ public class UltTumbleState : IVayneState
 {
     VayneState state;
     Vector3 targetLocation;
+    float ultTSpeed;
     Vector3 lastPosition;
-    float speed;
 
     public UltTumbleState(Vector3 location)
     {
@@ -27,9 +27,9 @@ public class UltTumbleState : IVayneState
     }
     public void UpdateState()
     {
-        speed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
+        ultTSpeed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
         lastPosition = state.transform.position;
-        state.anim?.SetFloat("TumbleWalk", speed, 0.1f, Time.deltaTime);
+        state.anim?.SetFloat("TumbleWalk", ultTSpeed, 0.1f, Time.deltaTime);
         state.anim?.SetFloat("Walk", 0f);
         
     }
