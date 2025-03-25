@@ -1,18 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-
+[Serializable]
 public class CommandBase
 {
     protected PlayerController controller;
     protected Character character;
+    public PhotonView pv;
 
     public float Delay
     {
         get;set;
     }
 
+    [PunRPC]
     public virtual void Execute()
     {
 
@@ -29,9 +33,12 @@ public class CommandBase
         this.controller = controller;
         character = controller.character;
         Delay = delay;
+        pv = controller.pv;
     }
 }
 
+
+[Serializable]
 public class MoveCommand : CommandBase //움직임
 {
     Vector3 movePos;
@@ -41,6 +48,7 @@ public class MoveCommand : CommandBase //움직임
     }
 
 
+    [PunRPC]
     public override void Execute()
     {
         controller.Move(movePos);
@@ -48,6 +56,8 @@ public class MoveCommand : CommandBase //움직임
 
 }
 
+
+[Serializable]
 public class AutoAttackCommand : CommandBase //평타
 {
     PlayerController target;
@@ -56,12 +66,15 @@ public class AutoAttackCommand : CommandBase //평타
         this.target = target;
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.AutoAttack(target);
     }
 }
 
+
+[Serializable]
 public class RushCommand : CommandBase //도주(유체화)
 {
     public RushCommand(PlayerController controller, float delay) : base(controller, delay)
@@ -69,6 +82,7 @@ public class RushCommand : CommandBase //도주(유체화)
 
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.Rush();
@@ -76,6 +90,7 @@ public class RushCommand : CommandBase //도주(유체화)
 }
 
 
+[Serializable]
 public class FlashCommmand : CommandBase //점멸
 {
     Vector3 pos;
@@ -85,12 +100,15 @@ public class FlashCommmand : CommandBase //점멸
         this.pos = pos;
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.Flash(pos);
     }
 }
 
+
+[Serializable]
 public class SKillCommands : CommandBase //스킬들 베이스
 {
     protected bool isTargeting;
@@ -107,6 +125,8 @@ public class SKillCommands : CommandBase //스킬들 베이스
     }
 }
 
+
+[Serializable]
 public class SkillQCommand : SKillCommands //Q스킬
 {
     public SkillQCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
@@ -114,12 +134,15 @@ public class SkillQCommand : SKillCommands //Q스킬
 
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.SkillQ(isTargeting, isChanneling, target, location);
     }
 }
 
+
+[Serializable]
 public class SkillWCommand : SKillCommands //W스킬
 {
     public SkillWCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
@@ -127,12 +150,15 @@ public class SkillWCommand : SKillCommands //W스킬
 
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.SkillW(isTargeting, isChanneling, target, location);
     }
 }
 
+
+[Serializable]
 public class SkillECommand : SKillCommands //E스킬
 {
     public SkillECommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
@@ -140,12 +166,15 @@ public class SkillECommand : SKillCommands //E스킬
 
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.SkillE(isTargeting, isChanneling, target, location);
     }
 }
 
+
+[Serializable]
 public class SkillRCommand : SKillCommands //R스킬
 {
     public SkillRCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
@@ -153,6 +182,7 @@ public class SkillRCommand : SKillCommands //R스킬
 
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.SkillR(isTargeting, isChanneling, target, location);
