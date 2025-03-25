@@ -22,7 +22,7 @@ public class UltTumbleState : IVayneState
         state.anim.SetTrigger("Tumble");
         state.anim.SetTrigger("UltTumbleIdle");
 
-        state.StartCoroutine(UltTumbleDelay());
+        state.StartCoroutine(UltTumbleTime());
 
     }
     public void UpdateState()
@@ -35,10 +35,9 @@ public class UltTumbleState : IVayneState
     }
     public void ExitState()
     {
-        Debug.Log("fuck");
         state.anim.SetTrigger("UltIdle");
     }
-    IEnumerator UltTumbleDelay()
+    IEnumerator UltTumbleTime()
     {
         yield return new WaitForSeconds(3f);
         state.ChangeState(new UltState());

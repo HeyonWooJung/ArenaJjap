@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IVayneState
 {
-    public void EnterState(VayneState VS) { }
+    public void EnterState(VayneState VS, float time =0) { }
     public void UpdateState() { }
     public void ExitState() { }
         

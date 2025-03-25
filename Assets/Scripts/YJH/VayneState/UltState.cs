@@ -7,27 +7,35 @@ public class UltState : IVayneState
     VayneState state;
     Vector3 lastPosition;
     float speed;
-    public void EnterState(VayneState VS)
+    int enteredNum;
+    public void EnterState(VayneState VS,float time)
     {
         state = VS;
         state.character.AdjustMoveSpeed(90);
         state.character.AdjustATK(65);
-        
+
+        enteredNum++;
+        if (enteredNum == 1)
+        {
+            time = 12;
+        }
         state.anim.SetBool("IsUlt", true);
 
         state.character.CurQCool = 1f;
 
         state.IsUlt = true;
-        state.StartCoroutine(UltDelay());
+
+        state.StartCoroutine(UltTime(time));
     }
     public void UpdateState()
     {
+        
+
+
         speed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
         lastPosition = state.transform.position;
         state.anim?.SetFloat("Walk", speed, 0.1f, Time.deltaTime);
-        state.anim?.SetFloat("TumbleWalk", 0f);
-        
-
+        state.anim?.SetFloat("TumbleWalk", 0f);        
     }
     public void ExitState()
     {
@@ -37,10 +45,11 @@ public class UltState : IVayneState
         state.anim.SetBool("IsUlt", false);
         state.anim.SetTrigger("UltIdle");
     }
-    IEnumerator UltDelay()
+    IEnumerator UltTime(float remainTime)
     {
-        yield return new WaitForSeconds(12f);
+        yield return new WaitForSeconds(remainTime);
         state.IsUlt = false;
+        enteredNum = 0;
         state.ChangeState(new DefaultState());
-    }
+    }    
 }

@@ -28,7 +28,7 @@ public class TumbleState : IVayneState
         state.anim.SetTrigger("Tumble");
         state.anim.SetTrigger("TumbleIdle");
         VayneState.OnAutoAttackGlobal += OnAutoAttack;
-        revertRoutine = state.StartCoroutine(TumbleDelay());
+        revertRoutine = state.StartCoroutine(TumbleTime());
     }       
 
     public void UpdateState()
@@ -53,7 +53,7 @@ public class TumbleState : IVayneState
     {
         state.ChangeState(new DefaultState());
     }
-    IEnumerator TumbleDelay()
+    IEnumerator TumbleTime()
     {
         yield return new WaitForSeconds(3f);
         state.ChangeState(new DefaultState());
