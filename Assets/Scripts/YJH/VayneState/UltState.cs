@@ -10,7 +10,7 @@ public class UltState : IVayneState
     public void EnterState(VayneState VS,float time)
     {
         state = VS;
-        Debug.Log("UltState");
+
         state.character.AdjustMoveSpeed(90);
         state.character.AdjustATK(65);
                         
@@ -31,16 +31,14 @@ public class UltState : IVayneState
     public void ExitState()
     {
         state.character.AdjustMoveSpeed(-90);
-        state.character.AdjustATK(-65);
-
-        state.anim.SetBool("IsUlt", false);
-        state.anim.SetTrigger("UltIdle");
+        state.character.AdjustATK(-65);        
     }
     IEnumerator UltTime(float remainTime)
     {
         Debug.Log("남은시간" +remainTime);
         yield return new WaitForSeconds(remainTime);
         state.IsUlt = false;
+        
         state.ChangeState(new DefaultState());
     }    
 }

@@ -4,10 +4,9 @@ using UnityEngine;
 
 public interface IVayneState
 {
-    public void EnterState(VayneState VS, float time =0) { }
-    public void UpdateState() { }
-    public void ExitState() { }
-        
+    public void EnterState(VayneState VS, float time = 0);
+    public void UpdateState();
+    public void ExitState();        
 }
 
 public class VayneState : PlayerController
@@ -18,7 +17,7 @@ public class VayneState : PlayerController
 
     public bool IsUlt = false;
 
-    public float ultTime = 12;
+    public float ultTime = 16;
     [Header("애니메이션")]
     public Animator anim;
 
@@ -33,11 +32,11 @@ public class VayneState : PlayerController
         base.Update();
         currentState.UpdateState();
 
-        //if(IsUlt)
-        //{
-        //    ultTime -= Time.time;
-        //    Debug.Log(ultTime);
-        //}
+        if (IsUlt)
+        {
+            ultTime -= Time.deltaTime;
+            Debug.Log(ultTime);
+        }        
     }
 
     public void ChangeState(IVayneState newState)
@@ -49,17 +48,6 @@ public class VayneState : PlayerController
         currentState = newState;
         currentState.EnterState(this);
     }
-    public override void SkillR(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
-    {
-
-        if (character.CurRCool <= 0)
-        {            
-            character.SetRCooldown();
-            ChangeState(new UltState());
-        }
-        base.SkillR(isTargeting, isChanneling, target, location);
-    }
-
     public override void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurQCool <= 0 && !IsUlt)
@@ -68,13 +56,46 @@ public class VayneState : PlayerController
             character.SetQCooldown();
             ChangeState(new TumbleState(location));
         }
-        else if(character.CurQCool <= 0 && IsUlt)
+        else if (character.CurQCool <= 0 && IsUlt)
         {
             character.SetQCooldown();
             ChangeState(new UltTumbleState(location));
         }
     }
-   
+
+    public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
+    {
+        if (character.CurECool <= 0)
+        {
+            Debug.Log("E스킬사용가능");
+            if (target != null && target.CompareTag(enemyTag))
+            {
+                Debug.Log("E스킬 사용");
+                anim.SetTrigger("ESkill");
+                Vector3 look = target.transform.position;
+                look.y = transform.position.y;
+                transform.LookAt(look, transform.forward);
+
+                target.character.TakeDamage(190 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
+
+
+                target.transform.position = Vector3.back;
+                character.SetECooldown();
+            }
+        }
+    }
+    public override void SkillR(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
+    {
+        if (character.CurRCool <= 0)
+        {            
+            character.SetRCooldown();
+            ChangeState(new UltState());
+        }
+    }
+
+    
+    
+
     public override void AutoAttack(PlayerController target)
     {
         if(currentState is TumbleState)

@@ -8,21 +8,21 @@ public class UltTumbleState : IVayneState
     Vector3 targetLocation;
     float ultTSpeed;
     Vector3 lastPosition;
+    Coroutine crt;
 
     public UltTumbleState(Vector3 location)
     {
         targetLocation = location;
     }
 
-    public void EnterState(VayneState VS)
+    public void EnterState(VayneState VS, float temp)
     {
         state = VS;
-
-        
+                
         state.anim.SetTrigger("Tumble");
         state.anim.SetTrigger("UltTumbleIdle");
 
-        state.StartCoroutine(UltTumbleTime());
+        crt = state.StartCoroutine(UltTumbleTime());
 
     }
     public void UpdateState()
@@ -36,6 +36,10 @@ public class UltTumbleState : IVayneState
     public void ExitState()
     {
         state.anim.SetTrigger("UltIdle");
+        if(crt != null)
+        {
+            state.StopCoroutine(crt);
+        }
     }
     IEnumerator UltTumbleTime()
     {

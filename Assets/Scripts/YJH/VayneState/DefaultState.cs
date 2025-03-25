@@ -7,22 +7,22 @@ public class DefaultState : IVayneState
     VayneState state;
     float defaultSpeed;
     Vector3 lastPosition;
-    public void EnterState(VayneState VS)
+    public void EnterState(VayneState VS, float t)
     {
         state = VS;
         Debug.Log("DefaultState");
+        state.anim.SetBool("IsUlt", false);
+        state.anim.SetTrigger("Idle");
+        lastPosition = state.transform.position;
     }
 
     public void UpdateState()
-    {        
-        //lastPosition = state.transform.position;
-        //defaultSpeed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
-        //state.anim?.SetFloat("Walk", defaultSpeed, 0.1f, Time.deltaTime);
-        //state.anim?.SetFloat("TumbleWalk", 0f);     
+    {
+        defaultSpeed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
+        lastPosition = state.transform.position;
+        state.anim?.SetFloat("Walk", defaultSpeed, 0.1f, Time.deltaTime);
+        state.anim?.SetFloat("TumbleWalk", 0f);
     }
 
-    public void ExitState() 
-    {
-        Debug.Log("DefaultState Exit");
-    }
+    public void ExitState(){}
 }

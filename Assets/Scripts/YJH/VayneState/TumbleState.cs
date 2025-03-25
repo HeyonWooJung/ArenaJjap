@@ -18,10 +18,9 @@ public class TumbleState : IVayneState
         targetLocation = location;
     }
 
-    public void EnterState(VayneState VS)
+    public void EnterState(VayneState VS, float temp)
     {
         state = VS;
-        Debug.Log("tumbleState");
         dir = (targetLocation - state.transform.position).normalized;
         state.Move(state.transform.position + dir * 4f);
         
@@ -29,19 +28,19 @@ public class TumbleState : IVayneState
         state.anim.SetTrigger("TumbleIdle");
         VayneState.OnAutoAttackGlobal += OnAutoAttack;
         revertRoutine = state.StartCoroutine(TumbleTime());
+        lastPosition = state.transform.position;
     }       
 
     public void UpdateState()
     {
-        //lastPosition = state.transform.position;
-        //tumbleSpeed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
-        //state.anim?.SetFloat("TumbleWalk", tumbleSpeed, 0.1f, Time.deltaTime);
-        //state.anim?.SetFloat("Walk", 0f);
+        tumbleSpeed = (state.transform.position - lastPosition).magnitude / Time.deltaTime;
+        lastPosition = state.transform.position;
+        state.anim?.SetFloat("TumbleWalk", tumbleSpeed, 0.1f, Time.deltaTime);
+        state.anim?.SetFloat("Walk", 0f);
     }
 
     public void ExitState()
     {
-        Debug.Log("tumbleState Exit");
         state.anim.SetTrigger("Idle");
         if (revertRoutine != null)
         {
