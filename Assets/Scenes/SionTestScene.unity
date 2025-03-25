@@ -360,6 +360,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 888179b12a6b6cb40adec3eff60739eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 293c43303a8c840478a67112c19d8d12, type: 2}
+  enemyTag: 
   hitLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -367,7 +369,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   debuggingMode: 1
-  playerController: {fileID: 0}
   skillCanvas: {fileID: 1176590630}
   qSkillMinFixedDamage: 120
   qSkillMaxFixedDamage: 350
@@ -388,7 +389,7 @@ MonoBehaviour:
   qSKillImage: {fileID: 559162592}
   qSkillOriginalPanelA: {r: 0, g: 0, b: 0, a: 0}
   qSkillMaxAlphaFloat: 0.98
-  qSkillPanel: {fileID: 0}
+  qSkillPanel: {fileID: 887146082}
   wBarrier: 0
   wTimer: 0
   wExlosiveWidth: 0
@@ -429,7 +430,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 293c43303a8c840478a67112c19d8d12, type: 2}
-  cursorTexture: {fileID: 0}
+  enemyTag: 
 --- !u!1 &521335050
 GameObject:
   m_ObjectHideFlags: 0
@@ -667,7 +668,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 1
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -907,7 +908,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &887146081
 RectTransform:
   m_ObjectHideFlags: 0
@@ -940,7 +941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.312, g: 0, b: 0, a: 0.98039216}
+  m_Color: {r: 0.312, g: 0, b: 0, a: 0.7490196}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

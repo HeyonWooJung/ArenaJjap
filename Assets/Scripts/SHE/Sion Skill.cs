@@ -15,10 +15,10 @@ public class SionSkill : MonoBehaviour
     [SerializeField] LayerMask wallLayer;
     [SerializeField] bool debuggingMode;
     readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
-    [SerializeField] PlayerController playerController;
+    //[SerializeField] PlayerController playerController;
     [SerializeField] GameObject skillCanvas;
     NavMeshAgent agent;
-    [Header("QΩ∫≈≥")]
+    [Header("QÏä§ÌÇ¨")]
     [SerializeField] float qSkillMinFixedDamage = 120;
     [SerializeField] float qSkillMaxFixedDamage = 350;
     [SerializeField] float qSkillMinAddDamage = 0.8f;
@@ -40,28 +40,28 @@ public class SionSkill : MonoBehaviour
     [SerializeField] float qSkillMaxLength = 8;
     [SerializeField] float qSkillWidth = 4;
     float chargeRatio;
-    float skillLength;
+    float skillLength;  
     [SerializeField] Image qSKillImage;
     [SerializeField] Color qSkillOriginalPanelA;
     [SerializeField] float qSkillMaxAlphaFloat = 0.98f;
     [SerializeField] Image qSkillPanel;
     //[SerializeField] Vector3 qSkillOriginalCenterPos;
 
-    [Header("WΩ∫≈≥")]
+    [Header("WÏä§ÌÇ¨")]
     [SerializeField] float wBarrier;
     [SerializeField] float wTimer;
     [SerializeField] float wExlosiveWidth;
     [SerializeField] float wTimerMax = 8f;
     [SerializeField] float wBoomMinTime = 3f;
     [SerializeField] bool wSkillOn = false;
-    [Header("EΩ∫≈≥")]
+    [Header("EÏä§ÌÇ¨")]
     [SerializeField] GameObject eSkillPrefab;
     [SerializeField] float eSkillDamage;
     [SerializeField] float eSkillSlowPercent;
     [SerializeField] float eSkillArmorDownPercent;
     [SerializeField] float eSkillSpeed;
     [SerializeField] float eSkillTimer;
-    [Header("RΩ∫≈≥")]
+    [Header("RÏä§ÌÇ¨")]
     [SerializeField] float rSkillFixedMinDamage = 700;
     [SerializeField] float rSkillFixedMaxDamage = 1400;
     [SerializeField] float rSkillAddMinDamage = 0.4f;
@@ -87,31 +87,32 @@ public class SionSkill : MonoBehaviour
     Dictionary<string, PlayerController> characterDictionary = new Dictionary<string, PlayerController>();
     void Start()
     {
-        //Red Blue tag √£∞Ì
+        //Red Blue tag Ï∞æÍ≥†
         //characterDictionary.Add("Blue", charcter);
         //qSkillcol = GetComponent<BoxCollider>();
         //qSkillOriginalCenterPos = qSkillcol.center;
         anim = GetComponentInChildren<Animator>();
-        playerController = GetComponent<PlayerController>();
+        //playerController = GetComponent<PlayerController>();
         agent = GetComponentInParent<NavMeshAgent>();
+        qSkillOriginalPanelA = qSkillPanel.color ;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Q) && !qSkillCharging && rSkillOn)
         {
-            QSkill();
+            SkillQ();
         }
         if(Input.GetKeyDown(KeyCode.W))
         {
             WSkill();
         }
-        if( Input.GetKeyDown(KeyCode.E))
+        if( Input.GetKeyDown(KeyCode.E) && qSkillCharging && rSkillOn)
         {
             ESkill();
         }
-        if(Input.GetKeyDown(KeyCode.R))
+        if(Input.GetKeyDown(KeyCode.R) && qSkillCharging == false && !rSkillOn)
         {
             if (!rSkillOn)
             {
@@ -131,7 +132,7 @@ public class SionSkill : MonoBehaviour
 
     public void UpdateEnemyDictionary()
     {
-        //Red Blue tag√£æ∆ø‰
+        //Red Blue tagÏ∞æÏïÑÏöî
         if(this.gameObject.tag == "Blue1" || this.gameObject.tag == "Blue2")
         {
             characterDictionary.Clear();
@@ -146,7 +147,7 @@ public class SionSkill : MonoBehaviour
 
     
 
-    public void QSkill()
+    public void SkillQ()
     {
         if(!qSkillCharging)
         {
@@ -164,19 +165,26 @@ public class SionSkill : MonoBehaviour
         qSkillCharging = true;
         
         anim.SetTrigger("Q");
-       
+        qSkillPanel.color = qSkillOriginalPanelA;
         while (Input.GetKey(KeyCode.Q) && qSkillTimer <= 2f)
         {
             chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
             qSkillTimer += Time.deltaTime;
             qSKillImage.fillAmount = chargeRatio;
+            if(qSkillTimer >= 1.2)
+            {
+                if(!qSkillPanel.gameObject.activeSelf) qSkillPanel.gameObject.SetActive(true);
+                Color a = qSkillOriginalPanelA;
+                a.a = Mathf.Lerp(qSkillPanel.color.a, qSkillMaxAlphaFloat, Time.deltaTime * 2);
+                qSkillPanel.color = a;
+            }
             yield return null;
         }
 
         CastQSkill();
         qSkillCharging = false;
 
-        #region ƒ›∂Û¿Ã¥ı∑Œ «œ∑¡¥Ÿ∞° ∏ªæ“¥Ÿ
+        #region ÏΩúÎùºÏù¥ÎçîÎ°ú ÌïòÎ†§Îã§Í∞Ä ÎßêÏïòÎã§
         //qSkillcol.center = qSkillOriginalCenterPos;
         //while(qSkillCharging == true)
         //{
@@ -189,16 +197,16 @@ public class SionSkill : MonoBehaviour
         //    yield return null;
         //}
         //
-        //if(qSkillCharging == false)//¿Ã ∫Œ∫–¿∫ º“≈ÎªÛ «‘ºˆø° µÈæÓ∞°æﬂ«“ ºˆµµ ¿÷¿Ω §∑§∑
+        //if(qSkillCharging == false)//Ïù¥ Î∂ÄÎ∂ÑÏùÄ ÏÜåÌÜµÏÉÅ Ìï®ÏàòÏóê Îì§Ïñ¥Í∞ÄÏïºÌï† ÏàòÎèÑ ÏûàÏùå „Öá„Öá
         //{
         //    if(qSkillTimer >= 1f)
         //    {
-        //        //¥Î√Ê ø°æÓ∫ª Ω‘∞°¥…
-        //        //±‚¿˝µµ µÂ∞°Ω√∞Ì §ª
+        //        //ÎåÄÏ∂© ÏóêÏñ¥Î≥∏ ÏåâÍ∞ÄÎä•
+        //        //Í∏∞Ï†àÎèÑ ÎìúÍ∞ÄÏãúÍ≥† „Öã
         //    }
         //    else
         //    {
-        //        //¥Î√Ê ΩΩ∑ŒøÏ ≥÷¥¬¥Ÿ §∑§∑
+        //        //ÎåÄÏ∂© Ïä¨Î°úÏö∞ ÎÑ£ÎäîÎã§ „Öá„Öá
         //    }
         //}
         //
@@ -208,9 +216,11 @@ public class SionSkill : MonoBehaviour
 
     void CastQSkill()
     {
-        //∫Ò¿≤ 0~1
+        //ÎπÑÏú® 0~1
         //chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
-        //Ω∫≈≥ ≥–¿Ã
+        //Ïä§ÌÇ¨ ÎÑìÏù¥
+
+        qSkillPanel.gameObject.SetActive(false);
         skillLength = Mathf.Lerp(qSkillMinLength, qSkillMaxLength, chargeRatio);
 
         Vector3 boxCenter = transform.position + transform.forward * (skillLength / 2f);
@@ -219,7 +229,7 @@ public class SionSkill : MonoBehaviour
         
 
 
-        //if(CC∞…∏≤ == true) πÿø° Ω««‡ X
+        //if(CCÍ±∏Î¶º == true) Î∞ëÏóê Ïã§Ìñâ X
         qSkillCurDamage = Mathf.Lerp(qSkillMinFixedDamage, qSkillMaxFixedDamage, qSkillTimer) + Mathf.Lerp(qSkillMinAddDamage, qSkillMaxAddDamage, qSkillChargeTime);
         if(qSkillTimer >= 1)
         {
@@ -238,7 +248,7 @@ public class SionSkill : MonoBehaviour
             {
                 if (qSkillTimer >= 1)
                 {
-                    //ø°æÓ∫ª + ±‚¿˝
+                    //ÏóêÏñ¥Î≥∏ + Í∏∞Ï†à
 
 
                     //enemy.SetState(State.Airborne);
@@ -265,7 +275,7 @@ public class SionSkill : MonoBehaviour
         }
         else
         {
-            Debug.Log("¬™∞‘ æ≤±‚");
+            Debug.Log("ÏßßÍ≤å Ïì∞Í∏∞");
             anim.SetTrigger("QShort");
         }
 
@@ -349,7 +359,7 @@ public class SionSkill : MonoBehaviour
             yield return skillCheckTime;
         }
         eSkillPrefab.SetActive(false);
-        //¥Î√Ê ∞Ëº”«—¥Ÿ¥¬ ∏ª
+        //ÎåÄÏ∂© Í≥ÑÏÜçÌïúÎã§Îäî Îßê
         //if(hits != null)
         //{
         //    hits[0].tag
@@ -370,23 +380,23 @@ public class SionSkill : MonoBehaviour
         while (rSkillOn == true && rSkillTimer < 8)
         {
             
-            // ªÁ¿Ãø¬¿« «ˆ¿Á ¿ßƒ° + ¿¸πÊ πÊ«‚¿∏∑Œ π⁄Ω∫ ¡ﬂΩ… º≥¡§
-            Vector3 boxCenter = transform.position + transform.forward * 0.5f; // ¿˚¿˝«— ∞≈∏Æ ¡∂¡§
+            // ÏÇ¨Ïù¥Ïò®Ïùò ÌòÑÏû¨ ÏúÑÏπò + Ï†ÑÎ∞© Î∞©Ìñ•ÏúºÎ°ú Î∞ïÏä§ Ï§ëÏã¨ ÏÑ§Ï†ï
+            Vector3 boxCenter = transform.position + transform.forward * 0.5f; // Ï†ÅÏ†àÌïú Í±∞Î¶¨ Ï°∞Ï†ï
 
-            // π⁄Ω∫ ≈©±‚ º≥¡§
-            Vector3 halfExtents = new Vector3(0.8f, 1.5f, 0.8f); //π›¿˝ ≈©±‚∏¶ ªÁøÎ«œ¥œ π›¿˝
+            // Î∞ïÏä§ ÌÅ¨Í∏∞ ÏÑ§Ï†ï
+            Vector3 halfExtents = new Vector3(0.8f, 1.5f, 0.8f); //Î∞òÏ†à ÌÅ¨Í∏∞Î•º ÏÇ¨Ïö©ÌïòÎãà Î∞òÏ†à
 
-            // π⁄Ω∫ πÊ«‚ º≥¡§
+            // Î∞ïÏä§ Î∞©Ìñ• ÏÑ§Ï†ï
             Quaternion boxRotation = transform.rotation;
 
-            // OverlapBox Ω««‡
+            // OverlapBox Ïã§Ìñâ
             Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, boxRotation, hitLayer);
             
             if (hits.Length > 0)
             {
                 foreach (Collider hit in hits)
                 {
-                    Debug.Log($"R Ω∫≈≥ ¿˚¡ﬂ: {hit.gameObject.name}");
+                    Debug.Log($"R Ïä§ÌÇ¨ Ï†ÅÏ§ë: {hit.gameObject.name}");
                     
                 }
                 rSkillOn = false;
@@ -396,6 +406,7 @@ public class SionSkill : MonoBehaviour
                 }
                 anim.SetTrigger("RHit");
                 character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
+                agent.SetDestination(transform.position);
             }
            
             if(rSkillTimer >= 2 && anim.GetBool("RRunning") == false)
@@ -410,7 +421,8 @@ public class SionSkill : MonoBehaviour
                 rSkillIncreasedSpeed += rSkillIncreasing;
                
             }
-            playerController.Move(skillCanvas.transform.position);
+            //playerController.Move(skillCanvas.transform.position);
+            //Move(skillCanvas.transform.position);
             yield return skillCheckTime;
         }
         
@@ -420,7 +432,7 @@ public class SionSkill : MonoBehaviour
     {
         if(Physics.Raycast(transform.position, transform.forward, rSkillCheckDistance, wallLayer))
         {
-            Debug.Log("∫Æø° π⁄æ“¥Á");
+            Debug.Log("Î≤ΩÏóê Î∞ïÏïòÎãπ");
             rSkillOn = false;
             if(anim.GetBool("RRunning") == true)
             {
@@ -428,6 +440,7 @@ public class SionSkill : MonoBehaviour
             }
             anim.SetTrigger("RHit");
             character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
+            agent.SetDestination(transform.position);
 
         }
     }
@@ -437,7 +450,7 @@ public class SionSkill : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, 100f))
         {
             Vector3 targetDirection = (hit.point - transform.position).normalized;
-            targetDirection.y = 0; // Y√‡ »∏¿¸ πÊ¡ˆ(ºˆ∆Ú »∏¿¸∏∏ ¿˚øÎ)
+            targetDirection.y = 0; // YÏ∂ï ÌöåÏ†Ñ Î∞©ÏßÄ(ÏàòÌèâ ÌöåÏ†ÑÎßå Ï†ÅÏö©)
 
             Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rSkillRotationSpeed * Time.deltaTime);
@@ -452,7 +465,7 @@ public class SionSkill : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, 100f))
         {
             Vector3 lookDir = (hit.point - transform.position).normalized;
-            lookDir.y = 0; // ≥Ù¿Ã ∫Ø»≠ π´Ω√ (ºˆ∆Ú πÊ«‚∏∏ ∞Ì∑¡)
+            lookDir.y = 0; // ÎÜíÏù¥ Î≥ÄÌôî Î¨¥Ïãú (ÏàòÌèâ Î∞©Ìñ•Îßå Í≥†Î†§)
             transform.rotation = Quaternion.LookRotation(lookDir);
         }
     }
@@ -463,9 +476,9 @@ public class SionSkill : MonoBehaviour
     {
         if (!debuggingMode) return;
 
-        //∫Ò¿≤ 0~1
+        //ÎπÑÏú® 0~1
         float chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
-        //Ω∫≈≥ ≥–¿Ã
+        //Ïä§ÌÇ¨ ÎÑìÏù¥
         float skillLength = Mathf.Lerp(qSkillMinLength, qSkillMaxLength, chargeRatio);
 
         Vector3 boxCenter = transform.position + transform.forward * (skillLength / 2f);
@@ -488,7 +501,7 @@ public class SionSkill : MonoBehaviour
         Gizmos.color = Color.red;
         Matrix4x4 rSkilloldMatrix = Gizmos.matrix;
         Gizmos.matrix = Matrix4x4.TRS(rSkillBoxCenter, boxRotation, Vector3.one);
-        Gizmos.DrawWireCube(Vector3.zero, rSkillhalfExtents * 2); // ø¯∑° ≈©±‚∑Œ «•Ω√
+        Gizmos.DrawWireCube(Vector3.zero, rSkillhalfExtents * 2); // ÏõêÎûò ÌÅ¨Í∏∞Î°ú ÌëúÏãú
         Gizmos.matrix = rSkilloldMatrix;
 
     }
