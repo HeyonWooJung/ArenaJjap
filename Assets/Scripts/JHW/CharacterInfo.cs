@@ -1,5 +1,8 @@
 using System;
+using System.Buffers.Text;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
+using UnityEngine.TextCore.Text;
 
 public enum State
 {
@@ -259,11 +262,12 @@ public class Character : ScriptableObject
     }
     #endregion
 
+
     public event Action OnMoveSpeedChanged;
 
-    public void InitCharacter()
+    public void InitCharacter(Character character)
     {
-        _curHP = _HP;
+        /*_curHP = _HP;
         _lethality = 0;
         _armorPen = 0;
         _baseAS = _atkSpeed;
@@ -280,11 +284,43 @@ public class Character : ScriptableObject
         rCurCool = 0;
 
         canFlash = true;
+        canRush = true;*/
+        _HP = character.HP;
+        _curHP = _HP;
+        _HPRegen = character.HpRegen;
+        _barrier = 0;
+        _atk = character.ATK;
+        _lethality = 0;
+        _armorPen = 0;
+        _def = character.DEF;
+        _moveSpeed = character.MoveSpeed;
+        _atkSpeed = character.AttackSpeed;
+        _baseAS = character.AttackSpeed;
+        _additionAS = 0;
+        _critChance = 0;
+        _critDamage = 1.7f;
+        _range = character.Range;
+        _abilityHaste = 0;
+        _lifeSteal = 0;
+        _state = State.Neutral;
+        _damageResist = 0;
+
+        qCoolDown = character.qCoolDown;
+        wCoolDown = character.wCoolDown;
+        eCoolDown = character.eCoolDown;
+        rCoolDown = character.rCoolDown;
+
+        qCurCool = 0;
+        wCurCool = 0;
+        eCurCool = 0;
+        rCurCool = 0;
+
         canRush = true;
+        canFlash = true;
     }
 
     //라운드 시작할때
-    public void ResetState()
+    public virtual void ResetState()
     {
         _curHP = _HP;
 
@@ -445,22 +481,23 @@ public class Character : ScriptableObject
 
     public void SetQCooldown()
     {
-        qCurCool = 100 / (100 + _abilityHaste) * qCoolDown;
+        qCurCool = (100f / (100 + _abilityHaste)) * qCoolDown;
     }
 
     public void SetWCooldown()
     {
-        wCurCool = 100 / (100 + _abilityHaste) * wCoolDown;
+        wCurCool = (100f / (100 + _abilityHaste)) * wCoolDown;
     }
 
     public void SetECooldown()
     {
-        eCurCool = 100 / (100 + _abilityHaste) * eCoolDown;
+        eCurCool = (100f / (100 + _abilityHaste)) * eCoolDown;
     }
 
     public void SetRCooldown()
     {
-        rCurCool = 100 / (100 + _abilityHaste) * rCoolDown;
+        rCurCool = (100f / (100 + _abilityHaste)) * rCoolDown;
+
     }
 
     public void SetCanRush(bool state)
