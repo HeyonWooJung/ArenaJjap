@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 
-public class SionSkill : MonoBehaviour
+public class SionSkill : PlayerController
 {
     Animator anim;
     [SerializeField] LayerMask hitLayer;
@@ -17,7 +17,7 @@ public class SionSkill : MonoBehaviour
     readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
     //[SerializeField] PlayerController playerController;
     [SerializeField] GameObject skillCanvas;
-    NavMeshAgent agent;
+    new NavMeshAgent agent;
     [Header("Q스킬")]
     [SerializeField] float qSkillMinFixedDamage = 120;
     [SerializeField] float qSkillMaxFixedDamage = 350;
@@ -61,6 +61,8 @@ public class SionSkill : MonoBehaviour
     [SerializeField] float eSkillArmorDownPercent;
     [SerializeField] float eSkillSpeed;
     [SerializeField] float eSkillTimer;
+    SionE findEPrefab;
+    bool checkingEPrefab = false; 
     [Header("R스킬")]
     [SerializeField] float rSkillFixedMinDamage = 700;
     [SerializeField] float rSkillFixedMaxDamage = 1400;
@@ -76,12 +78,22 @@ public class SionSkill : MonoBehaviour
     [SerializeField] float rSkillCheckDistance;
     [SerializeField] int rSkillIncreasedSpeed;
     [SerializeField] int rSkillIncreasing = 10;
-    
+    [SerializeField] float rSkillExpolosionWidth = 5;
+    [SerializeField] float rSkillAirborneWidth = 2;
+    [SerializeField] float rSkillCurStun;
+    [SerializeField] float rSkillCurDamage;
+    [SerializeField] float rSkillSlowTime;
 
 
 
+    PlayerController enemy;
+    float baseAttackDamage;
+    int lethal;
+    float armorPenetration;
+   
 
-    [SerializeField]Character character;
+
+    //[SerializeField]Character character;
     //[SerializeField] BoxCollider qSkillcol;
     
     Dictionary<string, PlayerController> characterDictionary = new Dictionary<string, PlayerController>();
@@ -94,24 +106,57 @@ public class SionSkill : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         //playerController = GetComponent<PlayerController>();
         agent = GetComponentInParent<NavMeshAgent>();
-        qSkillOriginalPanelA = qSkillPanel.color ;
+        qSkillOriginalPanelA = qSkillPanel.color;
+        hitLayer = 1 << LayerMask.NameToLayer(enemyTag);
+
+    }
+
+    public override void AutoAttack(PlayerController target)
+    {
+        if(!qSkillCharging && !rSkillOn)
+        {
+            StartCoroutine(AAHandle());
+            Vector3 look = target.transform.position;
+            look.y = transform.position.y;
+            Debug.Log("평타" + target.name);
+            float damage = character.ATK;
+
+            if(character.CritChance >= Random.Range(0, 1f))//치명타
+            {
+                damage = character.CritDamage;
+                anim.SetTrigger("Critical");
+            }
+            else
+            {
+                int animationNum = Random.Range(1, 4);
+                anim.SetTrigger("Attack" + animationNum);
+            }
+            enemy = target;
+            baseAttackDamage = damage;
+            lethal = character.Lethality;
+            armorPenetration = character.ArmorPenetration;
+            
+
+        }
+    }
+
+    public void AttackResult()
+    {
+        if(enemy == null)
+        {
+            return;
+        }
+
+        enemy.character.TakeDamage(baseAttackDamage, false, lethal, armorPenetration);
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q) && !qSkillCharging && rSkillOn)
-        {
-            SkillQ();
-        }
-        if(Input.GetKeyDown(KeyCode.W))
-        {
-            WSkill();
-        }
-        if( Input.GetKeyDown(KeyCode.E) && qSkillCharging && rSkillOn)
-        {
-            ESkill();
-        }
+       
+       
+        
         if(Input.GetKeyDown(KeyCode.R) && qSkillCharging == false && !rSkillOn)
         {
             if (!rSkillOn)
@@ -130,26 +175,11 @@ public class SionSkill : MonoBehaviour
         
     }
 
-    public void UpdateEnemyDictionary()
-    {
-        //Red Blue tag찾아요
-        if(this.gameObject.tag == "Blue1" || this.gameObject.tag == "Blue2")
-        {
-            characterDictionary.Clear();
-            
-        }
-        else
-        {
-            characterDictionary.Clear();
-
-        }
-    }
-
     
 
-    public void SkillQ()
+    public override void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
-        if(!qSkillCharging)
+        if(!qSkillCharging && !rSkillOn)
         {
             agent.SetDestination(transform.position);
             GetMouseCursorPos();
@@ -180,7 +210,7 @@ public class SionSkill : MonoBehaviour
             }
             yield return null;
         }
-
+        
         CastQSkill();
         qSkillCharging = false;
 
@@ -280,7 +310,7 @@ public class SionSkill : MonoBehaviour
         }
 
         qSKillImage.fillAmount = 0;
-
+        character.SetQCooldown();
     }
 
     public void WSkill()
@@ -310,11 +340,13 @@ public class SionSkill : MonoBehaviour
         if(wSkillOn == true && wTimer >= wTimerMax && character.Barrier > 0)
         {
             WSkillExplosion();
+            character.SetWCooldown();
             yield break;
         }
         else
         {
             wSkillOn = false;
+            character.SetWCooldown();
             yield break;
         }
     }
@@ -339,10 +371,21 @@ public class SionSkill : MonoBehaviour
 
     public void ESkill()
     {
+        if (!checkingEPrefab)
+        {
+            findEPrefab = FindObjectOfType<SionE>();
+            if (findEPrefab == null)
+            {
+                eSkillPrefab = Instantiate(eSkillPrefab);
+            }
+            checkingEPrefab = true;
+        }
         if (eSkillPrefab.activeSelf) return;
+        if (qSkillCharging && rSkillOn) return;
         GetMouseCursorPos();
         eSkillPrefab.gameObject.SetActive(true);
         StartCoroutine(CastESkill());
+        character.SetECooldown();
     }
 
     IEnumerator CastESkill()
@@ -368,8 +411,15 @@ public class SionSkill : MonoBehaviour
 
     public void RSkill()
     {
-        rSkillOn = true;
-        StartCoroutine(CastRSkill());
+        if(qSkillCharging == false && !rSkillOn)
+        {
+            rSkillOn = true;
+            StartCoroutine(CastRSkill());
+        }
+        else
+        {
+            return;
+        }
     }
 
     IEnumerator CastRSkill()
@@ -377,6 +427,9 @@ public class SionSkill : MonoBehaviour
         anim.SetTrigger("R");
         rSkillTimer = 0;
         rSkillIncreasedSpeed = 0;
+        rSkillCurDamage = 0;
+        rSkillCurStun = 0;
+
         while (rSkillOn == true && rSkillTimer < 8)
         {
             
@@ -421,6 +474,13 @@ public class SionSkill : MonoBehaviour
                 rSkillIncreasedSpeed += rSkillIncreasing;
                
             }
+
+            if(rSkillTimer >= 1 && Input.GetKeyDown(KeyCode.R))
+            {
+                anim.SetTrigger("RStop");
+
+            }
+
             //playerController.Move(skillCanvas.transform.position);
             //Move(skillCanvas.transform.position);
             yield return skillCheckTime;
@@ -457,6 +517,63 @@ public class SionSkill : MonoBehaviour
         }
     }
 
+    public void RSkillExplosion()
+    {
+        Collider[] targets = Physics.OverlapSphere(transform.position, rSkillExpolosionWidth, hitLayer);
+        Collider[] airborneTargets = Physics.OverlapSphere(transform.position, rSkillAirborneWidth, hitLayer);
+        rSkillCurDamage = Mathf.Lerp(rSkillFixedMinDamage + rSkillAddMinDamage, rSkillFixedMaxDamage + rSkillAddMaxDamage, rSkillTimer - 3);
+        
+
+        if(targets.Length > 0 )
+        {
+            foreach(Collider collider in targets)
+            {
+                PlayerController target = collider.GetComponent<PlayerController>();
+                target.character.TakeDamage(rSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
+                int x = (int)(target.character.MoveSpeed * rSkillSlowPercent);
+                StartCoroutine(SettingEnemyState(target, State.Slow, 1f, false, x));
+            }
+        }
+        if(airborneTargets.Length > 0)
+        {
+            rSkillCurStun = Mathf.Lerp(rSkillMinStun, rSkillMaxStun, rSkillTimer - 3);   
+            foreach(Collider col in airborneTargets)
+            {
+                PlayerController airborneTarget = col.GetComponent<PlayerController>();
+                StartCoroutine(SettingEnemyState(airborneTarget, State.Airborne, rSkillAirborneTime, true, 0));
+                StartCoroutine(SettingEnemyState(airborneTarget, State.Airborne, rSkillCurStun, false, 0));
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// 적에게 부여할 상태이상과 그 시간을 작성하여 넣을 것, 다중이면 True 하고 마지막 CC에 False 넣을 것
+    /// 슬로우는 마지막에 넣으셈 없다면 0
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="time"></param>
+    /// <returns></returns>
+
+    IEnumerator SettingEnemyState(PlayerController target ,State state, float time, bool multipleCC, int slow)
+    {
+        if(slow != 0)
+        {
+            target.character.AdjustMoveSpeed(-slow);
+        }
+        target.character.SetState(state);
+        yield return new WaitForSeconds(time);
+        if (multipleCC == true)
+        {
+            yield break;
+        }
+        else
+        {
+            target.character.AdjustMoveSpeed(slow);
+            target.character.ResetState();
+        }
+        
+    }
 
 
     void GetMouseCursorPos()
