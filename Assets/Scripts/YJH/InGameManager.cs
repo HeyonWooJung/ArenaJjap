@@ -26,7 +26,14 @@ public class InGameManager : MonoBehaviourPunCallbacks
 
         int actorIndex = PhotonNetwork.LocalPlayer.ActorNumber - 1;
         Vector3 spawnPos = spawnPoints[actorIndex].position;
-
-        PhotonNetwork.Instantiate(prefabName, spawnPos, Quaternion.identity);
+        PlayerController player = PhotonNetwork.Instantiate(prefabName, spawnPos, Quaternion.identity).GetComponent<PlayerController>();
+        if (actorIndex == 0 || actorIndex == 1)
+        {
+            player.GetComponent<PhotonView>().RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 1);
+        }
+        else if (actorIndex == 2 || actorIndex == 3)
+        {
+            player.GetComponent<PhotonView>().RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 2);
+        }
     }
 }

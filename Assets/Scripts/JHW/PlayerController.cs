@@ -9,6 +9,7 @@ using Photon.Pun;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System;
+using Photon.Realtime;
 
 [Serializable]
 [RequireComponent(typeof(NavMeshAgent))]
@@ -50,6 +51,24 @@ public class PlayerController : MonoBehaviour, IPunObservable
         StartCoroutine(HpRegen());
         StartCoroutine(Execution());
     }
+
+    [PunRPC]
+    public void SetMyTag(int tag)
+    {
+        if (tag == 1)
+        {
+            gameObject.tag = "Red";
+            enemyTag = "Blue";
+            gameObject.layer = LayerMask.NameToLayer("Red");
+        }
+        else if (tag == 2)
+        {
+            gameObject.tag = "Blue";
+            enemyTag = "Red";
+            gameObject.layer = LayerMask.NameToLayer("Blue");
+        }
+    }
+
 
     private void OnDestroy()
     {
@@ -433,6 +452,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
         //점멸
         if (character.CanFlash)
         {
+            character.SetCanFlash(false);
             pos.y = transform.position.y;
             pos = transform.position + Vector3.ClampMagnitude(pos - transform.position, 4);
             agent.ResetPath();

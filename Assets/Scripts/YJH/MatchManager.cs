@@ -37,7 +37,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     private int readyCount = 0;
 
     public static int myChampionIndex = -1; // <- 여기에 저장
-
+     
 
     private void Awake()
     {
