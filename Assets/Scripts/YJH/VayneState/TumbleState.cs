@@ -41,6 +41,7 @@ public class TumbleState : IVayneState
 
     public void ExitState()
     {
+        Debug.Log("구르기상태나감");
         state.anim.SetTrigger("Idle");
         if (revertRoutine != null)
         {
