@@ -1,3 +1,4 @@
+// FogUnit.cs (렌더러 비활성화 방식, 네트워크용)
 using UnityEngine;
 
 public class FogUnit : MonoBehaviour

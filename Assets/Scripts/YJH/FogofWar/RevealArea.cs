@@ -1,3 +1,4 @@
+// RevealArea.cs
 using UnityEngine;
 
 public class RevealArea : MonoBehaviour
@@ -7,7 +8,7 @@ public class RevealArea : MonoBehaviour
 
     void Start()
     {
-        revealInstance = Instantiate(revealPrefab, gameObject.transform);
+        revealInstance = Instantiate(revealPrefab, transform.position, Quaternion.Euler(90, 0, 0));
         revealInstance.transform.SetParent(transform);
     }
 }
