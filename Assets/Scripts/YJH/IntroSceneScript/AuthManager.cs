@@ -8,6 +8,7 @@ using Firebase.Database;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
+using System;
 
 public class AuthManager : MonoBehaviourPunCallbacks
 {
@@ -73,6 +74,10 @@ public class AuthManager : MonoBehaviourPunCallbacks
     private void Update()
     {
         loadingSpinner.transform.Rotate(0, 0, -200 * Time.deltaTime);
+        if(Input.GetKeyDown(KeyCode.Return)|| Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            loginBtn.onClick.Invoke();
+        }
     }
     public void Login()
     {

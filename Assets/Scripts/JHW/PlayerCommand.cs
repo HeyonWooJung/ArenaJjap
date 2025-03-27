@@ -1,12 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 
 public class CommandBase
 {
     protected PlayerController controller;
     protected Character character;
+    public PhotonView pv;
 
     public float Delay
     {
@@ -29,8 +31,10 @@ public class CommandBase
         this.controller = controller;
         character = controller.character;
         Delay = delay;
+        pv = controller.pv;
     }
 }
+
 
 public class MoveCommand : CommandBase //움직임
 {
@@ -48,13 +52,16 @@ public class MoveCommand : CommandBase //움직임
 
 }
 
+
+
 public class AutoAttackCommand : CommandBase //평타
 {
     PlayerController target;
-    public AutoAttackCommand(PlayerController controller, float delay, PlayerController target) : base(controller, delay)
+    public AutoAttackCommand(PlayerController controller, float delay, int targetId) : base(controller, delay)
     {
-        this.target = target;
+        target = PhotonView.Find(targetId)?.GetComponent<PlayerController>();
     }
+
 
     public override void Execute()
     {
@@ -91,6 +98,7 @@ public class FlashCommmand : CommandBase //점멸
     }
 }
 
+
 public class SKillCommands : CommandBase //스킬들 베이스
 {
     protected bool isTargeting;
@@ -98,31 +106,41 @@ public class SKillCommands : CommandBase //스킬들 베이스
     protected PlayerController target;
     protected Vector3 location;
 
-    public SKillCommands(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay)
+    public SKillCommands(PlayerController controller, float delay, bool isTargeting, bool isChanneling, int targetId , Vector3 location) : base(controller, delay)
     {
         this.isTargeting = isTargeting;
         this.isChanneling = isChanneling;
-        this.target = target;
+        if (PhotonView.Find(targetId) == null)
+        {
+            target = null;
+        }
+        else
+        {
+            target = PhotonView.Find(targetId)?.GetComponent<PlayerController>();
+        }
         this.location = location;
     }
 }
 
+
 public class SkillQCommand : SKillCommands //Q스킬
 {
-    public SkillQCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
+    public SkillQCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, int targetId, Vector3 location) : base(controller, delay, isTargeting, isChanneling, targetId, location)
     {
 
     }
 
+    [PunRPC]
     public override void Execute()
     {
         controller.SkillQ(isTargeting, isChanneling, target, location);
     }
 }
 
+
 public class SkillWCommand : SKillCommands //W스킬
 {
-    public SkillWCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
+    public SkillWCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, int targetId, Vector3 location) : base(controller, delay, isTargeting, isChanneling, targetId, location)
     {
 
     }
@@ -133,9 +151,10 @@ public class SkillWCommand : SKillCommands //W스킬
     }
 }
 
+
 public class SkillECommand : SKillCommands //E스킬
 {
-    public SkillECommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
+    public SkillECommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, int targetId, Vector3 location) : base(controller, delay, isTargeting, isChanneling, targetId, location)
     {
 
     }
@@ -146,9 +165,10 @@ public class SkillECommand : SKillCommands //E스킬
     }
 }
 
+
 public class SkillRCommand : SKillCommands //R스킬
 {
-    public SkillRCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, PlayerController target, Vector3 location) : base(controller, delay, isTargeting, isChanneling, target, location)
+    public SkillRCommand(PlayerController controller, float delay, bool isTargeting, bool isChanneling, int targetId, Vector3 location) : base(controller, delay, isTargeting, isChanneling, targetId, location)
     {
 
     }

@@ -5,13 +5,24 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using Photon.Pun;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System;
+using Photon.Realtime;
 
+[Serializable]
 [RequireComponent(typeof(NavMeshAgent))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IPunObservable
 {
     public Character character;
     public string enemyTag;
     NavMeshAgent agent;
+    public PhotonView pv;
+    public float qDelay;
+    public float wDelay;
+    public float eDelay;
+    public float rDelay;
 
     Queue<CommandBase> toExecute;
     CommandBase curCommand;
@@ -23,12 +34,14 @@ public class PlayerController : MonoBehaviour
     bool canCancel = true;
 
     // Start is called before the first frame update
-    void Start()
+    public virtual void Start()
     {
         toExecute = new Queue<CommandBase>();
+        curCommand = new CommandBase(this, 0);
         Character temp = character;
         character = ScriptableObject.CreateInstance<Character>();
         character.InitCharacter(temp);
+        pv = GetComponent<PhotonView>();
         agent = GetComponent<NavMeshAgent>();
         agent.speed = character.MoveSpeed * 0.01f;
         agent.angularSpeed = 100000;
@@ -39,14 +52,56 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(Execution());
     }
 
+    [PunRPC]
+    public void SetMyTag(int tag)
+    {
+        if (tag == 1)
+        {
+            gameObject.tag = "Red";
+            enemyTag = "Blue";
+            gameObject.layer = LayerMask.NameToLayer("Red");
+        }
+        else if (tag == 2)
+        {
+            gameObject.tag = "Blue";
+            enemyTag = "Red";
+            gameObject.layer = LayerMask.NameToLayer("Blue");
+        }
+    }
+
+
     private void OnDestroy()
     {
         character.OnMoveSpeedChanged -= ApplyMoveSpeed;
     }
 
+    public static byte[] SerializeCommandInfo(CommandBase command)
+    {
+        BinaryFormatter binaryF = new BinaryFormatter();
+        using (MemoryStream memoryStream = new MemoryStream())
+        {
+            binaryF.Serialize(memoryStream, command);
+
+            return memoryStream.ToArray();
+        }
+    }
+
+    public static CommandBase DeserializeCommandInfo(byte[] dataStream)
+    {
+        using (MemoryStream memoryStream = new MemoryStream())
+        {
+            BinaryFormatter binaryF = new BinaryFormatter();
+
+            memoryStream.Write(dataStream, 0, dataStream.Length);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            return (CommandBase)binaryF.Deserialize(memoryStream);
+        }
+    }
+
     IEnumerator Execution()
     {
-        while(true)
+        while (true)
         {
             yield return new WaitUntil(() => canCancel);
             yield return new WaitUntil(() => toExecute.Count > 0);
@@ -61,12 +116,51 @@ public class PlayerController : MonoBehaviour
             }
             if (curCommand != null)
             {
-                curCommand.Execute();
+                //curCommand.pv.RPC("Execute", RpcTarget.All);
+                //pv.RPC("Executer", RpcTarget.All, SerializeCommandInfo(curCommand)); 
+                pv.RPC("Executer", RpcTarget.All);
                 if (curCommand.Delay > 0)
                 {
                     StartCoroutine(Delay(curCommand.Delay));
                 }
             }
+        }
+    }
+
+    [PunRPC]
+    public void Executer()
+    {
+        //CommandBase command = DeserializeCommandInfo(stream);
+        //command.Execute();
+        curCommand?.Execute();
+        Debug.Log("발사발사");
+    }
+
+    [PunRPC]
+    public void AAEnququer(int targetId)
+    {
+        toExecute.Enqueue(new AutoAttackCommand(this, 0, targetId));
+    }
+
+    [PunRPC]
+    public void SkillEnqueuer(int type, float delay, bool isTarget, bool isChannel, int viewId, Vector3 point)
+    {
+        switch (type) //1: q, 2: w, 3: e, 4:r
+        {
+            case 1:
+                toExecute.Enqueue(new SkillQCommand(this, delay, isTarget, isChannel, viewId, point));
+                break;
+            case 2:
+                toExecute.Enqueue(new SkillWCommand(this, delay, isTarget, isChannel, viewId, point));
+                break;
+            case 3:
+                toExecute.Enqueue(new SkillECommand(this, delay, isTarget, isChannel, viewId, point));
+                break;
+            case 4:
+                toExecute.Enqueue(new SkillRCommand(this, delay, isTarget, isChannel, viewId, point));
+                break;
+            default:
+                break;
         }
     }
 
@@ -78,94 +172,110 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public virtual void Update()
     {
-        if ((character.CurState == State.Stun && character.CurState == State.Airborne) == false)
+        if (pv.IsMine)
         {
-            if (Input.GetMouseButton(1))
+            if ((character.CurState == State.Stun || character.CurState == State.Airborne) == false)
             {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
+                if (Input.GetMouseButton(1))
                 {
-                    if (hit.transform.gameObject.CompareTag(enemyTag) && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
                     {
-                        if (canAA)
+                        if (hit.transform.gameObject.CompareTag(enemyTag) && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
                         {
-                            toExecute.Enqueue(new AutoAttackCommand(this, 0, hit.transform.GetComponent<PlayerController>()));
+                            if (canAA)
+                            {
+                                pv.RPC("AAEnququer", RpcTarget.All, hit.transform.GetComponent<PhotonView>().ViewID);
+                                //toExecute.Enqueue(new AutoAttackCommand(this, 0, hit.transform.GetComponent<PhotonView>().ViewID));
+                            }
+                        }
+                        else
+                        {
+                            //toExecute.Enqueue(new MoveCommand(this, 0, hit.point));
+                            Move(hit.point);
                         }
                     }
-                    else
+                }
+
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
                     {
-                        //toExecute.Enqueue(new MoveCommand(this, 0, hit.point));
-                        Move(hit.point);
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(1, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
                     }
                 }
-            }
-
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
+                if (Input.GetKeyDown(KeyCode.W))
                 {
-                    toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(2, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(3, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(4, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillRCommand(this, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.D))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        toExecute.Enqueue(new RushCommand(this, 0));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        toExecute.Enqueue(new FlashCommmand(this, 0, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.S))
+                {
+                    Stop();
+                    toExecute.Clear();
                 }
             }
-            if (Input.GetKeyDown(KeyCode.W))
+            else if (character.CurState == State.Root)
             {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
-                {
-                    toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
-                }
+                agent.ResetPath();
             }
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
-                {
-                    toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
-                {
-                    toExecute.Enqueue(new SkillRCommand(this, 0, false, false, hit.transform?.GetComponent<PlayerController>(), hit.point));
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.D))
-            {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
-                {
-                    toExecute.Enqueue(new RushCommand(this, 0));
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit))
-                {
-                    toExecute.Enqueue(new FlashCommmand(this, 0, hit.point));
-                }
-            }
-            if(Input.GetKeyDown(KeyCode.S))
-            {
-                Stop();
-                toExecute.Clear();
-            }
-        }
-        else if (character.CurState == State.Root)
-        {
-            agent.ResetPath();
         }
     }
 
@@ -247,7 +357,7 @@ public class PlayerController : MonoBehaviour
         //평타
         float damage = character.ATK;
 
-        if (character.CritChance >= Random.Range(0f, 1f)) //치명타
+        if (character.CritChance >= UnityEngine.Random.Range(0f, 1f)) //치명타
         {
             damage *= character.CritDamage;
         }
@@ -342,6 +452,7 @@ public class PlayerController : MonoBehaviour
         //점멸
         if (character.CanFlash)
         {
+            character.SetCanFlash(false);
             pos.y = transform.position.y;
             pos = transform.position + Vector3.ClampMagnitude(pos - transform.position, 4);
             agent.ResetPath();
@@ -376,5 +487,10 @@ public class PlayerController : MonoBehaviour
         character.AdjustMoveSpeed(-tempSpeed);
         yield return new WaitForSeconds(time);
         character.AdjustMoveSpeed(tempSpeed);
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+
     }
 }

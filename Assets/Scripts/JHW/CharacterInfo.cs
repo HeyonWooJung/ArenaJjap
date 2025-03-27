@@ -15,6 +15,7 @@ public enum State
     Invincible//무적
 }
 
+[Serializable]
 [CreateAssetMenu(fileName = "CharacterInfo", menuName = "Scriptable Object/CharacterInfo", order = int.MaxValue)]
 public class Character : ScriptableObject
 {
