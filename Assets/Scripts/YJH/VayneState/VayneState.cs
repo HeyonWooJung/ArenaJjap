@@ -23,6 +23,11 @@ public class VayneState : PlayerController
 
     //마지막으로 때린놈
     GameObject lastAttackedTarget = null;
+    GameObject firstHitEffect = null;
+    GameObject secondHitEffect = null;
+
+    [SerializeField] GameObject firstHit;
+    [SerializeField] GameObject secondHit;
     int hitCount = 0;
     public override void Start()
     {
@@ -92,7 +97,7 @@ public class VayneState : PlayerController
                 Rigidbody targetRb = target.GetComponent<Rigidbody>();
                 if (targetRb != null)
                 {
-                    target.StartCoroutine(KnockbackWithWallCheck(target, dir, knockbackDistance, knockbackSpeed));
+                    target.StartCoroutine(WallCheck(target, dir, knockbackDistance, knockbackSpeed));
                 }
 
                 //character.SetECooldown();
@@ -142,30 +147,55 @@ public class VayneState : PlayerController
 
         VayneWSkill(target);
     }
+
     public void VayneWSkill(PlayerController target)
     {
         GameObject currentTarget = target.gameObject;
 
-        if (lastAttackedTarget == currentTarget)
+        if (lastAttackedTarget != currentTarget)
         {
-            hitCount++;
-            Debug.Log(hitCount + " 스택");
-        }
-        else
-        {
+            if (firstHitEffect != null)
+            {
+                Destroy(firstHitEffect);
+            }
+            if (secondHitEffect != null)
+            {
+                Destroy(secondHitEffect);
+            }
+
             hitCount = 1;
+            firstHitEffect = Instantiate(firstHit, target.transform);
+            secondHitEffect = null;
             lastAttackedTarget = currentTarget;
+            return;
         }
 
-        if (hitCount == 3)
-        {
+        // 같은 대상이면 히트 누적
+        hitCount++;
 
+        if (hitCount == 2)
+        {
+            if (secondHitEffect != null)
+            {
+                Destroy(secondHitEffect);
+            }
+            secondHitEffect = Instantiate(secondHit, target.transform);
+        }
+        else if (hitCount == 3)
+        {
+            target.character.TakeDamage(target.character.HP * 0.1f, true, 0, 0);
             Debug.Log("추뎀적용");
 
+            // 초기화
             hitCount = 0;
+            if (firstHitEffect != null) Destroy(firstHitEffect);
+            if (secondHitEffect != null) Destroy(secondHitEffect);
+            firstHitEffect = null;
+            secondHitEffect = null;
+            lastAttackedTarget = null;
         }
     }
-    private IEnumerator KnockbackWithWallCheck(PlayerController target, Vector3 dir, float distance, float speed)
+    private IEnumerator WallCheck(PlayerController target, Vector3 dir, float distance, float speed)
     {
         float pushed = 0f;
         float delta;

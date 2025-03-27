@@ -13,6 +13,7 @@ public class InGameManager : MonoBehaviourPunCallbacks
         SpawnMyChampion();
     }
 
+
     void SpawnMyChampion()
     {
         int champIndex = MatchManager.myChampionIndex;
