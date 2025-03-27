@@ -24,8 +24,8 @@ public class PlayerController : MonoBehaviour, IPunObservable
     public float eDelay;
     public float rDelay;
 
-    Queue<CommandBase> toExecute;
-    CommandBase curCommand;
+    protected Queue<CommandBase> toExecute;
+    protected CommandBase curCommand;
 
     Ray ray;
     RaycastHit hit;
