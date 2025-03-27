@@ -88,7 +88,7 @@ public class TryndamereController : PlayerController
     // 트린다미어 Q스킬 - 체력회복
     public override void SkillQ(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        if (rage > 0)
+        if (character.CurQCool <= 0 && rage > 0)
         {
             int healAmount = rage / 2;
             character.Heal(healAmount);
@@ -102,38 +102,45 @@ public class TryndamereController : PlayerController
                 healEffect.SetActive(true); // 비활성화되어 있다면 활성화
                 Destroy(healEffect, 2f); //  2초 후 삭제
             }
-        }
+            if (anim == null) anim = GetComponentInChildren<Animator>();
+            anim.SetTrigger("UseQ");
 
-        if (anim == null) anim = GetComponentInChildren<Animator>();
-        anim.SetTrigger("UseQ");
+            character.SetQCooldown();
+            Debug.Log("Q사용");
+        }    
+        
     }
 
     // 트린다미어 W스킬 - 적 공격력이랑 이속 감소
     public override void SkillW(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-
-        Collider[] targets = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
-        Debug.Log($"W 스킬 사용! 대상 검색 중... 감지된 개수: {targets.Length}");
-
-        foreach (Collider targetCollider in targets)
+        if (character.CurWCool <= 0)
         {
+            //대충 스킬쓰기
+            Collider[] targets = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
+            Debug.Log($"W 스킬 사용! 대상 검색 중... 감지된 개수: {targets.Length}");
 
-            PlayerController targetPlayer = targetCollider.GetComponent<PlayerController>();
+            foreach (Collider targetCollider in targets)
+            {
 
-            if (targetPlayer == null || targetPlayer == this) continue;
+                PlayerController targetPlayer = targetCollider.GetComponent<PlayerController>();
 
-            //  공격력 감소 적용
-            float attackReduction = targetPlayer.character.ATK * attackReductionPercent;
-            targetPlayer.character.AdjustATK(-attackReduction);
-            StartCoroutine(RestoreAttackPower(targetPlayer, attackReduction, effectDuration));
+                if (targetPlayer == null || targetPlayer == this) continue;
 
-            //  적이 등을 돌린 경우 이동 속도 감소
-            if (IsEnemyFacingAway(targetPlayer.transform))
-                StartCoroutine(SlowCharacter(targetPlayer, moveSlowAmount, effectDuration));
-                Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");  
+                //  공격력 감소 적용
+                float attackReduction = targetPlayer.character.ATK * attackReductionPercent;
+                targetPlayer.character.AdjustATK(-attackReduction);
+                StartCoroutine(RestoreAttackPower(targetPlayer, attackReduction, effectDuration));
+
+                //  적이 등을 돌린 경우 이동 속도 감소
+                if (IsEnemyFacingAway(targetPlayer.transform))
+                    StartCoroutine(SlowCharacter(targetPlayer, moveSlowAmount, effectDuration));
+                Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");
+            }
+               anim?.SetTrigger("UseW");
+               character.SetWCooldown();
+               Debug.Log("W사용");
         }
-
-        anim?.SetTrigger("UseW");
     }
 
     //  공격력 4초 후 감소 해제
@@ -172,23 +179,29 @@ public class TryndamereController : PlayerController
     // 트린다미어 E 스킬 (돌진 공격)
     public override void SkillE(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        if (isDashing) return; // 이미 돌진 중이면 실행 안 함
-
-        eTargetPosition = location; // 목표 위치 설정
-        isDashing = true; // 돌진 시작
-
-        // NavMeshAgent가 있다면 일시적으로 비활성화하여 충돌 방지
-        if (navMeshAgent != null)
+        if (character.CurECool <= 0)
         {
-            navMeshAgent.isStopped = true;
-            navMeshAgent.updatePosition = false;
-            navMeshAgent.enabled = false;
+            //대충 스킬쓰기
+            if (isDashing) return; // 이미 돌진 중이면 실행 안 함
+
+            eTargetPosition = location; // 목표 위치 설정
+            isDashing = true; // 돌진 시작
+
+            // NavMeshAgent가 있다면 일시적으로 비활성화하여 충돌 방지
+            if (navMeshAgent != null)
+            {
+                navMeshAgent.isStopped = true;
+                navMeshAgent.updatePosition = false;
+                navMeshAgent.enabled = false;
+            }
+
+            if (anim == null) anim = GetComponentInChildren<Animator>();
+            anim.SetTrigger("UseE");
+
+            StartCoroutine(DashMovement()); // 이동 처리 코루틴 실행
+            character.SetECooldown();
+            Debug.Log("E사용");
         }
-
-        if (anim == null) anim = GetComponentInChildren<Animator>();
-        anim.SetTrigger("UseE");
-
-        StartCoroutine(DashMovement()); // 이동 처리 코루틴 실행
     }
 
     // E 스킬 이동 처리 (목표 지점까지 자연스럽게 이동)
@@ -219,22 +232,30 @@ public class TryndamereController : PlayerController
     // R 스킬 (불사의 분노) - 일정 시간 동안 무적 상태 유지
     public override void SkillR(bool isTargeting, bool isChanneling, Character target, Vector3 location)
     {
-        if (isImmortal) return; // 이미 무적이면 실행 안 함
-
-        isImmortal = true; // 무적 상태 활성화
-        character.SetState(State.Invincible); // 캐릭터 상태를 무적으로 설정
-
-        if (anim == null) anim = GetComponentInChildren<Animator>();
-        anim.SetTrigger("UseR");
-
-        // 파티클 이펙트 활성화
-        if (rEffectObject != null)
+        if (character.CurRCool <= 0)
         {
-            rEffectObject.SetActive(true); // 궁극기 이펙트 활성화
-        }
+            //대충 스킬쓰기
 
-        StartCoroutine(DelayedEffectActivation());
-        StartCoroutine(EndRSkill()); // 5초 후 무적 해제 및 이펙트 제거
+            if (isImmortal) return; // 이미 무적이면 실행 안 함
+
+            isImmortal = true; // 무적 상태 활성화
+            character.SetState(State.Invincible); // 캐릭터 상태를 무적으로 설정
+
+            if (anim == null) anim = GetComponentInChildren<Animator>();
+            anim.SetTrigger("UseR");
+
+            // 파티클 이펙트 활성화
+            if (rEffectObject != null)
+            {
+                rEffectObject.SetActive(true); // 궁극기 이펙트 활성화
+            }
+
+            StartCoroutine(DelayedEffectActivation());
+            StartCoroutine(EndRSkill()); // 5초 후 무적 해제 및 이펙트 제거
+            character.SetRCooldown();
+            Debug.Log("R사용");
+        }
+        
     }
 
     // 2.5초 후 R 스킬 이펙트 활성화
