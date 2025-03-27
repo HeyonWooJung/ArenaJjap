@@ -24,8 +24,8 @@ public class PlayerController : MonoBehaviour, IPunObservable
     public float eDelay;
     public float rDelay;
 
-    Queue<CommandBase> toExecute;
-    CommandBase curCommand;
+    protected Queue<CommandBase> toExecute;
+    protected CommandBase curCommand;
 
     Ray ray;
     RaycastHit hit;
@@ -47,6 +47,9 @@ public class PlayerController : MonoBehaviour, IPunObservable
         agent.angularSpeed = 100000;
         agent.acceleration = 100000;
         character.OnMoveSpeedChanged += ApplyMoveSpeed;
+        character.OnTakeDamage += ApplyDamage;
+        character.OnHeal += ApplyHeal;
+        character.OnStateChanged += ApplyState;
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         StartCoroutine(HpRegen());
         StartCoroutine(Execution());
@@ -73,6 +76,9 @@ public class PlayerController : MonoBehaviour, IPunObservable
     private void OnDestroy()
     {
         character.OnMoveSpeedChanged -= ApplyMoveSpeed;
+        character.OnTakeDamage -= ApplyDamage;
+        character.OnHeal -= ApplyHeal;
+        character.OnStateChanged -= ApplyState;
     }
 
     public static byte[] SerializeCommandInfo(CommandBase command)
@@ -125,6 +131,39 @@ public class PlayerController : MonoBehaviour, IPunObservable
                 }
             }
         }
+    }
+
+    public void ApplyDamage(float value, bool trueDamage, int lethal, float armorPen)
+    {
+        pv.RPC("DamageRPC", RpcTarget.OthersBuffered, value, trueDamage, lethal, armorPen);
+    }
+
+    [PunRPC]
+    public void DamageRPC(float value, bool trueDamage, int lethal, float armorPen)
+    {
+        character.TakeDamage(null, value, trueDamage, lethal, armorPen);
+    }
+
+    public void ApplyHeal(float value)
+    {
+        pv.RPC("HealRPC", RpcTarget.OthersBuffered, value);
+    }
+
+    [PunRPC]
+    public void HealRPC(float value)
+    {
+        character.Heal(value);
+    }
+
+    public void ApplyState()
+    {
+        pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState);
+    }
+
+    [PunRPC]
+    public void StateRPC(State state)
+    {
+        character.SetState(state);
     }
 
     [PunRPC]
@@ -362,7 +401,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
             damage *= character.CritDamage;
         }
 
-        target.character.TakeDamage(damage, false, character.Lethality, character.ArmorPenetration);
+        target.character.TakeDamage(character, damage, false, character.Lethality, character.ArmorPenetration);
     }
 
     public virtual void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
