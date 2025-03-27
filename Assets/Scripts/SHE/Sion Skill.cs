@@ -1,3 +1,4 @@
+using Photon.Pun;
 using Photon.Pun.Demo.PunBasics;
 using Photon.Realtime;
 using System.Collections;
@@ -90,15 +91,18 @@ public class SionSkill : PlayerController
     float baseAttackDamage;
     int lethal;
     float armorPenetration;
-   
+    Ray ray;
+    RaycastHit hit;
+    bool canAA;
 
 
     //[SerializeField]Character character;
     //[SerializeField] BoxCollider qSkillcol;
     
     Dictionary<string, PlayerController> characterDictionary = new Dictionary<string, PlayerController>();
-    void Start()
+    public override void Start()
     {
+        base.Start();
         //Red Blue tag 찾고
         //characterDictionary.Add("Blue", charcter);
         //qSkillcol = GetComponent<BoxCollider>();
@@ -133,8 +137,7 @@ public class SionSkill : PlayerController
             }
             enemy = target;
             baseAttackDamage = damage;
-            lethal = character.Lethality;
-            armorPenetration = character.ArmorPenetration;
+           
             
 
         }
@@ -147,32 +150,118 @@ public class SionSkill : PlayerController
             return;
         }
 
-        enemy.character.TakeDamage(baseAttackDamage, false, lethal, armorPenetration);
+        enemy.character.TakeDamage(baseAttackDamage, false, character.Lethality, character.ArmorPenetration);
 
     }
 
     // Update is called once per frame
-    void Update()
+    public override void Update()
     {
-       
-       
-        
-        if(Input.GetKeyDown(KeyCode.R) && qSkillCharging == false && !rSkillOn)
+
+        if (pv.IsMine)
         {
-            if (!rSkillOn)
+            if ((character.CurState == State.Stun || character.CurState == State.Airborne) == false)
             {
-                RSkill();
-                GetMouseCursorPos();
+                if (Input.GetMouseButton(1))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (hit.transform.gameObject.CompareTag(enemyTag) && Vector3.Distance(hit.point, transform.position) <= character.Range * 0.01f)
+                        {
+                            if (canAA)
+                            {
+                                pv.RPC("AAEnququer", RpcTarget.All, hit.transform.GetComponent<PhotonView>().ViewID);
+                                //toExecute.Enqueue(new AutoAttackCommand(this, 0, hit.transform.GetComponent<PhotonView>().ViewID));
+                            }
+                        }
+                        else
+                        {
+                            //toExecute.Enqueue(new MoveCommand(this, 0, hit.point));
+                            Move(hit.point);
+                        }
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(1, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.W))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(2, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(3, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                        //SkillEnqueuer(4, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
+                        //toExecute.Enqueue(new SkillRCommand(this, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.D))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        //toExecute.Enqueue(new RushCommand(this, 0));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        //toExecute.Enqueue(new FlashCommmand(this, 0, hit.point));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.S))
+                {
+                    Stop();
+                    //toExecute.Clear();
+                }
             }
-            
+            else if (character.CurState == State.Root)
+            {
+                agent.ResetPath();
+            }
         }
-        if (rSkillOn)
-        {
-            RSkillCheckingHit();
-            RSkillRotation();
-            rSkillTimer += Time.deltaTime;
-        }
-        
+
     }
 
     
@@ -203,6 +292,8 @@ public class SionSkill : PlayerController
             qSKillImage.fillAmount = chargeRatio;
             if(qSkillTimer >= 1.2)
             {
+                PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+                pv.RPC("SkillEnqeuer", RpcTarget.All, 1, qDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                 if(!qSkillPanel.gameObject.activeSelf) qSkillPanel.gameObject.SetActive(true);
                 Color a = qSkillOriginalPanelA;
                 a.a = Mathf.Lerp(qSkillPanel.color.a, qSkillMaxAlphaFloat, Time.deltaTime * 2);
@@ -413,6 +504,7 @@ public class SionSkill : PlayerController
     {
         if(qSkillCharging == false && !rSkillOn)
         {
+            GetMouseCursorPos();
             rSkillOn = true;
             StartCoroutine(CastRSkill());
         }
@@ -460,6 +552,7 @@ public class SionSkill : PlayerController
                 anim.SetTrigger("RHit");
                 character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
                 agent.SetDestination(transform.position);
+                RSkillExplosion();
             }
            
             if(rSkillTimer >= 2 && anim.GetBool("RRunning") == false)
@@ -522,7 +615,7 @@ public class SionSkill : PlayerController
         Collider[] targets = Physics.OverlapSphere(transform.position, rSkillExpolosionWidth, hitLayer);
         Collider[] airborneTargets = Physics.OverlapSphere(transform.position, rSkillAirborneWidth, hitLayer);
         rSkillCurDamage = Mathf.Lerp(rSkillFixedMinDamage + rSkillAddMinDamage, rSkillFixedMaxDamage + rSkillAddMaxDamage, rSkillTimer - 3);
-        
+        Debug.Log("빵야");
 
         if(targets.Length > 0 )
         {
