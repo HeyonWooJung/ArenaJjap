@@ -28,7 +28,7 @@ public class RyzeController : PlayerController
         }
 
         GameObject tempAA = Instantiate(AAObj, transform.position, Quaternion.identity);
-        tempAA.GetComponent<RyzeAAScript>().GetDmg(target.transform, damage, character.Lethality, character.ArmorPenetration, enemyTag);
+        tempAA.GetComponent<RyzeAAScript>().GetDmg(target.transform, damage, character.Lethality, character.ArmorPenetration, enemyTag, character);
 
     }
 
@@ -42,7 +42,7 @@ public class RyzeController : PlayerController
             look.y = transform.position.y;
             transform.LookAt(look, transform.forward);
             GameObject tempQ = Instantiate(QObj, transform.position, Quaternion.identity);
-            tempQ.GetComponent<RyzeQScript>().GetDmg(155 + (0.55f * character.ATK), character.Lethality, character.ArmorPenetration, enemyTag);
+            tempQ.GetComponent<RyzeQScript>().GetDmg(155 + (0.55f * character.ATK), character.Lethality, character.ArmorPenetration, enemyTag, character);
             tempQ.transform.LookAt(location);
             tempQ.transform.rotation = Quaternion.Euler(0, tempQ.transform.rotation.eulerAngles.y, tempQ.transform.rotation.eulerAngles.z);
             UseRuneCount();
@@ -50,37 +50,40 @@ public class RyzeController : PlayerController
         else
         {
             //못쓴다하기
-             
+
             //진짜 못한다.
             Debug.Log("Q사용불가. 쿨타임: " + character.CurQCool);
         }
     }
     public override void SkillW(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
-        if (character.CurWCool <= 0)
+        if (Vector3.Distance(transform.position, target.transform.position) <= 5.5f)
         {
-            if (target != null && target.CompareTag(enemyTag))
+            if (character.CurWCool <= 0)
             {
-                GameObject tempW = Instantiate(WObj, target.transform);
-                Destroy(tempW, 1.5f);
-                Vector3 look = target.transform.position;
-                look.y = transform.position.y;
-                transform.LookAt(look, transform.forward);
-                //대충 스킬쓰기
+                if (target != null && target.CompareTag(enemyTag))
+                {
+                    GameObject tempW = Instantiate(WObj, target.transform);
+                    Destroy(tempW, 1.5f);
+                    Vector3 look = target.transform.position;
+                    look.y = transform.position.y;
+                    transform.LookAt(look, transform.forward);
+                    //대충 스킬쓰기
 
-                character.SetWCooldown();
-                character.CurQCool = 0;
+                    character.SetWCooldown();
+                    character.CurQCool = 0;
 
-                target.character.TakeDamage(200 + (0.7f * character.ATK), false, character.Lethality, character.ArmorPenetration);
-                StartCoroutine(WCCCor(target.character, target?.GetComponentInChildren<RyzeEScrpit>())); //표식 여부 확인
-                AddRuneCount();
-                Debug.Log("W사용");
+                    target.character.TakeDamage(character, 200 + (0.7f * character.ATK), false, character.Lethality, character.ArmorPenetration);
+                    StartCoroutine(WCCCor(target.character, target?.GetComponentInChildren<RyzeEScrpit>())); //표식 여부 확인
+                    AddRuneCount();
+                    Debug.Log("W사용");
+                }
             }
-        }
-        else
-        {
-            //못쓴다하기
-            Debug.Log("W사용불가. 쿨타임: " + character.CurWCool);
+            else
+            {
+                //못쓴다하기
+                Debug.Log("W사용불가. 쿨타임: " + character.CurWCool);
+            }
         }
     }
 
@@ -106,35 +109,38 @@ public class RyzeController : PlayerController
 
     public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
-        if (character.CurECool <= 0)
+        if (Vector3.Distance(transform.position, target.transform.position) <= 5.5f)
         {
-            if (target != null && target.CompareTag(enemyTag))
+            if (character.CurECool <= 0)
             {
-                Vector3 look = target.transform.position;
-                look.y = transform.position.y;
-                transform.LookAt(look, transform.forward);
-                RyzeEScrpit preE = target?.GetComponentInChildren<RyzeEScrpit>();
-                if (preE != null)
+                if (target != null && target.CompareTag(enemyTag))
                 {
-                    Destroy(preE.gameObject);
+                    Vector3 look = target.transform.position;
+                    look.y = transform.position.y;
+                    transform.LookAt(look, transform.forward);
+                    RyzeEScrpit preE = target?.GetComponentInChildren<RyzeEScrpit>();
+                    if (preE != null)
+                    {
+                        Destroy(preE.gameObject);
+                    }
+                    //대충 스킬쓰기
+                    target.character.TakeDamage(character, 180 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
+
+                    GameObject tempE = Instantiate(EObj, target.transform);
+                    tempE.GetComponent<RyzeEScrpit>().SpreadE(enemyTag, EObj);
+                    Destroy(tempE, 4f);
+
+                    character.SetECooldown();
+                    character.CurQCool = 0;
+                    AddRuneCount();
+                    Debug.Log("E사용");
                 }
-                //대충 스킬쓰기
-                target.character.TakeDamage(180 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
-
-                GameObject tempE = Instantiate(EObj, target.transform);
-                tempE.GetComponent<RyzeEScrpit>().SpreadE(enemyTag, EObj);
-                Destroy(tempE, 4f);
-
-                character.SetECooldown();
-                character.CurQCool = 0;
-                AddRuneCount();
-                Debug.Log("E사용");
             }
-        }
-        else
-        {
-            //못쓴다하기
-            Debug.Log("E사용불가. 쿨타임: " + character.CurECool);
+            else
+            {
+                //못쓴다하기
+                Debug.Log("E사용불가. 쿨타임: " + character.CurECool);
+            }
         }
     }
     public override void SkillR(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
