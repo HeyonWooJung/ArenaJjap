@@ -53,6 +53,10 @@ public class PlayerController : MonoBehaviour, IPunObservable
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         StartCoroutine(HpRegen());
         StartCoroutine(Execution());
+        if(pv.IsMine)
+        {
+            Camera.main.GetComponent<InGameCamera>().player = gameObject;
+        }
     }
 
     [PunRPC]
