@@ -6,11 +6,51 @@ using UnityEngine;
 public class RyzeController : PlayerController
 {
     int runeCount = 0;
-
+    [SerializeField] Animator animator;
     [SerializeField] GameObject AAObj;
     [SerializeField] GameObject QObj;
     [SerializeField] GameObject WObj;
     [SerializeField] GameObject EObj;
+
+    public override void Update()
+    {
+        base.Update();
+        if(agent.remainingDistance <= 0.1f)
+        {
+            if (animator.GetCurrentAnimatorStateInfo(0).IsName("Run") || animator.GetCurrentAnimatorStateInfo(0).IsName("RunFast"))
+            {
+                animator.SetTrigger("Stop");
+            }
+        }
+        else
+        {
+            if (character.MoveSpeed >= 400)
+            {
+                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("RunFast"))
+                {
+                    animator.SetTrigger("RunFast");
+                }
+            }
+            else
+            {
+                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Run"))
+                {
+                    animator.SetTrigger("Run");
+                }
+            }
+        }
+    }
+
+    public override void Stop()
+    {
+        base.Stop();
+        animator.SetTrigger("Stop");
+    }
+
+    public override void Move(Vector3 pos)
+    {
+        base.Move(pos);
+    }
 
     public override void AutoAttack(PlayerController target)
     {
@@ -26,7 +66,7 @@ public class RyzeController : PlayerController
         {
             damage *= character.CritDamage;
         }
-
+        animator.SetTrigger("AA");
         GameObject tempAA = Instantiate(AAObj, transform.position, Quaternion.identity);
         tempAA.GetComponent<RyzeAAScript>().GetDmg(target.transform, damage, character.Lethality, character.ArmorPenetration, enemyTag, character);
 
@@ -37,6 +77,7 @@ public class RyzeController : PlayerController
         if (character.CurQCool <= 0)
         {
             //대충 스킬쓰기 ?? : 그러니까 못맞추지
+            animator.SetTrigger("UseQ");
             character.SetQCooldown();
             Vector3 look = location;
             look.y = transform.position.y;
@@ -57,32 +98,37 @@ public class RyzeController : PlayerController
     }
     public override void SkillW(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
-        if (Vector3.Distance(transform.position, target.transform.position) <= 5.5f)
+        if (target != null)
         {
-            if (character.CurWCool <= 0)
+            if (Vector3.Distance(transform.position, target.transform.position) <= 5.5f)
             {
-                if (target != null && target.CompareTag(enemyTag))
+                if (character.CurWCool <= 0)
                 {
-                    GameObject tempW = Instantiate(WObj, target.transform);
-                    Destroy(tempW, 1.5f);
-                    Vector3 look = target.transform.position;
-                    look.y = transform.position.y;
-                    transform.LookAt(look, transform.forward);
-                    //대충 스킬쓰기
+                    if (target != null && target.CompareTag(enemyTag))
+                    {
+                        animator.SetTrigger("UseW");
+                        GameObject tempW = Instantiate(WObj, target.transform);
+                        Destroy(tempW, 1.5f);
+                        Vector3 look = target.transform.position;
+                        look.y = transform.position.y;
+                        transform.LookAt(look, transform.forward);
+                        //대충 스킬쓰기
 
-                    character.SetWCooldown();
-                    character.CurQCool = 0;
+                        character.SetWCooldown();
+                        character.CurQCool = 0;
 
-                    target.character.TakeDamage(character, 200 + (0.7f * character.ATK), false, character.Lethality, character.ArmorPenetration);
-                    StartCoroutine(WCCCor(target.character, target?.GetComponentInChildren<RyzeEScrpit>())); //표식 여부 확인
-                    AddRuneCount();
-                    Debug.Log("W사용");
+                        target.character.TakeDamage(character, 200 + (0.7f * character.ATK), false, character.Lethality, character.ArmorPenetration);
+                        StartCoroutine(WCCCor(target.character, target?.GetComponentInChildren<RyzeEScrpit>())); //표식 여부 확인
+                        AddRuneCount();
+                        Debug.Log("W사용");
+                    }
                 }
-            }
-            else
-            {
-                //못쓴다하기
-                Debug.Log("W사용불가. 쿨타임: " + character.CurWCool);
+                else
+                {
+                    //못쓴다하기
+                    Debug.Log("W사용불가. 쿨타임: " + character.CurWCool);
+                }
+
             }
         }
     }
@@ -109,38 +155,43 @@ public class RyzeController : PlayerController
 
     public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
-        if (Vector3.Distance(transform.position, target.transform.position) <= 5.5f)
+        if (target != null)
         {
-            if (character.CurECool <= 0)
+            if (Vector3.Distance(transform.position, target.transform.position) <= 5.5f)
             {
-                if (target != null && target.CompareTag(enemyTag))
+                if (character.CurECool <= 0)
                 {
-                    Vector3 look = target.transform.position;
-                    look.y = transform.position.y;
-                    transform.LookAt(look, transform.forward);
-                    RyzeEScrpit preE = target?.GetComponentInChildren<RyzeEScrpit>();
-                    if (preE != null)
+                    if (target != null && target.CompareTag(enemyTag))
                     {
-                        Destroy(preE.gameObject);
+                        animator.SetTrigger("UseE");
+                        Vector3 look = target.transform.position;
+                        look.y = transform.position.y;
+                        transform.LookAt(look, transform.forward);
+                        RyzeEScrpit preE = target?.GetComponentInChildren<RyzeEScrpit>();
+                        if (preE != null)
+                        {
+                            Destroy(preE.gameObject);
+                        }
+                        //대충 스킬쓰기
+                        target.character.TakeDamage(character, 180 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
+
+                        GameObject tempE = Instantiate(EObj, target.transform);
+                        tempE.GetComponent<RyzeEScrpit>().SpreadE(enemyTag, EObj);
+                        Destroy(tempE, 4f);
+
+                        character.SetECooldown();
+                        character.CurQCool = 0;
+                        AddRuneCount();
+                        Debug.Log("E사용");
                     }
-                    //대충 스킬쓰기
-                    target.character.TakeDamage(character, 180 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
-
-                    GameObject tempE = Instantiate(EObj, target.transform);
-                    tempE.GetComponent<RyzeEScrpit>().SpreadE(enemyTag, EObj);
-                    Destroy(tempE, 4f);
-
-                    character.SetECooldown();
-                    character.CurQCool = 0;
-                    AddRuneCount();
-                    Debug.Log("E사용");
+                }
+                else
+                {
+                    //못쓴다하기
+                    Debug.Log("E사용불가. 쿨타임: " + character.CurECool);
                 }
             }
-            else
-            {
-                //못쓴다하기
-                Debug.Log("E사용불가. 쿨타임: " + character.CurECool);
-            }
+
         }
     }
     public override void SkillR(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
