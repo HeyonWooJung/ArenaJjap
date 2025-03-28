@@ -1,12 +1,13 @@
 using System;
 using System.Buffers.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.TextCore.Text;
 
 public enum State
 {
-    Neutral, //기본
+    Neutral = 0, //기본
     Slow, //둔화
     Root, //속박
     Stun, //기절
@@ -62,6 +63,8 @@ public class Character : ScriptableObject
 
     bool canRush;
     bool canFlash;
+
+    public Dictionary<int, float> stateDiction = new Dictionary<int, float>();
 
     #endregion
 
@@ -418,6 +421,11 @@ public class Character : ScriptableObject
     public void AdjustHP(float hp)
     {
         _HP += hp;
+    }
+
+    public void AdjustHPRegen(float regen)
+    {
+        _HPRegen += regen;
     }
     public void AdjustBarrier(float barrier)
     {

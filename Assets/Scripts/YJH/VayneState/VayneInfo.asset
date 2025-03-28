@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfb7e9af41516b6498099348e6483b0a, type: 3}
+  m_Name: VayneInfo
+  m_EditorClassIdentifier: 
+  _HP: 2301
+  _HPRegen: 12.85
+  _atk: 100.12
+  _def: 101.2
+  _moveSpeed: 330
+  _atkSpeed: 1.03
+  _range: 555
+  qCoolDown: 2
+  wCoolDown: 0
+  eCoolDown: 12
+  rCoolDown: 70

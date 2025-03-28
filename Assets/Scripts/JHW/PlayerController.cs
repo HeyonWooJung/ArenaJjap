@@ -1,13 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 using Photon.Pun;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System;
 using Photon.Realtime;
 
@@ -17,7 +12,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
 {
     public Character character;
     public string enemyTag;
-    NavMeshAgent agent;
+    protected NavMeshAgent agent;
     public PhotonView pv;
     public float qDelay;
     public float wDelay;
@@ -29,9 +24,9 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     Ray ray;
     RaycastHit hit;
-    bool canAA = true;
+    protected bool canAA = true;
 
-    bool canCancel = true;
+    protected bool canCancel = true;
 
     // Start is called before the first frame update
     public virtual void Start()
@@ -85,30 +80,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
         character.OnStateChanged -= ApplyState;
     }
 
-    public static byte[] SerializeCommandInfo(CommandBase command)
-    {
-        BinaryFormatter binaryF = new BinaryFormatter();
-        using (MemoryStream memoryStream = new MemoryStream())
-        {
-            binaryF.Serialize(memoryStream, command);
-
-            return memoryStream.ToArray();
-        }
-    }
-
-    public static CommandBase DeserializeCommandInfo(byte[] dataStream)
-    {
-        using (MemoryStream memoryStream = new MemoryStream())
-        {
-            BinaryFormatter binaryF = new BinaryFormatter();
-
-            memoryStream.Write(dataStream, 0, dataStream.Length);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-
-            return (CommandBase)binaryF.Deserialize(memoryStream);
-        }
-    }
-
     IEnumerator Execution()
     {
         while (true)
@@ -126,9 +97,8 @@ public class PlayerController : MonoBehaviour, IPunObservable
             }
             if (curCommand != null)
             {
-                //curCommand.pv.RPC("Execute", RpcTarget.All);
-                //pv.RPC("Executer", RpcTarget.All, SerializeCommandInfo(curCommand)); 
                 pv.RPC("Executer", RpcTarget.All);
+                //curCommand.Execute();
                 if (curCommand.Delay > 0)
                 {
                     StartCoroutine(Delay(curCommand.Delay));
@@ -252,7 +222,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                         pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(1, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
-                        //toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                        //toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
                 }
                 if (Input.GetKeyDown(KeyCode.W))
@@ -264,7 +234,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                         pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(2, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
-                        //toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                        //toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
                 }
                 if (Input.GetKeyDown(KeyCode.E))
@@ -276,7 +246,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                         pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(3, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
-                        //toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                        //toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
                 }
                 if (Input.GetKeyDown(KeyCode.R))
@@ -288,7 +258,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                         pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(4, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
-                        //toExecute.Enqueue(new SkillRCommand(this, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
+                        //toExecute.Enqueue(new SkillRCommand(this, 0, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
                 }
                 if (Input.GetKeyDown(KeyCode.D))
@@ -374,7 +344,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
         }
     }
 
-    public void Stop()
+    public virtual void Stop()
     {
         agent.ResetPath();
     }
