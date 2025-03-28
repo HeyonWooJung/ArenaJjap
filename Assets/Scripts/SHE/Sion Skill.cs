@@ -18,7 +18,6 @@ public class SionSkill : PlayerController
     readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
     //[SerializeField] PlayerController playerController;
     [SerializeField] GameObject skillCanvas;
-    new NavMeshAgent agent;
     [Header("패시브")]
     [SerializeField] int passiveCount;
     [SerializeField] float passiveAtkSpeed = 1.75f;
@@ -108,7 +107,7 @@ public class SionSkill : PlayerController
     float armorPenetration;
     Ray ray;
     RaycastHit hit;
-    bool canAA;
+   //bool canAA;
 
 
     //[SerializeField]Character character;
@@ -124,9 +123,11 @@ public class SionSkill : PlayerController
         //qSkillOriginalCenterPos = qSkillcol.center;
         anim = GetComponentInChildren<Animator>();
         //playerController = GetComponent<PlayerController>();
-        agent = GetComponentInParent<NavMeshAgent>();
+        //agent = GetComponent<NavMeshAgent>();
         qSkillOriginalPanelA = qSkillPanel.color;
         hitLayer = 1 << LayerMask.NameToLayer(enemyTag);
+        if(debuggingMode) PhotonNetwork.OfflineMode = true;//디버깅용
+
 
     }
 
@@ -173,7 +174,7 @@ public class SionSkill : PlayerController
     public override void Update()
     {
 
-        if (pv.IsMine)
+        if (debuggingMode == true)//여기 원래 pv.Mine
         {
             if ((character.CurState == State.Stun || character.CurState == State.Airborne || qSkillCharging || rSkillOn) == false)
             {
@@ -199,50 +200,55 @@ public class SionSkill : PlayerController
                     }
                 }
 
-                if ((isPassiveNow || character.CurState == State.Stun || character.CurState == State.Airborne) == false)
+                if ((isPassiveNow && character.CurState == State.Stun || character.CurState == State.Airborne) == false)
                 {
-                    if (Input.GetKeyDown(KeyCode.Q) && !rSkillOn && !qSkillCharging)
+                    if (Input.GetKeyDown(KeyCode.Q) && !rSkillOn && !qSkillCharging && character.CurQCool <= 0)
                     {
                         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
                         if (Physics.Raycast(ray, out hit))
                         {
+                            SkillQ(false, true, null, hit.point);
                             PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                             pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                            
                             //SkillEnqueuer(1, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                             //toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
                         }
                     }
-                    if (Input.GetKeyDown(KeyCode.W))
+                    if (Input.GetKeyDown(KeyCode.W) && character.CurWCool <= 0)
                     {
                         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
                         if (Physics.Raycast(ray, out hit))
                         {
+                            SkillW(false, false, null, transform.eulerAngles);
                             PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
-                            pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+                            pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, transform.eulerAngles);
                             //SkillEnqueuer(2, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                             //toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
                         }
                     }
-                    if (Input.GetKeyDown(KeyCode.E) && !rSkillOn && !qSkillCharging)
+                    if (Input.GetKeyDown(KeyCode.E) && !rSkillOn && !qSkillCharging && character.CurECool <= 0)
                     {
                         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
                         if (Physics.Raycast(ray, out hit))
                         {
+                            SkillE(false, false, null, hit.point);
                             PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                             pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                             //SkillEnqueuer(3, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                             //toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point));
                         }
                     }
-                    if (Input.GetKeyDown(KeyCode.R) && !rSkillOn && !qSkillCharging)
+                    if (Input.GetKeyDown(KeyCode.R) && !rSkillOn && !qSkillCharging && character.CurRCool <= 0)
                     {
                         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
                         if (Physics.Raycast(ray, out hit))
                         {
+                            SkillR(false, false, null, hit.point);
                             PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
                             pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                             //SkillEnqueuer(4, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
@@ -267,6 +273,18 @@ public class SionSkill : PlayerController
                             toExecute.Enqueue(new FlashCommmand(this, 0, hit.point));
                         }
                     }
+                    if (rSkillOn)
+                    {
+                        RSkillRotation();
+                        RSkillCheckingHit();
+                        
+                        if (rSkillTimer >= 1 && Input.GetKeyDown(KeyCode.R))
+                        {
+                            anim.SetTrigger("RStop");
+                            RSkillExplosion();
+                        }
+
+                    }
                 }
                 else if(isPassiveNow == true || (character.CurState == State.Stun || character.CurState == State.Airborne) == false)//여기가 패시브 상태
                 {
@@ -286,8 +304,30 @@ public class SionSkill : PlayerController
             {
                 agent.ResetPath();
             }
+            if(anim !=  null)
+            {
+                bool walking = HasReachedDestination();
+                anim.SetBool("Walking", !walking);
+            }
+            else
+            {
+                Debug.Log("애니메이터 없는데");
+            }
+         
         }
 
+    }
+    bool HasReachedDestination()
+    {
+        if (agent != null)
+        {
+            return !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance;
+        }
+        else
+        {
+            Debug.Log("Agent가 없다");
+            return false;
+        }
     }
     IEnumerator PassiveOn()
     {
@@ -473,7 +513,7 @@ public class SionSkill : PlayerController
         character.SetQCooldown();
     }
 
-    public void WSkill()
+    public override void SkillW(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (!wSkillOn)
         {
@@ -529,7 +569,7 @@ public class SionSkill : PlayerController
     }
 
 
-    public void ESkill()
+    public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (!checkingEPrefab)
         {
@@ -569,7 +609,7 @@ public class SionSkill : PlayerController
         //}
     }
 
-    public void RSkill()
+    public override void SkillR(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if(qSkillCharging == false && !rSkillOn)
         {
@@ -591,10 +631,10 @@ public class SionSkill : PlayerController
         rSkillIncreasedSpeed = 0;
         rSkillCurDamage = 0;
         rSkillCurStun = 0;
-
+ 
         while (rSkillOn == true && rSkillTimer < 8)
         {
-            
+            rSkillTimer += 0.05f;
             // 사이온의 현재 위치 + 전방 방향으로 박스 중심 설정
             Vector3 boxCenter = transform.position + transform.forward * 0.5f; // 적절한 거리 조정
 
@@ -620,7 +660,7 @@ public class SionSkill : PlayerController
                     anim.SetBool("RRunning", false);
                 }
                 anim.SetTrigger("RHit");
-                character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
+                //character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
                 agent.SetDestination(transform.position);
                 RSkillExplosion();
             }
@@ -638,15 +678,17 @@ public class SionSkill : PlayerController
                
             }
 
-            if(rSkillTimer >= 1 && Input.GetKeyDown(KeyCode.R))
-            {
-                anim.SetTrigger("RStop");
 
-            }
+            Debug.Log("궁 코루틴 돈다");
 
             //playerController.Move(skillCanvas.transform.position);
-            //Move(skillCanvas.transform.position);
+            Move(skillCanvas.transform.position);
             yield return skillCheckTime;
+        }
+        if(rSkillTimer >= 8)
+        {
+            anim.SetTrigger("RStop");
+            
         }
         
     }
@@ -662,7 +704,6 @@ public class SionSkill : PlayerController
                 anim.SetBool("RRunning",false);
             }
             anim.SetTrigger("RHit");
-            character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
             agent.SetDestination(transform.position);
             RSkillExplosion();
 
@@ -671,7 +712,7 @@ public class SionSkill : PlayerController
     void RSkillRotation()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+        if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Vector3 targetDirection = (hit.point - transform.position).normalized;
             targetDirection.y = 0; // Y축 회전 방지(수평 회전만 적용)
@@ -685,14 +726,21 @@ public class SionSkill : PlayerController
     {
         Collider[] targets = Physics.OverlapSphere(transform.position, rSkillExpolosionWidth, hitLayer);
         Collider[] airborneTargets = Physics.OverlapSphere(transform.position, rSkillAirborneWidth, hitLayer);
-        rSkillCurDamage = Mathf.Lerp(rSkillFixedMinDamage + rSkillAddMinDamage, rSkillFixedMaxDamage + rSkillAddMaxDamage, rSkillTimer - 3);
+        rSkillCurDamage = Mathf.Lerp(rSkillFixedMinDamage +(character.ATK * rSkillAddMinDamage), rSkillFixedMaxDamage +( character.ATK * rSkillAddMaxDamage), rSkillTimer - 4);
         Debug.Log("빵야");
+        if (rSkillOn)
+        {
+            rSkillOn = false;
+            
+        }
+        character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
 
-        if(targets.Length > 0 )
+        if (targets.Length > 0 )
         {
             foreach(Collider collider in targets)
             {
                 PlayerController target = collider.GetComponent<PlayerController>();
+                
                 target.character.TakeDamage(character,rSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
                 int x = (int)(target.character.MoveSpeed * rSkillSlowPercent);
                 StartCoroutine(SettingEnemyState(target, State.Slow, 1f, false, x));
@@ -709,6 +757,7 @@ public class SionSkill : PlayerController
             }
         }
         character.SetState(State.Neutral);
+        
     }
 
     /// <summary>
