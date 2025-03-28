@@ -85,7 +85,7 @@ public class VayneState : PlayerController
                 transform.LookAt(look, transform.forward);
 
                 // 기본 피해
-                target.character.TakeDamage(190 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
+                target.character.TakeDamage(character, 190 + (character.ATK * 0.5f), false, character.Lethality, character.ArmorPenetration);
 
                 // 방향 계산
                 Vector3 dir = target.transform.position - transform.position;
@@ -183,7 +183,7 @@ public class VayneState : PlayerController
         }
         else if (hitCount == 3)
         {
-            target.character.TakeDamage(target.character.HP * 0.1f, true, 0, 0);
+            target.character.TakeDamage(character, target.character.HP * 0.1f, true, 0, 0);
             Debug.Log("추뎀적용");
 
             // 초기화
@@ -218,7 +218,7 @@ public class VayneState : PlayerController
                     yield return new WaitForSeconds(1.5f);
                     target.character.SetState(State.Neutral);
 
-                    target.character.TakeDamage(285 + (character.ATK * 0.75f), false, character.Lethality, character.ArmorPenetration);
+                    target.character.TakeDamage(character, 285 + (character.ATK * 0.75f), false, character.Lethality, character.ArmorPenetration);
                     yield break;
                 }
             }

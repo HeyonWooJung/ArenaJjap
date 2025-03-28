@@ -64,7 +64,7 @@ public class Character : ScriptableObject
     bool canRush;
     bool canFlash;
 
-    public Dictionary<int, float> stateDiction = new Dictionary<int, float>();
+    public Dictionary<State, float> stateDiction = new Dictionary<State, float>();
 
     #endregion
 
