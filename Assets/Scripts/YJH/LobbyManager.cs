@@ -106,7 +106,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             yield return null;
         }
 
-        acceptTimer.fillAmount = 0; // 최종적으로 0으로 설정
+        acceptTimer.fillAmount = 0;
         if (acceptTimer.fillAmount <= 0)
         {
             yield return new WaitForSeconds(3);
