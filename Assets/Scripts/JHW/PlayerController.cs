@@ -131,13 +131,13 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     public void ApplyState()
     {
-        pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState);
+        pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState, character.stateDict[character.CurState]);
     }
 
     [PunRPC]
-    public void StateRPC(State state)
+    public void StateRPC(State state, float time)
     {
-        character.SetState(state);
+        character.SetState(state, time);
     }
 
     [PunRPC]
@@ -342,7 +342,24 @@ public class PlayerController : MonoBehaviour, IPunObservable
                 character.CurRCool = 0;
             }
         }
+        if(character.stateDict != null)
+        {
+            for(int i = 1; i < (int)State.End; i++)
+            {
+                State tempState = (State)i;
+                if (character.stateDict.ContainsKey(tempState) && character.stateDict[tempState] > 0)
+                {
+                    character.stateDict[tempState] -= Time.deltaTime;
+                    if(character.stateDict[tempState] <= 0)
+                    {
+                        character.stateDict[tempState] = 0;
+                    }
+                }
+            }
+        }
+        character.StateChecker();
     }
+
 
     public virtual void Stop()
     {
