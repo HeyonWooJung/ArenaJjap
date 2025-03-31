@@ -78,13 +78,18 @@ public class TryndamereController : PlayerController
     //기본 공격 실행
     public override void AutoAttack(PlayerController target)
     {
+        //  변경: 사거리 비교 추가
+        float distance = Vector3.Distance(transform.position, target.transform.position);
+        if (distance > character.Range * 0.01f) return;
+
         base.AutoAttack(target);
 
         if (anim == null) anim = GetComponentInChildren<Animator>();
+        PerformAttack(); // → 애니메이션 + 분노 증가 둘 다 여기서 처
 
-        PerformAttack(); // → 애니메이션 + 분노 증가 둘 다 여기서 처리
         Debug.Log($"AutoAttack 실행! 대상: {target?.name}, 현재 분노: {rage}");
     }
+
 
 
     // 트린다미어 Q스킬 - 체력회복
@@ -137,10 +142,12 @@ public class TryndamereController : PlayerController
                 targetPlayer.character.AdjustATK(-attackReduction);
                 StartCoroutine(RestoreAttackPower(targetPlayer, attackReduction, effectDuration));
 
-                //  적이 등을 돌린 경우 이동 속도 감소
+                // 등 돌린 경우에만 슬로우 적용 + 로그 출력
                 if (IsEnemyFacingAway(targetPlayer.transform))
+                {
                     StartCoroutine(SlowCharacter(targetPlayer, moveSlowAmount, effectDuration));
-                Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");
+                    Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");
+                }
             }
                anim?.SetTrigger("UseW");
                character.SetWCooldown();
@@ -169,6 +176,7 @@ public class TryndamereController : PlayerController
             Vector3 spawnPos = target.transform.position + Vector3.up * 1.8f;
             slowEffect = Instantiate(slowEffectPrefab, spawnPos, Quaternion.identity);
             slowEffect.transform.SetParent(target.transform); // 캐릭터 따라다님
+            Destroy(slowEffect, 4f); // 4초 뒤 삭제
         }
 
         // 2️ 이동속도 감소 적용
@@ -191,14 +199,27 @@ public class TryndamereController : PlayerController
         }
     }
 
+    //// 적이 등을 돌렸는지 확인
+    //private bool IsEnemyFacingAway(Transform target)
+    //{
+    //    Vector3 directionToEnemy = (transform.position - target.position).normalized;
+    //    directionToEnemy.y = 0;
 
-    // 적이 등을 돌렸는지 확인
+    //    return Vector3.Dot(target.forward, directionToEnemy) < 0;
+
+    //}
     private bool IsEnemyFacingAway(Transform target)
     {
         Vector3 directionToEnemy = (transform.position - target.position).normalized;
         directionToEnemy.y = 0;
-        return Vector3.Dot(target.forward, directionToEnemy) < 0;
+
+        float dot = Vector3.Dot(target.forward, directionToEnemy);
+        Debug.Log($"[W 사용] {target.name} Dot: {dot} → {(dot < 0 ? "등 돌림" : "정면")}");
+
+        return dot < 0;
     }
+
+
 
 
     // 트린다미어 E스킬 - 돌진공격

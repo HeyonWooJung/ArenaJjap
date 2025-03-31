@@ -70,17 +70,21 @@ public class SkillCooldownUI : MonoBehaviour
 
         UpdateHPUI(); // 체력 UI 갱신
 
-        ////  테스트용: 스페이스바 누르면 체력 200 깎기
         //if (Input.GetKeyDown(KeyCode.Space))
         //{
-        //    targetController.character.AdjustHP(-500);
+        //    // 캐릭터에 데미지를 주는 방식으로 체력 감소
+        //    targetController.character.TakeDamage(200, true, 0, 0f);
         //}
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // 캐릭터에 데미지를 주는 방식으로 체력 감소
-           // targetController.character.TakeDamage(200, true, 0, 0f);
+            TryndamereController trynd = targetController as TryndamereController;
+            if (trynd != null)
+            {
+                trynd.TakeDamage(200, true, 0, 0f);
+            }
         }
+
 
 
     }
