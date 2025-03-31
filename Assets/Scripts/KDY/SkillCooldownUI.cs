@@ -79,7 +79,7 @@ public class SkillCooldownUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             // 캐릭터에 데미지를 주는 방식으로 체력 감소
-            targetController.character.TakeDamage(200, true, 0, 0f);
+           // targetController.character.TakeDamage(200, true, 0, 0f);
         }
 
 
