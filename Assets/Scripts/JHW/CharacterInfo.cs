@@ -277,7 +277,7 @@ public class Character : ScriptableObject
 
     public Dictionary<State, float> stateDict = new Dictionary<State, float>();
 
-    public void ResetStates()
+    public void ResetStatus()
     {
         stateDict = new Dictionary<State, float>();
         stateDict.Add(State.Slow, 0);
@@ -327,7 +327,7 @@ public class Character : ScriptableObject
         _state = State.Neutral;
         _damageResist = 0;
 
-        ResetState();
+        ResetStatus();
 
         qCoolDown = character.qCoolDown;
         wCoolDown = character.wCoolDown;
@@ -347,7 +347,7 @@ public class Character : ScriptableObject
     public virtual void ResetState()
     {
         _curHP = _HP;
-        ResetState();
+        ResetStatus();
 
         qCurCool = 0;
         wCurCool = 0;
