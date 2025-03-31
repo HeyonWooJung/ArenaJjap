@@ -135,7 +135,7 @@ public class SionSkill : PlayerController
     {
         if(!qSkillCharging && !rSkillOn)
         {
-            StartCoroutine(AAHandle());
+            
             Vector3 look = target.transform.position;
             look.y = transform.position.y;
             Debug.Log("평타" + target.name);
@@ -145,6 +145,19 @@ public class SionSkill : PlayerController
             {
                 damage = character.CritDamage;
                 anim.SetTrigger("Critical");
+            }
+            else if (isPassiveNow)
+            {
+                int x = 1;
+                if(x == 1)
+                {
+                    x++;
+                }
+                else
+                {
+                    x--;
+                }
+                anim.SetTrigger("Attack" + x);
             }
             else
             {
@@ -165,8 +178,17 @@ public class SionSkill : PlayerController
         {
             return;
         }
+        if (isPassiveNow)
+        {
+            enemy.character.TakeDamage(character, baseAttackDamage + (enemy.character.HP * 0.1f), false, character.Lethality, character.ArmorPenetration);
+        }
+        else
+        {
+            enemy.character.TakeDamage(character, baseAttackDamage, false, character.Lethality, character.ArmorPenetration);
+        }
+        StartCoroutine(AAHandle());
 
-        enemy.character.TakeDamage(character, baseAttackDamage, false, character.Lethality, character.ArmorPenetration);
+
 
     }
 
@@ -331,14 +353,15 @@ public class SionSkill : PlayerController
     }
     IEnumerator PassiveOn()
     {
-        character.SetState(State.Stun);
+        character.SetState(State.Invincible ,2);
+        anim.Play("passiveDeath");
         isPassiveNow = true;
         originalAtkSpeed = character.AttackSpeed;
         originalHPRegen = character.HpRegen;
         float x = 1.75f - character.AttackSpeed;
-        anim.SetTrigger("Passive");
+ 
         yield return new WaitForSeconds(2f);
-        character.SetState(State.Neutral);
+        character.ResetState();
         character.Heal(character.HP);
         if(x < 0)
         {
@@ -348,11 +371,19 @@ public class SionSkill : PlayerController
         {
             character.AdjustAtkSpeed(-x);
         }
-        //character.Adjust 체젠 추가 바람
-        while(isPassiveNow && character.CurHP > 0)
-        {
+        
+       
+        character.AdjustHPRegen(-character.HpRegen);
 
+        while (isPassiveNow && character.CurHP > 0)
+        {
+            character.TakeDamage(character, -(1.3f + (passiveCount * 0.7f)), true, 0, 0);
+            passiveCount++;
+            yield return passiveDecreaseHPTime;
         }
+        character.AdjustHPRegen(originalHPRegen);
+        character.AdjustAtkSpeed(-1.75f);
+        character.AdjustAtkSpeed(originalAtkSpeed);
 
     }
     IEnumerator PassiveSkill()
@@ -625,7 +656,7 @@ public class SionSkill : PlayerController
 
     IEnumerator CastRSkill()
     {
-        character.SetState(State.Unstoppable);
+        character.SetState(State.Unstoppable,8);
         anim.SetTrigger("R");
         rSkillTimer = 0;
         rSkillIncreasedSpeed = 0;
@@ -756,7 +787,7 @@ public class SionSkill : PlayerController
                 StartCoroutine(SettingEnemyState(airborneTarget, State.Airborne, rSkillCurStun, false, 0));
             }
         }
-        character.SetState(State.Neutral);
+        character.ResetState();
         
     }
 
@@ -774,7 +805,7 @@ public class SionSkill : PlayerController
         {
             target.character.AdjustMoveSpeed(-slow);
         }
-        target.character.SetState(state);
+        target.character.SetState(state, time);
         yield return new WaitForSeconds(time);
         if (multipleCC == true)
         {
@@ -783,7 +814,7 @@ public class SionSkill : PlayerController
         else
         {
             target.character.AdjustMoveSpeed(slow);
-            target.character.ResetState();
+          
         }
         
     }
