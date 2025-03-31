@@ -54,7 +54,7 @@ public class RyzeController : PlayerController
 
     public override void AutoAttack(PlayerController target)
     {
-        StartCoroutine(AAHandle());
+        //StartCoroutine(AAHandle());
         Vector3 look = target.transform.position;
         look.y = transform.position.y;
         transform.LookAt(look, transform.forward);
@@ -147,7 +147,6 @@ public class RyzeController : PlayerController
             target.AdjustMoveSpeed(-tempSpeed);
             yield return new WaitForSeconds(1.5f);
             target.AdjustMoveSpeed(tempSpeed);
-            target.SetState(State.Neutral, 0);
         }
     }
 

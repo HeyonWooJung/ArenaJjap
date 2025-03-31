@@ -22,6 +22,7 @@ public enum State
 public class Character : ScriptableObject
 {
     #region 변수
+    bool alive;
     [SerializeField]
     float _HP; //체력
     float _curHP; //현재 체력
@@ -307,6 +308,7 @@ public class Character : ScriptableObject
 
         canFlash = true;
         canRush = true;*/
+        alive = true;
         _HP = character.HP;
         _curHP = _HP;
         _HPRegen = character.HpRegen;
@@ -346,6 +348,7 @@ public class Character : ScriptableObject
     //라운드 시작할때
     public virtual void ResetState()
     {
+        alive = true;
         _curHP = _HP;
         ResetStatus();
 
@@ -418,10 +421,14 @@ public class Character : ScriptableObject
 
     void Die()
     {
-        if (OnDie != null)
+        if(alive)
         {
-            //죽으셈
-            OnDie();
+            alive = false;
+            if (OnDie != null)
+            {
+                //죽으셈
+                OnDie();
+            }
         }
     }
 

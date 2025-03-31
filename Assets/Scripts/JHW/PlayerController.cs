@@ -5,6 +5,7 @@ using UnityEngine.AI;
 using Photon.Pun;
 using System;
 using Photon.Realtime;
+using UnityEngine.SocialPlatforms;
 
 [Serializable]
 [RequireComponent(typeof(NavMeshAgent))]
@@ -42,7 +43,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     protected Queue<CommandBase> toExecute;
     protected CommandBase curCommand;
-    protected Coroutine moveToUse;
+    protected Coroutine curCommandCor;
 
     Ray ray;
     RaycastHit hit;
@@ -53,11 +54,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
     // Start is called before the first frame update
     public virtual void Start()
     {
-        if (Application.isEditor) 
-        {
-            Debug.Log("Edit");
-            PhotonNetwork.OfflineMode = true;
-        }
         toExecute = new Queue<CommandBase>();
         curCommand = new CommandBase(this, 0);
         Character temp = character;
@@ -74,7 +70,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
         character.OnStateChanged += ApplyState;
         character.OnDie += Death;
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
-        StartCoroutine(HpRegen());
+        //StartCoroutine(HpRegen());
         StartCoroutine(Execution());
         if (pv.IsMine)
         {
@@ -116,10 +112,10 @@ public class PlayerController : MonoBehaviour, IPunObservable
             yield return new WaitUntil(() => canCancel);
             yield return new WaitUntil(() => toExecute.Count > 0);
             Debug.Log("tete: " + toExecute.Count);
-            if (moveToUse != null)
+            if (curCommandCor != null)
             {
-                StopCoroutine(moveToUse);
-                moveToUse = null;
+                StopCoroutine(curCommandCor);
+                curCommandCor = null;
             }
             if (curCommand != null)
             {
@@ -136,12 +132,20 @@ public class PlayerController : MonoBehaviour, IPunObservable
                     SKillCommands tempCommand = (SKillCommands)curCommand;
                     if (tempCommand.isTargeting == true)
                     {
-                        moveToUse = StartCoroutine(MoveToUse(false, tempCommand.range * 0.01f, tempCommand.GetTargetTransform()));
+                        curCommandCor = StartCoroutine(MoveToUse(false, tempCommand.range * 0.01f, tempCommand.GetTargetTransform()));
+                    }
+                    else
+                    {
+                        pv.RPC("Executer", RpcTarget.All);
+                        if (curCommand.Delay > 0)
+                        {
+                            StartCoroutine(Delay(curCommand.Delay));
+                        }
                     }
                 }
                 else if (curCommand is AutoAttackCommand)
                 {
-                    moveToUse = StartCoroutine(MoveToUse(true, character.Range * 0.01f, ((AutoAttackCommand)curCommand).GetTargetTransform()));
+                    curCommandCor = StartCoroutine(AACoroutine(((AutoAttackCommand)curCommand).GetTargetTransform(), character.Range * 0.01f));
                 }
                 else
                 {
@@ -158,19 +162,39 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     protected IEnumerator MoveToUse(bool loop, float range, Transform target)
     {
-        do
+        while (Vector3.Distance(transform.position, target.position) > range)
         {
-            while (Vector3.Distance(transform.position, target.position) <= range)
+            yield return null;
+            agent.SetDestination(target.position);
+        }
+        agent.ResetPath();
+        pv.RPC("Executer", RpcTarget.All);
+        if (curCommand.Delay > 0)
+        {
+            StartCoroutine(Delay(curCommand.Delay));
+        }
+    }
+
+    protected IEnumerator AACoroutine(Transform target, float range)
+    {
+        while (true)
+        {
+            yield return null;
+            if (Vector3.Distance(transform.position, target.position) > range)
             {
-                yield return null;
                 agent.SetDestination(target.position);
             }
-            pv.RPC("Executer", RpcTarget.All);
-            if (curCommand.Delay > 0)
+            else if (canAA)
             {
-                StartCoroutine(Delay(curCommand.Delay));
+                StartCoroutine(AAHandle());
+                agent.ResetPath();
+                pv.RPC("Executer", RpcTarget.All);
+                if (curCommand.Delay > 0)
+                {
+                    StartCoroutine(Delay(curCommand.Delay));
+                }
             }
-        } while (loop);
+        }
     }
 
     public void ApplyDamage(float value, bool trueDamage, int lethal, float armorPen)
@@ -253,7 +277,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
     // Update is called once per frame
     public virtual void Update()
     {
-        if (PhotonNetwork.OfflineMode || pv.IsMine)
+        if (pv.IsMine)
         {
             if ((character.CurState == State.Stun || character.CurState == State.Airborne) == false)
             {
@@ -263,13 +287,10 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
                     if (Physics.Raycast(ray, out hit))
                     {
-                        if (hit.transform.gameObject.CompareTag(enemyTag))
+                        if (hit.transform.gameObject.CompareTag(enemyTag) && (curCommand is AutoAttackCommand) == false)
                         {
-                            if (canAA)
-                            {
-                                pv.RPC("AAEnququer", RpcTarget.All, hit.transform.GetComponent<PhotonView>().ViewID);
-                                //toExecute.Enqueue(new AutoAttackCommand(this, 0, hit.transform.GetComponent<PhotonView>().ViewID));
-                            }
+                            pv.RPC("AAEnququer", RpcTarget.All, hit.transform.GetComponent<PhotonView>().ViewID);
+                            //toExecute.Enqueue(new AutoAttackCommand(this, 0, hit.transform.GetComponent<PhotonView>().ViewID));
                         }
                         else
                         {
@@ -410,7 +431,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
     public IEnumerator AAHandle()
     {
         canAA = false;
-        yield return new WaitForSeconds(1 / character.AttackSpeed);
+        yield return new WaitForSeconds(1f / character.AttackSpeed);
         canAA = true;
     }
 
@@ -469,6 +490,11 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     public virtual void Stop()
     {
+        if (curCommandCor != null)
+        {
+            StopCoroutine(curCommandCor);
+            curCommandCor = null;
+        }
         agent.ResetPath();
     }
 
@@ -480,6 +506,17 @@ public class PlayerController : MonoBehaviour, IPunObservable
     public virtual void Move(Vector3 pos)
     {
         //움직이다
+        toExecute.Clear();
+        if (curCommand != null)
+        {
+            curCommand = null;
+        }
+        if (curCommandCor != null)
+        {
+            StopCoroutine(curCommandCor);
+            curCommandCor = null;
+        }
+
         if (character.CurState != State.Root)
         {
             agent.SetDestination(pos);
@@ -488,7 +525,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     public virtual void AutoAttack(PlayerController target)
     {
-        StartCoroutine(AAHandle());
+        //StartCoroutine(AAHandle());
         Debug.Log("AA " + target.name);
         //평타
         float damage = character.ATK;
@@ -627,7 +664,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     public virtual void Death()
     {
-        agent.ResetPath();
+        Debug.Log(pv.ViewID + " 사망");
         agent.enabled = false;
         this.enabled = false;
     }
