@@ -1,12 +1,13 @@
 using System;
 using System.Buffers.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.TextCore.Text;
 
 public enum State
 {
-    Neutral, //기본
+    Neutral = 0, //기본
     Slow, //둔화
     Root, //속박
     Stun, //기절
@@ -62,6 +63,8 @@ public class Character : ScriptableObject
 
     bool canRush;
     bool canFlash;
+
+    public Dictionary<State, float> stateDiction = new Dictionary<State, float>();
 
     #endregion
 
@@ -266,6 +269,11 @@ public class Character : ScriptableObject
 
     public event Action OnMoveSpeedChanged;
 
+    public event Action OnStateChanged;
+
+    public event Action<float, bool, int, float> OnTakeDamage;
+    public event Action<float> OnHeal;
+
     public void InitCharacter(Character character)
     {
         /*_curHP = _HP;
@@ -334,8 +342,13 @@ public class Character : ScriptableObject
         canFlash = true;
     }
 
-    public void TakeDamage(float damage, bool isTrueDmg, int lethal, float armorPen)
+    public void TakeDamage(Character attacker, float damage, bool isTrueDmg, int lethal, float armorPen)
     {
+        if (OnTakeDamage != null)
+        {
+            OnTakeDamage(damage, isTrueDmg, lethal, armorPen);
+        }
+
         if (isTrueDmg)
         {
             if (_barrier > 0)
@@ -357,9 +370,10 @@ public class Character : ScriptableObject
             damage -= damage * _damageResist;
             float tempDef = _def - lethal; //물관 적용
             tempDef -= tempDef * armorPen; //방관 적용
-            if(_barrier > 0)
+            damage = damage * (1 + tempDef * 0.01f);
+            if (_barrier > 0)
             {
-                _barrier -= damage * (1 + tempDef * 0.01f);
+                _barrier -= damage;
                 if (_barrier <= 0)
                 {
                     _curHP += _barrier;
@@ -368,10 +382,16 @@ public class Character : ScriptableObject
             }
             else
             {
-                _curHP -= damage * (1 + tempDef * 0.01f);
+                _curHP -= damage;
             }
 
         }
+
+
+        if(attacker != null && attacker.LifeSteal > 0)
+        {
+            attacker.Heal(damage * attacker.LifeSteal);
+        } 
 
         if (_curHP <= 0)
         {
@@ -392,11 +412,20 @@ public class Character : ScriptableObject
         {
             _curHP = _HP;
         }
+        if (OnHeal != null)
+        {
+            OnHeal(heal);
+        }
     }
 
     public void AdjustHP(float hp)
     {
         _HP += hp;
+    }
+
+    public void AdjustHPRegen(float regen)
+    {
+        _HPRegen += regen;
     }
     public void AdjustBarrier(float barrier)
     {
@@ -477,6 +506,11 @@ public class Character : ScriptableObject
         else
         {
             _state = state;
+        }
+
+        if (OnStateChanged != null)
+        {
+            OnStateChanged();
         }
     }
 

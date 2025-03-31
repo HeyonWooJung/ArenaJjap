@@ -11,6 +11,7 @@ public class RyzeQScript : MonoBehaviour
     float damage;
     int lethal;
     float aPen;
+    Character character;
 
     private void Start()
     {
@@ -30,12 +31,13 @@ public class RyzeQScript : MonoBehaviour
         }
     }
 
-    public void GetDmg(float dmg, int let, float ap, string tag)
+    public void GetDmg(float dmg, int let, float ap, string tag, Character chara)
     {
         damage = dmg;
         lethal = let;
         aPen = ap;
         enemyTag = tag;
+        character = chara;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -62,12 +64,12 @@ public class RyzeQScript : MonoBehaviour
                         {
                             Destroy(addMark.gameObject);
                             GameObject addQ = Instantiate(addQObj, transform.position, Quaternion.identity);
-                            addQ.GetComponent<RyzeAddQScript>().GetDmg(hits[i].transform, damage, lethal, aPen, enemyTag);
+                            addQ.GetComponent<RyzeAddQScript>().GetDmg(hits[i].transform, damage, lethal, aPen, enemyTag, character);
                         }
                     }
                 }
             }
-            target.character.TakeDamage(damage, false, lethal, aPen);
+            target.character.TakeDamage(character, damage, false, lethal, aPen);
             Debug.Log(target.name + " 맞음 | " + damage + " 의 데미지");
             Destroy(gameObject);
         }

@@ -9,6 +9,7 @@ public class RyzeAddQScript : MonoBehaviour
     float damage;
     int lethal;
     float aPen;
+    Character character;
 
     // Update is called once per frame
     void Update()
@@ -20,20 +21,21 @@ public class RyzeAddQScript : MonoBehaviour
         }
     }
 
-    public void GetDmg(Transform tar, float dmg, int let, float ap, string tag)
+    public void GetDmg(Transform tar, float dmg, int let, float ap, string tag, Character chara)
     {
         target = tar;
         damage = dmg;
         lethal = let;
         aPen = ap;
         enemyTag = tag;
+        character = chara;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<PlayerController>(out PlayerController tar) && target.CompareTag(enemyTag) && other.transform == target)
         {
-            tar.character.TakeDamage(damage, false, lethal, aPen);
+            tar.character.TakeDamage(character, damage, false, lethal, aPen);
             Debug.Log(tar.name + " 맞음 | " + damage + " 의 데미지");
             Destroy(gameObject);
         }
