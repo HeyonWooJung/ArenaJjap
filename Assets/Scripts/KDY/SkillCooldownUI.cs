@@ -1,13 +1,10 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SkillCooldownUI : MonoBehaviour
 {
-    // ÇöÀç Á¶ÀÛ ÁßÀÎ Ä³¸¯ÅÍ (PlayerController) ÂüÁ¶
     public PlayerController targetController;
 
-    // QWER ½ºÅ³ UI (Fill ÀÌ¹ÌÁö + ÅØ½ºÆ®)
     [Header("Q Slot")]
     public Image qFillImage;
     public Text qCooldownText;
@@ -24,97 +21,89 @@ public class SkillCooldownUI : MonoBehaviour
     public Image rFillImage;
     public Text rCooldownText;
 
-    // D (À¯Ã¼È­) ½½·Ô - ¼öµ¿ ÄğÅ¸ÀÓ ÃßÀû
     [Header("D Slot (Rush)")]
     public Image dFillImage;
     public Text dCooldownText;
-    public float dCooldownDuration = 240f; // À¯Ã¼È­ ÄğÅ¸ÀÓ (ÃÊ)
-    private float dLastUsedTime = -999f;   // ¸¶Áö¸· »ç¿ë ½Ã°£ ±â·Ï
+    public float dCooldownDuration = 240f;
+    private float dLastUsedTime = -999f;
 
-    // F (Á¡¸ê) ½½·Ô - ¼öµ¿ ÄğÅ¸ÀÓ ÃßÀû
     [Header("F Slot (Flash)")]
     public Image fFillImage;
     public Text fCooldownText;
-    public float fCooldownDuration = 300f; // Á¡¸ê ÄğÅ¸ÀÓ (ÃÊ)
+    public float fCooldownDuration = 300f;
     private float fLastUsedTime = -999f;
+
+    [Header("HP UI")]
+    public Image hpFillImage;
+
+    [Header("HP Text (Split)")]
+    public Text hpLeftText;   // í˜„ì¬ ì²´ë ¥
+    public Text hpRightText;  // ìµœëŒ€ ì²´ë ¥
+
+    //  ìµœëŒ€ ì²´ë ¥ ìºì‹±ìš© ë³€ìˆ˜
+    private float cachedMaxHP;
+
+    void Start()
+    {
+        // ìµœì´ˆ ìµœëŒ€ ì²´ë ¥ ìºì‹±
+        if (targetController != null && targetController.character != null)
+        {
+            cachedMaxHP = targetController.character.HP;
+        }
+    }
 
     void Update()
     {
         if (targetController == null || targetController.character == null)
         {
-            Debug.LogWarning("targetController ¶Ç´Â character°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("targetController ë˜ëŠ” characterê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // QWER ½ºÅ³ ÄğÅ¸ÀÓ Fill, ÅØ½ºÆ® Ç¥½Ã Ã³¸®
         UpdateSkillUI(targetController.character.CurQCool, GetSkillMaxCooldown("qCoolDown"), qFillImage, qCooldownText, "Q");
         UpdateSkillUI(targetController.character.CurWCool, GetSkillMaxCooldown("wCoolDown"), wFillImage, wCooldownText, "W");
         UpdateSkillUI(targetController.character.CurECool, GetSkillMaxCooldown("eCoolDown"), eFillImage, eCooldownText, "E");
         UpdateSkillUI(targetController.character.CurRCool, GetSkillMaxCooldown("rCoolDown"), rFillImage, rCooldownText, "R");
 
-        // DF ½ºÅ³Àº bool »óÅÂ ±â¹İÀÌ¹Ç·Î º°µµ Ã³¸®
         UpdateDFCooldown("D", targetController.character.CanRush, dFillImage, dCooldownText, dCooldownDuration, ref dLastUsedTime);
         UpdateDFCooldown("F", targetController.character.CanFlash, fFillImage, fCooldownText, fCooldownDuration, ref fLastUsedTime);
+
+        UpdateHPUI(); // ì²´ë ¥ UI ê°±ì‹ 
+
+        ////  í…ŒìŠ¤íŠ¸ìš©: ìŠ¤í˜ì´ìŠ¤ë°” ëˆ„ë¥´ë©´ ì²´ë ¥ 200 ê¹ê¸°
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    targetController.character.AdjustHP(-500);
+        //}
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            // ìºë¦­í„°ì— ë°ë¯¸ì§€ë¥¼ ì£¼ëŠ” ë°©ì‹ìœ¼ë¡œ ì²´ë ¥ ê°ì†Œ
+            targetController.character.TakeDamage(200, true, 0, 0f);
+        }
+
+
     }
 
-    // QWER ½ºÅ³ UI ¾÷µ¥ÀÌÆ® (ÇöÀç°ª / ÃÖ´ë°ª ±âÁØÀ¸·Î FillAmount °è»ê ¹× ÅØ½ºÆ® Ç¥½Ã)
     void UpdateSkillUI(float currentCool, float maxCool, Image fillImage, Text cooldownText, string label)
     {
         float ratio = Mathf.Clamp01(currentCool / maxCool);
 
-        // FillAmount º¯È­ °¨Áö
         if (fillImage != null)
-        {
-            if (Mathf.Abs(fillImage.fillAmount - ratio) > 0.001f)
-            {
-                Debug.Log($"[{label}] FillAmount °¨¼Ò ½ÃÀÛ: {fillImage.fillAmount:0.00} ¡æ {ratio:0.00}");
-            }
             fillImage.fillAmount = ratio;
-        }
 
-        // ÅØ½ºÆ® º¯È­ °¨Áö
         if (cooldownText != null)
         {
-            if (currentCool > 0)
-            {
-                int time = Mathf.CeilToInt(currentCool);
-                if (cooldownText.text != time.ToString())
-                {
-                    Debug.Log($"[{label}] ÅØ½ºÆ® Ç¥½Ã ½ÃÀÛ: {time}ÃÊ ³²À½");
-                }
-                cooldownText.text = time.ToString();
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(cooldownText.text))
-                {
-                    Debug.Log($"[{label}] ÄğÅ¸ÀÓ Á¾·á ¡æ ÅØ½ºÆ® »ç¶óÁü");
-                }
-                cooldownText.text = "";
-            }
+            cooldownText.text = currentCool > 0 ? Mathf.CeilToInt(currentCool).ToString() : "";
         }
     }
 
-    // D / F ½ºÅ³ ÄğÅ¸ÀÓ UI Ã³¸® (bool »óÅÂ ±â¹İ ¼öµ¿ ÃßÀû)
     void UpdateDFCooldown(string label, bool isAvailable, Image fillImage, Text cooldownText, float cooldownDuration, ref float lastUsedTime)
     {
         if (isAvailable)
         {
-            // »ç¿ë °¡´É »óÅÂÀÏ °æ¿ì Fill 0, ÅØ½ºÆ® ¾øÀ½
-            if (fillImage != null && fillImage.fillAmount != 0f)
-            {
-                Debug.Log($"[{label}] »ç¿ë °¡´É »óÅÂ ¡æ Fill 0, ÅØ½ºÆ® »ç¶óÁü");
-            }
-
-            if (cooldownText != null && !string.IsNullOrEmpty(cooldownText.text))
-            {
-                Debug.Log($"[{label}] »ç¿ë °¡´É »óÅÂ ¡æ ÅØ½ºÆ® ÃÊ±âÈ­");
-            }
-
             if (fillImage != null) fillImage.fillAmount = 0f;
             if (cooldownText != null) cooldownText.text = "";
-
-            // ÄğÅ¸ÀÓ ÃÊ±âÈ­
             lastUsedTime = Time.time;
         }
         else
@@ -123,22 +112,26 @@ public class SkillCooldownUI : MonoBehaviour
             float remain = Mathf.Clamp(cooldownDuration - elapsed, 0f, cooldownDuration);
             float ratio = remain / cooldownDuration;
 
-            if (fillImage != null && Mathf.Abs(fillImage.fillAmount - ratio) > 0.001f)
-            {
-                Debug.Log($"[{label}] FillAmount °¨¼Ò Áß: {fillImage.fillAmount:0.00} ¡æ {ratio:0.00}");
-            }
-
-            if (cooldownText != null && cooldownText.text != Mathf.CeilToInt(remain).ToString())
-            {
-                Debug.Log($"[{label}] ÅØ½ºÆ® Ç¥½Ã Áß: {Mathf.CeilToInt(remain)}ÃÊ ³²À½");
-            }
-
             if (fillImage != null) fillImage.fillAmount = ratio;
             if (cooldownText != null) cooldownText.text = Mathf.CeilToInt(remain).ToString();
         }
     }
 
-    // Character.csÀÇ private ÄğÅ¸ÀÓ °ª(qCoolDown µî)À» ¸®ÇÃ·º¼ÇÀ¸·Î ÀĞ¾î¿È
+    //  HP UI ê°±ì‹  (í˜„ì¬ ì²´ë ¥ë§Œ ë³€í•¨, ìµœëŒ€ ì²´ë ¥ì€ ê³ ì •)
+    void UpdateHPUI()
+    {
+        float curHP = Mathf.Max(0f, targetController.character.CurHP);
+
+        if (hpFillImage != null)
+            hpFillImage.fillAmount = Mathf.Clamp01(curHP / cachedMaxHP);
+
+        if (hpLeftText != null)
+            hpLeftText.text = $"{(int)curHP}";
+
+        if (hpRightText != null)
+            hpRightText.text = $"/ {(int)cachedMaxHP}";
+    }
+
     float GetSkillMaxCooldown(string fieldName)
     {
         var field = targetController.character.GetType().GetField(fieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -148,7 +141,7 @@ public class SkillCooldownUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"ÄğÅ¸ÀÓ ÇÊµå {fieldName} ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning($"ì¿¨íƒ€ì„ í•„ë“œ {fieldName} ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return 1f;
         }
     }

@@ -1,4 +1,4 @@
-﻿
+
 namespace Photon.Pun
 {
     using UnityEngine;
@@ -35,6 +35,7 @@ namespace Photon.Pun
         /// </remarks>
         /// \ingroup publicApi
         void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info);
+        //void SkillE(bool isTargeting, bool isChanneling, global::Character target, Vector3 location);
     }
 
 
