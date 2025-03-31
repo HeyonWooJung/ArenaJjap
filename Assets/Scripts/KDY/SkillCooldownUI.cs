@@ -70,12 +70,6 @@ public class SkillCooldownUI : MonoBehaviour
 
         UpdateHPUI(); // 체력 UI 갱신
 
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    // 캐릭터에 데미지를 주는 방식으로 체력 감소
-        //    targetController.character.TakeDamage(200, true, 0, 0f);
-        //}
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
             TryndamereController trynd = targetController as TryndamereController;
@@ -84,9 +78,6 @@ public class SkillCooldownUI : MonoBehaviour
                 trynd.TakeDamage(200, true, 0, 0f);
             }
         }
-
-
-
     }
 
     void UpdateSkillUI(float currentCool, float maxCool, Image fillImage, Text cooldownText, string label)

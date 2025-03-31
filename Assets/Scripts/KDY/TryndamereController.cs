@@ -4,6 +4,9 @@ using UnityEngine.AI;
 
 public class TryndamereController : PlayerController
 {
+    [SerializeField] private float attackCooldown = 0.3f; // 후딜 시간
+    //private bool canAttack = true;
+
     // 애니메이션 및 상태 관련 변수
     public GameObject healEffectPrefab; // Q 스킬 사용 시 힐 이펙트 프리팹
     public GameObject rEffectObject; // R스킬 사용 시 파티클 
@@ -75,6 +78,8 @@ public class TryndamereController : PlayerController
         }
     }
 
+
+
     //기본 공격 실행
     public override void AutoAttack(PlayerController target)
     {
@@ -88,15 +93,19 @@ public class TryndamereController : PlayerController
         PerformAttack(); // → 애니메이션 + 분노 증가 둘 다 여기서 처
 
         Debug.Log($"AutoAttack 실행! 대상: {target?.name}, 현재 분노: {rage}");
+
+        //StartCoroutine(AttackDelayReset()); // 후딜 도중 평캔 가능
     }
-
-
 
     // 트린다미어 Q스킬 - 체력회복
     public override void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurQCool <= 0 && rage > 0)
         {
+            // 평캔 처리: 평타 후딜 캔슬
+            //StopAllCoroutines();
+            //canAttack = true;
+
             Debug.Log("QQ");
             int healAmount = rage / 2;
             character.Heal(healAmount);
@@ -126,6 +135,10 @@ public class TryndamereController : PlayerController
         Debug.Log(character.CurWCool +"w쿨");
         if (character.CurWCool <= 0)
         {
+
+            //StopAllCoroutines();
+            //canAttack = true;
+
             //대충 스킬쓰기
             Collider[] targets = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
             Debug.Log($"W 스킬 사용! 대상 검색 중... 감지된 개수: {targets.Length}");
@@ -199,15 +212,6 @@ public class TryndamereController : PlayerController
         }
     }
 
-    //// 적이 등을 돌렸는지 확인
-    //private bool IsEnemyFacingAway(Transform target)
-    //{
-    //    Vector3 directionToEnemy = (transform.position - target.position).normalized;
-    //    directionToEnemy.y = 0;
-
-    //    return Vector3.Dot(target.forward, directionToEnemy) < 0;
-
-    //}
     private bool IsEnemyFacingAway(Transform target)
     {
         Vector3 directionToEnemy = (transform.position - target.position).normalized;
@@ -219,14 +223,15 @@ public class TryndamereController : PlayerController
         return dot < 0;
     }
 
-
-
-
     // 트린다미어 E스킬 - 돌진공격
     public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurECool <= 0 && !isDashing)
         {
+            // 평캔 처리: 평타 후딜 캔슬
+            //StopAllCoroutines();
+            //canAttack = true;
+
             eTargetPosition = location;
             isDashing = true;
 
@@ -280,6 +285,9 @@ public class TryndamereController : PlayerController
     {
         if (character.CurRCool <= 0)
         {
+            //StopAllCoroutines();
+            //canAttack = true;
+
             if (isImmortal) return; // 이미 무적이면 실행 안 함
 
             isImmortal = true; // 무적 상태 활성화
@@ -357,4 +365,10 @@ public class TryndamereController : PlayerController
         Debug.Log($"분노 증가: {rageGain}, 현재 분노: {rage}");
     }
 
+    //private IEnumerator AttackDelayReset()
+    //{
+    //    canAttack = false;
+    //    yield return new WaitForSeconds(attackCooldown); // 딜레이 후 공격 가능
+    //    canAttack = true;
+    //}
 }
