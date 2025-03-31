@@ -6,7 +6,7 @@ public class InGameManager : MonoBehaviourPunCallbacks
     public Transform[] spawnPoints; // 인원 수 만큼 위치 설정
 
     // 인덱스에 대응하는 프리팹 이름 리스트
-    private readonly string[] championNames = { "Ryze", "Sion1", "Tryn1", "Vayne1" };
+    private readonly string[] championNames = { "Ryze", "Sion1", "Tryn1", "Vayne" };
 
     void Start()
     {
