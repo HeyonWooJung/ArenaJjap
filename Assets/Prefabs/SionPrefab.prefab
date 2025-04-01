@@ -186,9 +186,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7174265133618866419}
-  - component: {fileID: 1539046470216478304}
   - component: {fileID: 2702172553904765677}
   - component: {fileID: 3929813930540370221}
+  - component: {fileID: 5585046338059369880}
+  - component: {fileID: 238116844509075921}
+  - component: {fileID: 8164872356892357802}
   m_Layer: 0
   m_Name: SionPrefab
   m_TagString: Untagged
@@ -212,20 +214,6 @@ Transform:
   - {fileID: 2797649430975001094}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1539046470216478304
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7982299385377449195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1eac00eb53697bc48b8f3050e40c3d9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  character: {fileID: 11400000, guid: 293c43303a8c840478a67112c19d8d12, type: 2}
-  enemyTag: 
 --- !u!114 &2702172553904765677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,7 +227,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: 293c43303a8c840478a67112c19d8d12, type: 2}
-  enemyTag: 
+  enemyTag: Enemy
+  pv: {fileID: 0}
+  qRange: 0
+  qDelay: 0
+  qTarget: 0
+  qChannel: 0
+  wRange: 0
+  wDelay: 0
+  wTarget: 0
+  wChannel: 0
+  eRange: 0
+  eDelay: 0.2
+  eTarget: 0
+  eChannel: 0
+  rRange: 0
+  rDelay: 0
+  rTarget: 0
+  rChannel: 0
   hitLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -248,6 +253,18 @@ MonoBehaviour:
     m_Bits: 4294967295
   debuggingMode: 1
   skillCanvas: {fileID: 3141851457519422815}
+  passiveCount: 0
+  passiveAtkSpeed: 1.75
+  passiveDecreaseHPFloat: 1.3
+  passiveIncreasingMovementSpeedPercentage: 1.5
+  passiveAddDamage: 0.1
+  passiveAddLifeStill: 100
+  passiveTime: 0
+  isPassiveNow: 0
+  usedPassiveSkill: 0
+  originalAtkSpeed: 0
+  originalHPRegen: 0
+  canActivePassive: 1
   qSkillMinFixedDamage: 120
   qSkillMaxFixedDamage: 350
   qSkillMinAddDamage: 0.8
@@ -274,7 +291,7 @@ MonoBehaviour:
   wTimerMax: 8
   wBoomMinTime: 3
   wSkillOn: 0
-  eSkillPrefab: {fileID: 1778343436738501546, guid: d1c11de7d1f0bb648ba5ee0e4dc31be8, type: 3}
+  eSkillPrefab: {fileID: 0}
   eSkillDamage: 140
   eSkillSlowPercent: 55
   eSkillArmorDownPercent: 20
@@ -289,11 +306,16 @@ MonoBehaviour:
   rSkillMinStun: 0.75
   rSkillMaxStun: 1.75
   rSkillOn: 0
-  rSkillRotationSpeed: 20
+  rSkillRotationSpeed: 500000
   rSkillTimer: 0
   rSkillCheckDistance: 0.5
   rSkillIncreasedSpeed: 0
   rSkillIncreasing: 10
+  rSkillExpolosionWidth: 5
+  rSkillAirborneWidth: 2
+  rSkillCurStun: 0
+  rSkillCurDamage: 0
+  rSkillSlowTime: 0
 --- !u!195 &3929813930540370221
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -316,6 +338,74 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &5585046338059369880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982299385377449195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 2702172553904765677}
+  - {fileID: 238116844509075921}
+  - {fileID: 9146346226634718972}
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &238116844509075921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982299385377449195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 1
+  m_UseLocal: 1
+--- !u!54 &8164872356892357802
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982299385377449195}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &8820750549822241077
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,10 +556,108 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7874915680689561170}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6406557189142146444}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9146346226634718972}
   m_SourcePrefab: {fileID: 100100000, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
 --- !u!4 &2797649430975001094 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
   m_PrefabInstance: {fileID: 2403099385856251373}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &3285639781461452988 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
+  m_PrefabInstance: {fileID: 2403099385856251373}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6406557189142146444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3285639781461452988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e70b64631aa9c5f49a133f9c1c4a4fe2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &9146346226634718972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3285639781461452988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters:
+  - Type: 9
+    SynchronizeType: 0
+    Name: Q
+  - Type: 9
+    SynchronizeType: 0
+    Name: E
+  - Type: 9
+    SynchronizeType: 0
+    Name: WBoom
+  - Type: 9
+    SynchronizeType: 0
+    Name: R
+  - Type: 4
+    SynchronizeType: 0
+    Name: RRunning
+  - Type: 9
+    SynchronizeType: 0
+    Name: RStop
+  - Type: 9
+    SynchronizeType: 0
+    Name: RHit
+  - Type: 9
+    SynchronizeType: 0
+    Name: Passive
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack
+  - Type: 4
+    SynchronizeType: 0
+    Name: Walking
+  - Type: 3
+    SynchronizeType: 0
+    Name: Slow
+  - Type: 3
+    SynchronizeType: 0
+    Name: Stun
+  - Type: 4
+    SynchronizeType: 0
+    Name: Death
+  - Type: 9
+    SynchronizeType: 0
+    Name: QShort
+  - Type: 9
+    SynchronizeType: 0
+    Name: QLong
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack1
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack2
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack3
+  - Type: 9
+    SynchronizeType: 0
+    Name: Critical
+  m_SynchronizeLayers:
+  - SynchronizeType: 0
+    LayerIndex: 0
