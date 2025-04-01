@@ -52,7 +52,7 @@ public class AugmentManager : MonoBehaviour
     }
     public void ApplyCritDamage()
     {
-        localPlayer.AdjustCritDmg(      statAugment.statPlusInt);
+        localPlayer.AdjustCritDmg(statAugment.statPlusInt);
     }
     public void ApplyLifeSteal()
     {
@@ -62,6 +62,8 @@ public class AugmentManager : MonoBehaviour
     {
         localPlayer.AdjustMoveSpeed(statAugment.statPlusInt);
     }
+
+
 
 
 }
