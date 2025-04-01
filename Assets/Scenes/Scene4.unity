@@ -521,7 +521,11 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6427876, y: 0, z: 0, w: 0.7660445}
+<<<<<<< Updated upstream
   m_LocalPosition: {x: 0, y: 20, z: -2}
+=======
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+>>>>>>> Stashed changes
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -540,7 +544,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  initPos: {x: 0, y: 20, z: -2}
+  initPos: {x: 0, y: 50, z: -2}
   moveLimit: 10
   speed: 15
 --- !u!1 &1185938289
