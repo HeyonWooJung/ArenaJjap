@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class ScriptableStatPlus : MonoBehaviour
+[CreateAssetMenu(fileName = "NewAugment", menuName = "Augment System/Augment")]
+public class ScriptableStatPlus : ScriptableObject
 {
     public string statName;
-    public int statPlusInt;
+    public float statPlusInt;
     public Sprite icon;
 
 
