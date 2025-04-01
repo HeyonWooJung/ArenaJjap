@@ -98,22 +98,10 @@ MonoBehaviour:
   character: {fileID: 11400000, guid: f1a975db0b5613d4d9d7038d1ebbc79d, type: 2}
   enemyTag: Enemy
   pv: {fileID: 0}
-  qRange: 1000
   qDelay: 0.2
-  qTarget: 0
-  qChannel: 0
-  wRange: 550
   wDelay: 0.1
-  wTarget: 1
-  wChannel: 0
-  eRange: 550
   eDelay: 0.1
-  eTarget: 1
-  eChannel: 0
-  rRange: 0
   rDelay: 0
-  rTarget: 0
-  rChannel: 0
   animator: {fileID: 7101806127043439641}
   AAObj: {fileID: 5801730086407992184, guid: 59d56bf0fc937514ea136589b3a3fc2e, type: 3}
   QObj: {fileID: 4778584851969424976, guid: eeeb389befc640b4083c4619333d93bc, type: 3}
@@ -167,7 +155,6 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 1703957794433250074}
   - {fileID: 5953291633800328535}
-  - {fileID: 7976152804115816039}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -262,60 +249,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f518fe26f1c46943ae1665ac776ed09, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7976152804115816039}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8f518fe26f1c46943ae1665ac776ed09, type: 3}
 --- !u!4 &3778102132006205027 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8f518fe26f1c46943ae1665ac776ed09, type: 3}
   m_PrefabInstance: {fileID: 3739178059456926088}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &4550134754964434137 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f518fe26f1c46943ae1665ac776ed09, type: 3}
-  m_PrefabInstance: {fileID: 3739178059456926088}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7976152804115816039
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4550134754964434137}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowLayerWeightsInspector: 1
-  ShowParameterInspector: 1
-  m_SynchronizeParameters:
-  - Type: 9
-    SynchronizeType: 2
-    Name: Run
-  - Type: 9
-    SynchronizeType: 2
-    Name: RunFast
-  - Type: 9
-    SynchronizeType: 2
-    Name: AA
-  - Type: 9
-    SynchronizeType: 2
-    Name: UseQ
-  - Type: 9
-    SynchronizeType: 2
-    Name: UseW
-  - Type: 9
-    SynchronizeType: 2
-    Name: UseE
-  - Type: 9
-    SynchronizeType: 2
-    Name: Stop
-  m_SynchronizeLayers:
-  - SynchronizeType: 2
-    LayerIndex: 0
 --- !u!95 &7101806127043439641 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 8f518fe26f1c46943ae1665ac776ed09, type: 3}

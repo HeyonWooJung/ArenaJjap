@@ -138,16 +138,18 @@ public class RyzeController : PlayerController
         if (marked != null) //표식 있으면
         {
             Destroy(marked.gameObject);
-            target.SetState(State.Root, 1.5f);
+            target.SetState(State.Root);
+            yield return new WaitForSeconds(1.5f);
+            target.SetState(State.Neutral);
         }
         else
         {
             int tempSpeed = (int)(target.MoveSpeed * 0.5f);
-            target.SetState(State.Slow, 1.5f);
+            target.SetState(State.Slow);
             target.AdjustMoveSpeed(-tempSpeed);
             yield return new WaitForSeconds(1.5f);
             target.AdjustMoveSpeed(tempSpeed);
-            target.SetState(State.Neutral, 0);
+            target.SetState(State.Neutral);
         }
     }
 
@@ -242,12 +244,5 @@ public class RyzeController : PlayerController
         character.AdjustMoveSpeed(tempSpeed);
         yield return new WaitForSeconds(2f);
         character.AdjustMoveSpeed(-tempSpeed);
-    }
-
-    public override void Death()
-    {
-        base.Death();
-        animator.SetTrigger("Die");
-
     }
 }

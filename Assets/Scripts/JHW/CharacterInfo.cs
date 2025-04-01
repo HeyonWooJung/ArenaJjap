@@ -13,8 +13,7 @@ public enum State
     Stun, //기절
     Airborne, //에어본
     Unstoppable, //저지불가
-    Invincible,//무적
-    End //끝 확인용
+    Invincible//무적
 }
 
 [Serializable]
@@ -64,6 +63,8 @@ public class Character : ScriptableObject
 
     bool canRush;
     bool canFlash;
+
+    public Dictionary<State, float> stateDiction = new Dictionary<State, float>();
 
     #endregion
 
@@ -269,23 +270,9 @@ public class Character : ScriptableObject
     public event Action OnMoveSpeedChanged;
 
     public event Action OnStateChanged;
-    public event Action OnDie;
 
     public event Action<float, bool, int, float> OnTakeDamage;
     public event Action<float> OnHeal;
-
-
-    public Dictionary<State, float> stateDict = new Dictionary<State, float>();
-
-    public void ResetStatus()
-    {
-        stateDict = new Dictionary<State, float>();
-        stateDict.Add(State.Slow, 0);
-        stateDict.Add(State.Stun, 0);
-        stateDict.Add(State.Airborne, 0);
-        stateDict.Add(State.Unstoppable, 0);
-        stateDict.Add(State.Invincible, 0);
-    }
 
     public void InitCharacter(Character character)
     {
@@ -327,8 +314,6 @@ public class Character : ScriptableObject
         _state = State.Neutral;
         _damageResist = 0;
 
-        ResetStatus();
-
         qCoolDown = character.qCoolDown;
         wCoolDown = character.wCoolDown;
         eCoolDown = character.eCoolDown;
@@ -347,7 +332,6 @@ public class Character : ScriptableObject
     public virtual void ResetState()
     {
         _curHP = _HP;
-        ResetStatus();
 
         qCurCool = 0;
         wCurCool = 0;
@@ -404,10 +388,10 @@ public class Character : ScriptableObject
         }
 
 
-        if (attacker != null && attacker.LifeSteal > 0)
+        if(attacker != null && attacker.LifeSteal > 0)
         {
             attacker.Heal(damage * attacker.LifeSteal);
-        }
+        } 
 
         if (_curHP <= 0)
         {
@@ -418,11 +402,7 @@ public class Character : ScriptableObject
 
     void Die()
     {
-        if (OnDie != null)
-        {
-            //죽으셈
-            OnDie();
-        }
+        //죽으셈
     }
 
     public void Heal(float heal)
@@ -514,31 +494,24 @@ public class Character : ScriptableObject
         _lifeSteal += ls;
     }
 
-    public void SetState(State state, float time)
+    public void SetState(State state)
     {
-        if(stateDict.ContainsKey(state) && stateDict[state] < time)
+        if (_state == State.Unstoppable)
         {
-            stateDict[state] = time;
-        }
-
-        OnStateChanged?.Invoke();
-    }
-
-    public void StateChecker()
-    {
-        State curState = State.Neutral;
-        if (stateDict != null)
-        {
-            for (int i = 1; i < (int)State.End; i++)
+            if (state == State.Neutral)
             {
-                State tempState = (State)i;
-                if (stateDict.ContainsKey(tempState) && stateDict[tempState] > 0)
-                {
-                    curState = tempState;
-                }
+                _state = state;
             }
         }
-        _state = curState;
+        else
+        {
+            _state = state;
+        }
+
+        if (OnStateChanged != null)
+        {
+            OnStateChanged();
+        }
     }
 
     public void SetQCooldown()
