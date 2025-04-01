@@ -32,7 +32,7 @@ public class SionSkill : PlayerController
     [SerializeField] bool usedPassiveSkill = false;
     [SerializeField] float originalAtkSpeed;
     [SerializeField] float originalHPRegen;
-
+    [SerializeField] bool canActivePassive = true;
 
     [Header("Q스킬")]
     [SerializeField] float qSkillMinFixedDamage = 120;
@@ -130,7 +130,23 @@ public class SionSkill : PlayerController
 
 
     }
+    private void OnEnable()
+    {
+        canActivePassive = true;
+    }
 
+    public override void Death()
+    {
+        if (canActivePassive)
+        {
+            canActivePassive = false;
+            StartCoroutine(PassiveOn());
+        }
+        else
+        {
+            base.Death();
+        }
+    }
     public override void AutoAttack(PlayerController target)
     {
         if(!qSkillCharging && !rSkillOn)
@@ -384,6 +400,8 @@ public class SionSkill : PlayerController
         character.AdjustHPRegen(originalHPRegen);
         character.AdjustAtkSpeed(-1.75f);
         character.AdjustAtkSpeed(originalAtkSpeed);
+        anim.Play("SionDeath");
+        base.Death();
 
     }
     IEnumerator PassiveSkill()
