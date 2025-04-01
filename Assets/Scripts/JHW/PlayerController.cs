@@ -184,7 +184,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
         canCancel = true;
     }
 
-    // Update is called once per frame
     public virtual void Update()
     {
         if (pv.IsMine)

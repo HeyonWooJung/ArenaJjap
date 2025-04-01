@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3713678617428843873}
   - component: {fileID: 3205854455308713299}
   m_Layer: 0
-  m_Name: Tryn1
+  m_Name: Tryn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -102,8 +102,10 @@ MonoBehaviour:
   wDelay: 0
   eDelay: 0
   rDelay: 0
+  attackCooldown: 0.3
   healEffectPrefab: {fileID: 1679069660912616131}
   rEffectObject: {fileID: 2416173175428008392}
+  slowEffectPrefab: {fileID: 0}
   rage: 0
   maxRage: 100
   eSpeed: 10

@@ -157,6 +157,11 @@ MonoBehaviour:
   - {fileID: 682256408}
   - {fileID: 1927461164}
   - {fileID: 1185938290}
+  canvasUIs:
+  - {fileID: 7874480120587445605, guid: 88ccfbde2b678074fb5bbb84b6839c91, type: 3}
+  - {fileID: 6741234669035834132, guid: a1f6d00daa8e914498e56d615738903a, type: 3}
+  - {fileID: 6889772730537229755, guid: 91a926524e0e3c7479ff43764d1b0b8f, type: 3}
+  - {fileID: 7842068953769916472, guid: d489fc3d65827b544939a1e4b96ef392, type: 3}
 --- !u!4 &57520863
 Transform:
   m_ObjectHideFlags: 0
