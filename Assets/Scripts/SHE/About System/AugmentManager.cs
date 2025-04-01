@@ -50,51 +50,21 @@ public class AugmentManager : MonoBehaviour
     {
         localPlayer.AdjustCritChance(statAugment.statPlusInt);
     }
+    public void ApplyCritDamage()
+    {
+        localPlayer.AdjustCritDmg(statAugment.statPlusInt);
+    }
     public void ApplyLifeSteal()
     {
         localPlayer.AdjustLifeSteal(statAugment.statPlusInt);
     }
     public void ApplyMovementSpeed()
     {
-        localPlayer.AdjustMoveSpeed((int)statAugment.statPlusInt * localPlayer.MoveSpeed);
+        localPlayer.AdjustMoveSpeed(statAugment.statPlusInt);
     }
-    public void ApplyCooldown()
-    {
-        localPlayer.AdjustAbilityHaste((int)statAugment.statPlusInt);
-    }
-    public void ApplyPrisomDamage()
-    {
-        localPlayer.AdjustATK(statAugment.statPlusInt);
-    }
-    public void ApplyPrisomArmor()
-    {
-        localPlayer.AdjustDef(statAugment.statPlusInt);
-    }
-   
-    public void ApplyPrisomHP()
-    {
-        localPlayer.AdjustHP(statAugment.statPlusInt + localPlayer.HP * 0.4f);
-    }
-    public void ApplyPrisomCritical()
-    {
-        localPlayer.AdjustCritChance(statAugment.statPlusInt);
-    }
-    public void ApplyPrisomCritDamage()
-    {
-        localPlayer.AdjustCritDmg(statAugment.statPlusInt);
-    }
-    public void ApplyPrisomLifeSteal()
-    {
-        localPlayer.AdjustLifeSteal(statAugment.statPlusInt);
-    }
-    public void ApplyPrisomMovementSpeed()
-    {
-        localPlayer.AdjustMoveSpeed((int)statAugment.statPlusInt * localPlayer.MoveSpeed);
-    }
-    public void ApplyPrisomCooldown()
-    {
-        localPlayer.AdjustAbilityHaste((int)statAugment.statPlusInt);
-    }
+
+
+
 
 }
 
