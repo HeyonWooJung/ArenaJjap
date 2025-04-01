@@ -69,12 +69,14 @@ public class PlayerController : MonoBehaviour, IPunObservable
         character.OnHeal += ApplyHeal;
         character.OnStateChanged += ApplyState;
         character.OnDie += Death;
+        
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         //StartCoroutine(HpRegen());
         StartCoroutine(Execution());
         if (pv.IsMine)
         {
             Camera.main.GetComponent<InGameCamera>().player = gameObject;
+            PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
         }
     }
 
