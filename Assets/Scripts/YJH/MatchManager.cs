@@ -39,14 +39,6 @@ public class MatchManager : MonoBehaviourPunCallbacks
     public static int myChampionIndex = -1; // <- 여기에 저장
      
 
-    private void Awake()
-    {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            AssignTeams();
-        }
-    }
-
     void AssignTeams()
     {
         playerList = new List<Player>(PhotonNetwork.PlayerList);
@@ -108,6 +100,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            AssignTeams();
+        }
         foreach (var bg in BackgroundImgs)
         {
             bg.SetActive(false);

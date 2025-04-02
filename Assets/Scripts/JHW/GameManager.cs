@@ -85,10 +85,9 @@ public class GameManager : MonoBehaviour
 
     public void ResetRound()
     {
-        Debug.Log("ResetRound");
         foreach(var blue in blueChamps)
         {
-            Debug.Log(blue.Value + "레드 초기화");
+            Debug.Log(blue.Value + "블루 초기화");
             blue.Value.character.ResetState();
             blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
         }
