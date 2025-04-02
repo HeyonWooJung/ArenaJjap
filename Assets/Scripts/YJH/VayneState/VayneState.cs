@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public interface IVayneState
@@ -31,8 +32,8 @@ public class VayneState : PlayerController
     int hitCount = 0;
     public override void Start()
     {
-        ChangeState(new DefaultState());
         base.Start();
+        ChangeState(new DefaultState());        
     }
 
     public override void Update()
@@ -214,7 +215,9 @@ public class VayneState : PlayerController
                 if (hit.collider.CompareTag("Wall"))
                 {
                     Debug.Log("벽 충돌 감지");
-                    target.character.SetState(State.Stun, 1.5f);
+                    target.character.SetState(State.Stun);
+                    yield return new WaitForSeconds(1.5f);
+                    target.character.SetState(State.Neutral);
 
                     target.character.TakeDamage(character, 285 + (character.ATK * 0.75f), false, character.Lethality, character.ArmorPenetration);
                     yield break;

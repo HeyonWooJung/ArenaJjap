@@ -15,31 +15,10 @@ public class PlayerController : MonoBehaviour, IPunObservable
     public string enemyTag;
     protected NavMeshAgent agent;
     public PhotonView pv;
-
-    [Header("Q")]
-    public int qRange;
     public float qDelay;
-    public bool qTarget;
-    public bool qChannel;
-
-    [Header("W")]
-    public int wRange;
     public float wDelay;
-    public bool wTarget;
-    public bool wChannel;
-
-    [Header("E")]
-    public int eRange;
     public float eDelay;
-    public bool eTarget;
-    public bool eChannel;
-
-    [Header("R")]
-    public int rRange;
     public float rDelay;
-    public bool rTarget;
-    public bool rChannel;
-
 
     protected Queue<CommandBase> toExecute;
     protected CommandBase curCommand;
@@ -73,7 +52,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         //StartCoroutine(HpRegen());
         StartCoroutine(Execution());
-        if (pv.IsMine)
+        if(pv.IsMine)
         {
             Camera.main.GetComponent<InGameCamera>().Init(gameObject);
             PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
@@ -104,7 +83,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
         character.OnTakeDamage -= ApplyDamage;
         character.OnHeal -= ApplyHeal;
         character.OnStateChanged -= ApplyState;
-        character.OnDie -= Death;
     }
 
     IEnumerator Execution()
@@ -223,13 +201,13 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     public void ApplyState()
     {
-        pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState, character.stateDict[character.CurState]);
+        pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState);
     }
 
     [PunRPC]
-    public void StateRPC(State state, float time)
+    public void StateRPC(State state)
     {
-        character.SetState(state, time);
+        character.SetState(state);
     }
 
     [PunRPC]
@@ -253,16 +231,16 @@ public class PlayerController : MonoBehaviour, IPunObservable
         switch (type) //1: q, 2: w, 3: e, 4:r
         {
             case 1:
-                toExecute.Enqueue(new SkillQCommand(this, delay, isTarget, isChannel, qRange, viewId, point));
+                toExecute.Enqueue(new SkillQCommand(this, delay, isTarget, isChannel, viewId, point));
                 break;
             case 2:
-                toExecute.Enqueue(new SkillWCommand(this, delay, isTarget, isChannel, wRange, viewId, point));
+                toExecute.Enqueue(new SkillWCommand(this, delay, isTarget, isChannel, viewId, point));
                 break;
             case 3:
-                toExecute.Enqueue(new SkillECommand(this, delay, isTarget, isChannel, eRange, viewId, point));
+                toExecute.Enqueue(new SkillECommand(this, delay, isTarget, isChannel, viewId, point));
                 break;
             case 4:
-                toExecute.Enqueue(new SkillRCommand(this, delay, isTarget, isChannel, rRange, viewId, point));
+                toExecute.Enqueue(new SkillRCommand(this, delay, isTarget, isChannel, viewId, point));
                 break;
             default:
                 break;
@@ -276,7 +254,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
         canCancel = true;
     }
 
-    // Update is called once per frame
     public virtual void Update()
     {
         if (pv.IsMine)
@@ -309,17 +286,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                     if (Physics.Raycast(ray, out hit))
                     {
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
-                        if (qTarget)
-                        {
-                            if (enemyTemp.CompareTag(enemyTag))
-                            {
-                                pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, qTarget, qChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                            }
-                        }
-                        else
-                        {
-                            pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, qTarget, qChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                        }
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 1, qDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(1, 0.2f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                         //toExecute.Enqueue(new SkillQCommand(this, 0.2f, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
@@ -331,17 +298,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                     if (Physics.Raycast(ray, out hit))
                     {
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
-                        if (wTarget)
-                        {
-                            if (enemyTemp.CompareTag(enemyTag))
-                            {
-                                pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, wTarget, wChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                            }
-                        }
-                        else
-                        {
-                            pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, wTarget, wChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                        }
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 2, wDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(2, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                         //toExecute.Enqueue(new SkillWCommand(this, 0.1f, true, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
@@ -353,17 +310,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                     if (Physics.Raycast(ray, out hit))
                     {
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
-                        if (eTarget)
-                        {
-                            if (enemyTemp.CompareTag(enemyTag))
-                            {
-                                pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, eTarget, eChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                            }
-                        }
-                        else
-                        {
-                            pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, eTarget, eChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                        }
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 3, eDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(3, 0.1f, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                         //toExecute.Enqueue(new SkillECommand(this, 0.1f, true, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
@@ -375,17 +322,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                     if (Physics.Raycast(ray, out hit))
                     {
                         PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
-                        if (rTarget)
-                        {
-                            if (enemyTemp.CompareTag(enemyTag))
-                            {
-                                pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, rTarget, rChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                            }
-                        }
-                        else
-                        {
-                            pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, rTarget, rChannel, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
-                        }
+                        pv.RPC("SkillEnqueuer", RpcTarget.All, 4, rDelay, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
                         //SkillEnqueuer(4, 0, false, false, hit.transform.GetComponent<PhotonView>().ViewID, hit.point);
                         //toExecute.Enqueue(new SkillRCommand(this, 0, false, false, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point));
                     }
@@ -471,24 +408,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
                 character.CurRCool = 0;
             }
         }
-        if (character.stateDict != null)
-        {
-            for (int i = 1; i < (int)State.End; i++)
-            {
-                State tempState = (State)i;
-                if (character.stateDict.ContainsKey(tempState) && character.stateDict[tempState] > 0)
-                {
-                    character.stateDict[tempState] -= Time.deltaTime;
-                    if (character.stateDict[tempState] <= 0)
-                    {
-                        character.stateDict[tempState] = 0;
-                    }
-                }
-            }
-        }
-        character.StateChecker();
     }
-
 
     public virtual void Stop()
     {
@@ -674,7 +594,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
         agent.enabled = false;
         this.enabled = false;
     }
-
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
