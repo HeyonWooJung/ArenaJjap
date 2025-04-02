@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
         StartCoroutine(Execution());
         if (pv.IsMine)
         {
-            Camera.main.GetComponent<InGameCamera>().player = gameObject;
+            Camera.main.GetComponent<InGameCamera>().Init(gameObject);
             PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
         }
     }
@@ -667,6 +667,10 @@ public class PlayerController : MonoBehaviour, IPunObservable
     public virtual void Death()
     {
         Debug.Log(pv.ViewID + " 사망");
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.PlayerDeath(pv.ControllerActorNr);
+        }
         agent.enabled = false;
         this.enabled = false;
     }
