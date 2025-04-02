@@ -37,6 +37,22 @@ public class InGameManager : MonoBehaviourPunCallbacks
         PhotonView view = player.GetComponent<PhotonView>();
 
 
+        if(champIndex == 0)
+        {
+            canvasUIs[0].gameObject.SetActive(true);
+        }
+        else if(champIndex == 1)
+        {
+            canvasUIs[1].gameObject.SetActive(true);
+        }
+        else if(champIndex == 2)
+        {
+            canvasUIs[2].gameObject.SetActive(true);
+        }
+        else
+        {
+            canvasUIs[3].gameObject.SetActive(true);
+        }
         // 태그 설정
         if (actorIndex == 0 || actorIndex == 1)
         {
