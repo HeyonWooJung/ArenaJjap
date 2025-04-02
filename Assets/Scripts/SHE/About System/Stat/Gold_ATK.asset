@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 441d1844819a8e046b6e71b8cffffed4, type: 3}
   m_Name: Gold_ATK
   m_EditorClassIdentifier: 
-  statName: "\uACF5\uACA9\uB825"
+  statName: "\uACF5\uACA9\uB825 \uD30C\uD3B8"
   statPlusInt: 35
-  icon: {fileID: 0}
-  statDescription: "\uACF5\uACA9\uB825 + 35"
+  icon: {fileID: 21300000, guid: a3c01b28010aa0e409fd063731f330c8, type: 3}
+  statDescription: "\uACF5\uACA9\uB825\uC744 35 \uC5BB\uC2B5\uB2C8\uB2E4"
+  statType: 1

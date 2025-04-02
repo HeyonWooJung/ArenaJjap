@@ -29,11 +29,14 @@ public class AugmentManager : MonoBehaviour
             { StatType.HP, localPlayer.AdjustHP },
             { StatType.Def, localPlayer.AdjustDef },
             { StatType.LifeSteel, localPlayer.AdjustLifeSteal },
+            
         };
         augmentIntActions = new Dictionary<StatType, Action<int>>()
         {
             {StatType.MoveSpeed, localPlayer.AdjustMoveSpeed},
             {StatType.AbilityHaste, localPlayer.AdjustAbilityHaste},
+            {StatType.ArmorPen, localPlayer.AdjustArmorPen},
+            {StatType.Lethal, localPlayer.AdjustLethality},
         };
 
 
@@ -76,7 +79,7 @@ public class AugmentManager : MonoBehaviour
     public void SetUpAugment()
     {
         
-        StartCoroutine(AugmentAppear());
+        StartCoroutine(StatAugmentInstantiate());
     }
     //증강 띄우고 고르면 여기서 패널 끈 걸로 알아차린 것처럼 똑같이 스탯 증강 부르면 됨
     IEnumerator StatAugmentInstantiate()
@@ -84,7 +87,7 @@ public class AugmentManager : MonoBehaviour
         int num = 0;
         int x = 0;
         count = 0;
-        while(num < 2)
+        while(num < 3)
         {
             augmentPanel.SetActive(true);
             while (count < 3)
@@ -105,13 +108,13 @@ public class AugmentManager : MonoBehaviour
         
     }
 
-    IEnumerator AugmentAppear()
-    {
-
-
-        yield return new WaitUntil(() => augmentPanel.activeSelf != true);
-        StartCoroutine(StatAugmentInstantiate());
-    }
+    //IEnumerator AugmentAppear()
+    //{
+    //
+    //
+    //    yield return new WaitUntil(() => augmentPanel.activeSelf != true);
+    //    StartCoroutine(StatAugmentInstantiate());
+    //}
     
 
 

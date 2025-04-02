@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 441d1844819a8e046b6e71b8cffffed4, type: 3}
+  m_Name: Gold_ATKSpeed
+  m_EditorClassIdentifier: 
+  statName: "\uACF5\uACA9 \uC18D\uB3C4 \uD30C\uD3B8"
+  statPlusInt: 40
+  icon: {fileID: 21300000, guid: 75af67f3dbe41f743b31350fd419d15a, type: 3}
+  statDescription: "\uACF5\uACA9 \uC18D\uB3C4\uB97C 40% \uC5BB\uC2B5\uB2C8\uB2E4"
+  statType: 2
