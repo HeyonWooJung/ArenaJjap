@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 public enum StatType
 {
     HP = 0,
@@ -11,7 +12,9 @@ public enum StatType
     CirtDamage,
     LifeSteel,
     MoveSpeed,
-    AbilityHaste
+    AbilityHaste,
+    ArmorPen,
+    Lethal
 }
 
 

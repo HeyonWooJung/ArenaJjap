@@ -4,6 +4,7 @@ using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Build;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.AI;
@@ -16,6 +17,12 @@ public class SionSkill : PlayerController
     [SerializeField] LayerMask wallLayer;
     [SerializeField] bool debuggingMode;
     readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
+    [SerializeField] float attackSpeedAnimFloat;
+    [SerializeField] float moveSpeedAnimFloat;
+    float attackSppedAnimGetFloat;
+    float moveSpeedAnimGetFloat;
+    Rigidbody enemyRb;
+    [SerializeField] float powerOfAirborne;
     //[SerializeField] PlayerController playerController;
     [SerializeField] GameObject skillCanvas;
     [Header("패시브")]
@@ -47,7 +54,7 @@ public class SionSkill : PlayerController
     [SerializeField] float qSkillCurDamage;
     [SerializeField] float qSkillCurAirborne;
     [SerializeField] float qSkillCurStun;
-    [SerializeField] float qSkillSlowPercentage = 75f;
+    [SerializeField] int qSkillSlowPercentage = 75;
     float qSkillTimer;
     float maxChargeTime = 2f;
     bool qSkillCharging = false;
@@ -60,7 +67,7 @@ public class SionSkill : PlayerController
     [SerializeField] Color qSkillOriginalPanelA;
     [SerializeField] float qSkillMaxAlphaFloat = 0.98f;
     [SerializeField] Image qSkillPanel;
-
+    
 
     [Header("W스킬")]
     [SerializeField] float wBarrier;
@@ -69,6 +76,14 @@ public class SionSkill : PlayerController
     [SerializeField] float wTimerMax = 8f;
     [SerializeField] float wBoomMinTime = 3f;
     [SerializeField] bool wSkillOn = false;
+    [SerializeField] float wExlosionFixedDamage = 140f;
+    [SerializeField] float wExlosionAddDamage = 0.4f;
+    [SerializeField] float wExlosionAddEnemyHealth = 0.14f;
+    [SerializeField] GameObject barrierPrefab;
+    [SerializeField] Renderer barrierColor;
+    [SerializeField] GameObject wExplosionPrefab;
+    [SerializeField] Image wExplosionColor;
+    Color wExplosiveOriginalColor;
     [Header("E스킬")]
     [SerializeField] GameObject eSkillPrefab;
     [SerializeField] float eSkillDamage;
@@ -98,7 +113,10 @@ public class SionSkill : PlayerController
     [SerializeField] float rSkillCurStun;
     [SerializeField] float rSkillCurDamage;
     [SerializeField] float rSkillSlowTime;
-
+    [SerializeField] Transform rSkillDestination;
+    [SerializeField] Image rSkillExplosiveImage;
+    Color rSkillOriginalColor;
+    //[SerializeField] RectTransform rSkillCursor;
 
 
     PlayerController enemy;
@@ -127,8 +145,10 @@ public class SionSkill : PlayerController
         qSkillOriginalPanelA = qSkillPanel.color;
         hitLayer = 1 << LayerMask.NameToLayer(enemyTag);
         if(debuggingMode) PhotonNetwork.OfflineMode = true;//디버깅용
+        if(barrierColor == null) barrierColor = barrierPrefab.GetComponent<Renderer>();
 
-
+        rSkillOriginalColor = rSkillExplosiveImage.color;
+        wExplosiveOriginalColor = wExplosionColor.color;
     }
     private void OnEnable()
     {
@@ -311,22 +331,8 @@ public class SionSkill : PlayerController
                             toExecute.Enqueue(new FlashCommmand(this, 0, hit.point));
                         }
                     }
-                    if (Input.GetKeyDown(KeyCode.T))
-                    {
-                        StartCoroutine(PassiveOn());
-                    }
-                    if (rSkillOn)
-                    {
-                        RSkillRotation();
-                        RSkillCheckingHit();
-                        
-                        if (rSkillTimer >= 1 && Input.GetKeyDown(KeyCode.R))
-                        {
-                            anim.SetTrigger("RStop");
-                            RSkillExplosion();
-                        }
-
-                    }
+                  
+                    
                 }
                 else if(isPassiveNow == true || (character.CurState == State.Stun || character.CurState == State.Airborne) == false)//여기가 패시브 상태
                 {
@@ -346,16 +352,61 @@ public class SionSkill : PlayerController
             {
                 agent.ResetPath();
             }
-            if(anim !=  null)
+            if(anim !=  null && !rSkillOn)
             {
                 bool walking = HasReachedDestination();
                 anim.SetBool("Walking", !walking);
+                if(attackSpeedAnimFloat != 1 + (character.AttackSpeed * 0.2f))
+                {
+                    attackSpeedAnimFloat = 1 + (character.AttackSpeed * 0.2f);
+                    attackSppedAnimGetFloat = anim.GetFloat("AttackSpeed");
+                }
+                
+                if(attackSppedAnimGetFloat != attackSpeedAnimFloat)
+                {
+                    anim.SetFloat("AttackSpeed", attackSpeedAnimFloat);
+                }
+
+                if(moveSpeedAnimFloat != 1 +  character.MoveSpeed * 0.0005f)
+                {
+                    moveSpeedAnimFloat = 1 + (character.MoveSpeed * 0.0005f);
+                    moveSpeedAnimGetFloat = anim.GetFloat("MoveSpeed");
+                }
+                if(moveSpeedAnimGetFloat != moveSpeedAnimFloat)
+                {
+                    anim.SetFloat("MoveSpeed", moveSpeedAnimFloat);
+                }
+                if(character.CurState == State.Slow)
+                {
+                    anim.SetBool("Slow", true);
+                }
+                else
+                {
+                    if (anim.GetBool("Slow"))
+                    {
+                        anim.SetBool("Slow", false);
+                    }
+                }
             }
-            else
+            else if(anim == null)
             {
                 Debug.Log("애니메이터 없는데");
             }
-         
+            if (rSkillOn)
+            {
+
+                RSkillCheckingHit();
+                
+                //Vector3 screenPosition = Input.mousePosition;
+                //screenPosition.z = 5f; // UI가 카메라에서 일정 거리 유지
+                //rSkillCursor.position = Camera.main.ScreenToWorldPoint(screenPosition);
+                //Vector3 cursorRotation = new Vector3(0 ,0, -transform.eulerAngles.y);
+                //rSkillCursor.eulerAngles = cursorRotation;
+
+                
+            }
+
+
         }
 
     }
@@ -412,8 +463,6 @@ public class SionSkill : PlayerController
     }
     IEnumerator PassiveSkill()
     {
-
-       
         usedPassiveSkill = true;
         int increasedSpeed = (int)(character.MoveSpeed * 0.5f);
         int baseSpeed = character.MoveSpeed;
@@ -427,9 +476,7 @@ public class SionSkill : PlayerController
 
             passiveTime += Time.deltaTime;
             yield return null;
-
         }
-
     }
 
     public override void SkillQ(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
@@ -440,8 +487,6 @@ public class SionSkill : PlayerController
             GetMouseCursorPos();
             StartCoroutine(QSkillCharge());
         }
-       
-        
     }
 
     IEnumerator QSkillCharge()
@@ -451,10 +496,18 @@ public class SionSkill : PlayerController
         
         anim.SetTrigger("Q");
         qSkillPanel.color = qSkillOriginalPanelA;
-        while (Input.GetKey(KeyCode.Q) && qSkillTimer <= 2f && character.CurState != State.Stun && character.CurState != State.Airborne && character.CurHP > 0)
+        while (Input.GetKey(KeyCode.Q) && qSkillTimer <= 2f && character.CurHP > 0)
         {
             PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
             pv.RPC("SkillEnqeuer", RpcTarget.All, 1, qDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+            if(character.CurState == State.Stun || character.CurState == State.Airborne)
+            {
+                qSkillPanel.gameObject.SetActive(false);
+                qSKillImage.fillAmount = 0;
+                character.SetQCooldown();
+                character.CurQCool = 2f;
+                yield break;
+            }
             chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
             qSkillTimer += Time.deltaTime;
             qSKillImage.fillAmount = chargeRatio;
@@ -503,54 +556,42 @@ public class SionSkill : PlayerController
 
     void CastQSkill()
     {
-        //비율 0~1
-        //chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);
-        //스킬 넓이
-
         qSkillPanel.gameObject.SetActive(false);
         skillLength = Mathf.Lerp(qSkillMinLength, qSkillMaxLength, chargeRatio);
-
         Vector3 boxCenter = transform.position + transform.forward * (skillLength / 2f);
         Vector3 halfExtents = new Vector3(qSkillWidth / 2f, 0.5f, skillLength / 2f);
         Quaternion boxOrientation = transform.rotation;
-        
-
-
-        //if(CC걸림 == true) 밑에 실행 X
         qSkillCurDamage = Mathf.Lerp(qSkillMinFixedDamage, qSkillMaxFixedDamage, qSkillTimer) + Mathf.Lerp(qSkillMinAddDamage, qSkillMaxAddDamage, qSkillChargeTime);
+        
         if(qSkillTimer >= 1)
         {
             qSkillCurAirborne = Mathf.Lerp(qSkillAirborneTimeMin, qSkillAirborneTimeMax, chargeRatio / 2f);
             qSkillCurStun = Mathf.Lerp(qSkillStunTimeMix, qSkillStunTimeMax, qSkillTimer / 2f) + qSkillCurAirborne;
         }
-
-
         Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, boxOrientation, hitLayer);
-
-        
 
         foreach(Collider hit in hits)
         {
             if (characterDictionary.TryGetValue(hit.tag, out PlayerController enemy) == true)
             {
+                enemyRb = enemy.GetComponent<Rigidbody>();
                 if (qSkillTimer >= 1)
                 {
                     StartCoroutine(SettingEnemyState(enemy, State.Airborne, qSkillCurAirborne, true, 0));
+                    StartCoroutine(ApplyAirborne(enemyRb, qSkillCurAirborne));
                     StartCoroutine(SettingEnemyState(enemy, State.Stun, qSkillCurStun, false, 0));
-                   
+                    
+                }
+                else
+                {
+                    StartCoroutine(SettingEnemyState(enemy, State.Slow, 0.5f, false, qSkillSlowPercentage));
                 }
                 
+
             }
-            else
-            {
-                    //enemy.SetState(State.Slow);
-            }
+            
             Debug.Log(hit.tag);
-            //enemy.TakeDamage(qSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
         }
-        
-
-
 
         if (qSkillTimer >= 1)
         {
@@ -564,6 +605,7 @@ public class SionSkill : PlayerController
         }
 
         qSKillImage.fillAmount = 0;
+        anim.ResetTrigger("WBoom");
         character.SetQCooldown();
     }
 
@@ -582,12 +624,26 @@ public class SionSkill : PlayerController
     IEnumerator CastWSkill()
     {
         wTimer = 0;
+        Color x = barrierColor.material.color;
+        x.a = 0.4f;
+        barrierColor.material.color = x;
+        
+        barrierPrefab.SetActive(true);
         while(wSkillOn == true && wTimer <= wTimerMax && character.Barrier > 0)
         {
             wTimer += Time.deltaTime;
+            barrierPrefab.transform.position = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+            Color color = x;
+            if(color.a < 222)
+            {
+                color.a = Mathf.Lerp(barrierColor.material.color.a, 0.8f, wTimer);
+            }
+            barrierColor.material.color = color;
+            
             if(wTimer >= 3 && Input.GetKeyDown(KeyCode.W))
             {
                 WSkillExplosion();
+                barrierPrefab.SetActive(false);
             }
             yield return null;
         }
@@ -595,11 +651,13 @@ public class SionSkill : PlayerController
         {
             WSkillExplosion();
             character.SetWCooldown();
+            barrierPrefab.SetActive(false);
             yield break;
         }
         else
         {
             wSkillOn = false;
+            barrierPrefab.SetActive(false);
             character.SetWCooldown();
             yield break;
         }
@@ -609,17 +667,38 @@ public class SionSkill : PlayerController
     {
         wSkillOn = false;
         Collider[] hits = Physics.OverlapSphere(transform.position, wExlosiveWidth, hitLayer);
+        wExplosionPrefab.transform.position = transform.position;
+        wExplosionColor.color = wExplosiveOriginalColor;
+        wExplosionPrefab.SetActive(true);
+        StartCoroutine(WExplosionFade());
         foreach(Collider enemy in hits)
         {
-            if(characterDictionary.TryGetValue(enemy.tag, out PlayerController x))
-            {
-                //Debug.Log(x.name);
-            }
+            PlayerController x = enemy.GetComponent<PlayerController>();
+            x.character.TakeDamage(character, wExlosionFixedDamage + (character.ATK * wExlosionAddDamage) + (x.character.HP * wExlosionAddEnemyHealth), false, character.Lethality, character.ArmorPenetration);
             Debug.Log(enemy);
         }
-        anim.Play("WBoom");
+        anim.SetTrigger("WBoom");
 
 
+    }
+    IEnumerator WExplosionFade()
+    {
+        float x = 0f;
+        Color c = wExplosiveOriginalColor;
+        Vector3 fixedPosition = wExplosionPrefab.transform.position;
+        while (4f > x)
+        {
+            wExplosionPrefab.transform.position = fixedPosition;
+            wExplosionPrefab.transform.localRotation = Quaternion.Euler(0f,0f,0f);   
+
+            x += Time.deltaTime;
+            c.a = Mathf.Lerp(1f, 0f, x);
+            wExplosionColor.color = c;
+            yield return null;
+        }
+       
+            wExplosionPrefab.SetActive(false);
+        
     }
 
 
@@ -640,7 +719,7 @@ public class SionSkill : PlayerController
         eSkillPrefab.gameObject.SetActive(true);
         StartCoroutine(CastESkill());
         character.SetECooldown();
-        anim.Play("E");
+        anim.SetTrigger("E");
     }
 
     IEnumerator CastESkill()
@@ -649,7 +728,7 @@ public class SionSkill : PlayerController
         eSkillTimer = 0;
         Collider[] hits = Physics.OverlapSphere(eSkillPrefab.transform.position, 1, hitLayer);
         Vector3 targetPos = transform.forward;
-        while (eSkillPrefab.gameObject.activeSelf && eSkillTimer < 0.7f && hits.Length == 0)
+        while (eSkillPrefab.gameObject.activeSelf && eSkillTimer < 0.1f && hits.Length == 0)
         {
             eSkillTimer += Time.deltaTime;
             eSkillPrefab.transform.Translate((targetPos * eSkillSpeed) * Time.deltaTime);
@@ -665,11 +744,6 @@ public class SionSkill : PlayerController
             StartCoroutine(ESkillArmorDown(x));
         }
         eSkillPrefab.SetActive(false);
-        //대충 계속한다는 말
-        //if(hits != null)
-        //{
-        //    hits[0].tag
-        //}
     }
     IEnumerator ESkillArmorDown(PlayerController enemy)
     {
@@ -694,15 +768,13 @@ public class SionSkill : PlayerController
 
     IEnumerator CastRSkill()
     {
-        character.SetState(State.Unstoppable,8);
-        anim.Play("R");
-        rSkillTimer = 0;
-        rSkillIncreasedSpeed = 0;
-        rSkillCurDamage = 0;
-        rSkillCurStun = 0;
+        //character.SetState(State.Unstoppable,8);
+        anim.SetTrigger("R");
+        anim.SetBool("RRunnig",false);
  
-        while (rSkillOn == true && rSkillTimer < 8 && character.CurHP <= 1)
+        while (rSkillOn == true && rSkillTimer < 8 && character.CurHP > 0)
         {
+            Debug.Log(rSkillTimer);
             rSkillTimer += 0.05f;
             // 사이온의 현재 위치 + 전방 방향으로 박스 중심 설정
             Vector3 boxCenter = transform.position + transform.forward * 0.5f; // 적절한 거리 조정
@@ -715,21 +787,13 @@ public class SionSkill : PlayerController
 
             // OverlapBox 실행
             Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, boxRotation, hitLayer);
-            
+
+            RSkillRotation();
+           
+
             if (hits.Length > 0)
             {
-                foreach (Collider hit in hits)
-                {
-                    Debug.Log($"R 스킬 적중: {hit.gameObject.name}");
-                    
-                }
-                rSkillOn = false;
-                if (anim.GetBool("RRunning") == true)
-                {
-                    anim.SetBool("RRunning", false);
-                }
                 anim.SetTrigger("RHit");
-                //character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
                 agent.SetDestination(transform.position);
                 RSkillExplosion();
             }
@@ -737,7 +801,9 @@ public class SionSkill : PlayerController
             if(rSkillTimer >= 2 && anim.GetBool("RRunning") == false)
             {
                 anim.SetBool("RRunning", true);
+                anim.SetFloat("MoveSpeed", 2f);
             }
+
 
             
             if(character.MoveSpeed <= 950)
@@ -746,36 +812,36 @@ public class SionSkill : PlayerController
                 rSkillIncreasedSpeed += rSkillIncreasing;
                
             }
-
-
-            Debug.Log("궁 코루틴 돈다");
-
-            //playerController.Move(skillCanvas.transform.position);
-            Move(skillCanvas.transform.position);
+            Debug.Log("궁 코루틴");
+            Move(rSkillDestination.position);
+            if (Input.GetKey(KeyCode.R) && rSkillTimer > 0.3f)
+            {
+                anim.SetTrigger("RStop");
+            }
+            
             yield return skillCheckTime;
         }
         if(rSkillTimer >= 8)
         {
             anim.SetTrigger("RStop");
-            
         }
+
         
+
     }
+
+    
 
     void RSkillCheckingHit()
     {
-        if(Physics.Raycast(transform.position, transform.forward, rSkillCheckDistance, wallLayer))
+        if(Physics.Raycast(transform.position, transform.forward, out RaycastHit wallHit, rSkillCheckDistance, wallLayer))
         {
             Debug.Log("벽에 박았당");
             rSkillOn = false;
-            if(anim.GetBool("RRunning") == true)
-            {
-                anim.SetBool("RRunning",false);
-            }
             anim.SetTrigger("RHit");
             agent.SetDestination(transform.position);
             RSkillExplosion();
-
+            StartCoroutine(SettingEnemyState(this, State.Stun, 0.2f, false, 0));
         }
     }
     void RSkillRotation()
@@ -793,15 +859,17 @@ public class SionSkill : PlayerController
 
     public void RSkillExplosion()
     {
+        rSkillExplosiveImage.color = rSkillOriginalColor;
+        rSkillExplosiveImage.transform.position = transform.position;
+        rSkillExplosiveImage.gameObject.SetActive(true);
+        StartCoroutine(RSKillExplosiveFade());
         Collider[] targets = Physics.OverlapSphere(transform.position, rSkillExpolosionWidth, hitLayer);
         Collider[] airborneTargets = Physics.OverlapSphere(transform.position, rSkillAirborneWidth, hitLayer);
         rSkillCurDamage = Mathf.Lerp(rSkillFixedMinDamage +(character.ATK * rSkillAddMinDamage), rSkillFixedMaxDamage +( character.ATK * rSkillAddMaxDamage), rSkillTimer - 4);
         Debug.Log("빵야");
-        if (rSkillOn)
-        {
-            rSkillOn = false;
-            
-        }
+        rSkillOn = false;
+        anim.ResetTrigger("RStop");
+
         character.AdjustMoveSpeed(-rSkillIncreasedSpeed);
 
         if (targets.Length > 0 )
@@ -820,15 +888,39 @@ public class SionSkill : PlayerController
             rSkillCurStun = Mathf.Lerp(rSkillMinStun, rSkillMaxStun, rSkillTimer - 3);   
             foreach(Collider col in airborneTargets)
             {
+                enemyRb = col.GetComponent<Rigidbody>();
                 PlayerController airborneTarget = col.GetComponent<PlayerController>();
                 StartCoroutine(SettingEnemyState(airborneTarget, State.Airborne, rSkillAirborneTime, true, 0));
-                StartCoroutine(SettingEnemyState(airborneTarget, State.Airborne, rSkillCurStun, false, 0));
+                StartCoroutine(ApplyAirborne(enemyRb, rSkillAirborneTime));
             }
         }
         character.ResetState();
-        
+
+        rSkillTimer = 0;
+        rSkillIncreasedSpeed = 0;
+        rSkillCurDamage = 0;
+        rSkillCurStun = 0;
     }
 
+    IEnumerator RSKillExplosiveFade()
+    {
+        float x = 0;
+        Vector3 fixedPosition = rSkillExplosiveImage.transform.position;
+        Color c = rSkillOriginalColor;
+        while(3 > x)
+        {
+            rSkillExplosiveImage.transform.position = fixedPosition;
+            rSkillExplosiveImage.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+
+            x += Time.deltaTime;
+            c.a = Mathf.Lerp(1f, 0f, x);
+            rSkillExplosiveImage.color = c;
+            yield return null;
+        }
+        rSkillExplosiveImage.gameObject.SetActive(false);
+    }
+
+    
     /// <summary>
     /// 적에게 부여할 상태이상과 그 시간을 작성하여 넣을 것, 다중이면 True 하고 마지막 CC에 False 넣을 것
     /// 슬로우는 마지막에 넣으셈 없다면 0
@@ -844,6 +936,7 @@ public class SionSkill : PlayerController
             target.character.AdjustMoveSpeed(-slow);
         }
         target.character.SetState(state, time);
+        Debug.Log($"상태이상 적용 대상: {target}, 종류: {state}, 시간: {time}"); 
         yield return new WaitForSeconds(time);
         if (multipleCC == true)
         {
@@ -857,6 +950,28 @@ public class SionSkill : PlayerController
         
     }
 
+    IEnumerator ApplyAirborne(Rigidbody rb, float totalAirborneTime)
+    {
+        float airborneTime = totalAirborneTime / 2; // 떠 있는 시간 (절반)
+        float fallTime = totalAirborneTime / 2;     // 내려오는 시간 (절반)
+
+        //띄우기
+        rb.velocity = Vector3.zero; // 기존 속도 초기화
+        rb.AddForce(Vector3.up * powerOfAirborne, ForceMode.Impulse); // 위로
+        yield return new WaitForSeconds(airborneTime);
+
+        //착지
+        float elapsedTime = 0f;
+        while (elapsedTime < fallTime)
+        {
+            rb.velocity = Vector3.Lerp(rb.velocity, Vector3.down * 3f, elapsedTime / fallTime);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        //최종적으로 땅에 닿으면 속도 초기화
+        rb.velocity = Vector3.zero;
+    }
 
     void GetMouseCursorPos()
     {
