@@ -233,10 +233,22 @@ MonoBehaviour:
   character: {fileID: 11400000, guid: a9646da42ab2f7d4584311bd82564773, type: 2}
   enemyTag: Enemy
   pv: {fileID: 0}
+  qRange: 0
   qDelay: 0
+  qTarget: 0
+  qChannel: 0
+  wRange: 0
   wDelay: 0
+  wTarget: 0
+  wChannel: 0
+  eRange: 0
   eDelay: 0
+  eTarget: 0
+  eChannel: 0
+  rRange: 0
   rDelay: 0
+  rTarget: 0
+  rChannel: 0
   IsUlt: 0
   ultTime: 12
   anim: {fileID: 7895303522347208664}

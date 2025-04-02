@@ -92,7 +92,6 @@ public class TryndamereController : PlayerController
         if (anim == null) anim = GetComponentInChildren<Animator>();
         PerformAttack(); // → 애니메이션 + 분노 증가 둘 다 여기서 처
 
-        Debug.Log($"AutoAttack 실행! 대상: {target?.name}, 현재 분노: {rage}");
 
         //StartCoroutine(AttackDelayReset()); // 후딜 도중 평캔 가능
     }
@@ -110,7 +109,6 @@ public class TryndamereController : PlayerController
             int healAmount = rage / 2;
             character.Heal(healAmount);
             rage = 0;
-            Debug.Log($"Q 스킬 사용! 체력 {healAmount} 회복");
 
             if (healEffectPrefab != null)
             {
@@ -123,7 +121,6 @@ public class TryndamereController : PlayerController
             anim.SetTrigger("UseQ");
 
             character.SetQCooldown();
-            Debug.Log("Q사용");
         }    
         
     }
@@ -132,7 +129,6 @@ public class TryndamereController : PlayerController
     public override void SkillW(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         //base.SkillW( isTargeting,  isChanneling,  target,  location);
-        Debug.Log(character.CurWCool +"w쿨");
         if (character.CurWCool <= 0)
         {
 
@@ -141,7 +137,6 @@ public class TryndamereController : PlayerController
 
             //대충 스킬쓰기
             Collider[] targets = Physics.OverlapSphere(transform.position, skillRange, LayerMask.GetMask("Enemy"));
-            Debug.Log($"W 스킬 사용! 대상 검색 중... 감지된 개수: {targets.Length}");
 
             foreach (Collider targetCollider in targets)
             {
@@ -159,12 +154,10 @@ public class TryndamereController : PlayerController
                 if (IsEnemyFacingAway(targetPlayer.transform))
                 {
                     StartCoroutine(SlowCharacter(targetPlayer, moveSlowAmount, effectDuration));
-                    Debug.Log($"{targetPlayer.name} 이동 속도 감소 적용!");
                 }
             }
                anim?.SetTrigger("UseW");
                character.SetWCooldown();
-               Debug.Log("W사용");
         }
     }
 
@@ -173,7 +166,6 @@ public class TryndamereController : PlayerController
     {
         yield return new WaitForSeconds(duration);
         target.character.AdjustATK(amount);
-        Debug.Log($"{target.name} ATK 복구 완료! (+{amount})");
     }
 
     //  이동 속도 4초 후 감소 해제
@@ -183,7 +175,6 @@ public class TryndamereController : PlayerController
 
         // 1️ 이펙트 생성 (고정 위치)
         GameObject slowEffect = null;
-        Debug.Log("이펙트생성");
         if (slowEffectPrefab != null)
         {
             Vector3 spawnPos = target.transform.position + Vector3.up * 1.8f;
@@ -196,14 +187,12 @@ public class TryndamereController : PlayerController
         target.character.SetCanRush(false);
         int tempSpeed = (int)(target.character.MoveSpeed * slowAmount);
         target.character.AdjustMoveSpeed(-tempSpeed);
-        Debug.Log($"{target.name} 이동 속도 감소 시작! (-{tempSpeed})");
 
         yield return new WaitForSeconds(duration);
 
         // 3️ 원래 속도 복구
         target.character.AdjustMoveSpeed(tempSpeed);
         target.character.SetCanRush(true);
-        Debug.Log($"{target.name} 이동 속도 복구 완료!");
 
         // 4️ 이펙트 제거
         if (slowEffect != null)
@@ -240,7 +229,6 @@ public class TryndamereController : PlayerController
 
             StartCoroutine(SmoothDash());
             character.SetECooldown();
-            Debug.Log("E 사용 - 자연스러운 돌진 시작");
         }
     }
 
@@ -276,7 +264,6 @@ public class TryndamereController : PlayerController
             navMeshAgent.isStopped = false;
         }
 
-        Debug.Log("E 돌진 (애니 길이 기반) 종료");
     }
 
 
@@ -297,7 +284,6 @@ public class TryndamereController : PlayerController
             StartCoroutine(EndRSkill()); // 5초 후 무적 해제 및 이펙트 제거
 
             character.SetRCooldown();
-            Debug.Log("R 사용");
         }
     }
 
@@ -313,7 +299,6 @@ public class TryndamereController : PlayerController
             rEffectObject.SetActive(false); // 궁극기 이펙트 종료
         }
 
-        Debug.Log("R 스킬 종료, 무적 해제 및 이펙트 끔");
     }
 
 
@@ -347,7 +332,6 @@ public class TryndamereController : PlayerController
         // 애니메이션 실행
         anim.SetTrigger(isCritical ? "CriticalHit" : "Attack");
 
-        Debug.Log(isCritical ? "치명타 공격!" : "일반 공격!");
     }
 
 
@@ -358,7 +342,6 @@ public class TryndamereController : PlayerController
         rage += rageGain;
         rage = Mathf.Clamp(rage, 0, maxRage);
 
-        Debug.Log($"분노 증가: {rageGain}, 현재 분노: {rage}");
     }
 
     //private IEnumerator AttackDelayReset()

@@ -36,6 +36,7 @@ public class InGameManager : MonoBehaviourPunCallbacks
         PlayerController player = champObj.GetComponent<PlayerController>();
         PhotonView view = player.GetComponent<PhotonView>();
 
+
         // 태그 설정
         if (actorIndex == 0 || actorIndex == 1)
         {
@@ -45,50 +46,25 @@ public class InGameManager : MonoBehaviourPunCallbacks
         {
             view.RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 2);
         }
-        if (view.IsMine)
-        {
-            GameObject barPrefab = Resources.Load<GameObject>("HealthBarCanvas");
-            if (barPrefab != null)
-            {
-                GameObject bar = Instantiate(barPrefab);
-                HealthBar healthBar = bar.GetComponent<HealthBar>();
-                if (healthBar != null)
-                {
-                    healthBar.target = player;
-                    healthBar.useLocalData = true;
-                }
+        // 체력바 프리팹 로드
+        GameObject barPrefab = Resources.Load<GameObject>("HealthBarCanvas");
+        if (barPrefab == null)  return;
 
-                HealthBarNetworkSync sync = bar.GetComponent<HealthBarNetworkSync>();
-                if (sync != null)
-                {
-                    sync.photonView.ViewID = view.ViewID; // 연결된 캐릭터와 같은 ViewID 사용
-                }
-            }
-            else
-            {
-                Debug.LogError("HealthBarCanvas 프리팹을 Resources/UI 안에서 찾을 수 없습니다.");
-            }
+        // 체력바 생성 및 연결
+        GameObject bar = Instantiate(barPrefab);
+        HealthBar healthBar = bar.GetComponent<HealthBar>();
+        if (healthBar != null)
+        {
+            healthBar.target = player;
+            healthBar.useLocalData = view.IsMine;
+            Debug.Log($"[HealthBar 연결] 대상: {player.name}, 내 캐릭터 여부: {view.IsMine}");
         }
-        else
-        {
-            // 내 챔피언이 아니더라도 체력바 생성 필요
-            GameObject barPrefab = Resources.Load<GameObject>("HealthBarCanvas");
-            if (barPrefab != null)
-            {
-                GameObject bar = Instantiate(barPrefab);
-                HealthBar healthBar = bar.GetComponent<HealthBar>();
-                if (healthBar != null)
-                {
-                    healthBar.target = player;
-                    healthBar.useLocalData = false; // RPC 동기화용
-                }
 
-                HealthBarNetworkSync sync = bar.GetComponent<HealthBarNetworkSync>();
-                if (sync != null)
-                {
-                    sync.photonView.ViewID = view.ViewID;
-                }
-            }
+        // 체력바 네트워크 동기화 설정 (ViewID는 건드리지 않음!)
+        HealthBarNetworkSync sync = bar.GetComponent<HealthBarNetworkSync>();
+        if (sync == null)
+        {
+            Debug.LogWarning("HealthBarNetworkSync가 체력바에 붙어 있지 않습니다.");
         }
     }    
 }
