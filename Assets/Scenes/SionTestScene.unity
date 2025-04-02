@@ -742,6 +742,45 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1698413271 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7982299385377449195, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
+  m_PrefabInstance: {fileID: 4601576910702247157}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1698413273 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2702172553904765677, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
+  m_PrefabInstance: {fileID: 4601576910702247157}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698413271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888179b12a6b6cb40adec3eff60739eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1698413276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698413271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 1698413273}
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1724579118
 GameObject:
   m_ObjectHideFlags: 0
@@ -772,7 +811,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localPlayer: {fileID: 0}
-  statAugment: {fileID: 0}
+  statAugmentPrefabs: []
+  count: 0
+  augmentPanel: {fileID: 0}
 --- !u!4 &1724579120
 Transform:
   m_ObjectHideFlags: 0
@@ -891,6 +932,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2702172553904765677, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
+      propertyPath: enemyTag
+      value: Blue
+      objectReference: {fileID: 0}
+    - target: {fileID: 2702172553904765677, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
+      propertyPath: qChannel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2702172553904765677, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
+      propertyPath: rChannel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2702172553904765677, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
       propertyPath: eSkillPrefab
       value: 
       objectReference: {fileID: 780411411}
@@ -942,10 +995,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: SionPrefab
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1539046470216478304, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7982299385377449195, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1698413276}
   m_SourcePrefab: {fileID: 100100000, guid: ea4c8a388a16b2040a12ac3f87c0d960, type: 3}
 --- !u!1001 &5150108392700264884
 PrefabInstance:

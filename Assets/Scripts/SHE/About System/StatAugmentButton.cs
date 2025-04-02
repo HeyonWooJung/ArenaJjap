@@ -19,4 +19,9 @@ public class StatAugmentButton : MonoBehaviour
         image = statSO.icon;
         statDescription.text = statSO.statDescription;
     }
+
+    
+
+
+
 }
