@@ -224,7 +224,14 @@ public class PlayerController : MonoBehaviour, IPunObservable
 
     public void ApplyState()
     {
-        pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState, character.stateDict[character.CurState]);
+        if(character.CurState != State.Neutral)
+        {
+            pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState, character.stateDict[character.CurState]);
+        }
+        else
+        {
+            pv.RPC("StateRPC", RpcTarget.OthersBuffered, character.CurState, 0);
+        }
     }
 
     [PunRPC]
