@@ -1,22 +1,33 @@
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.UI;
 using System.Collections;
 
 public class InGameManager : MonoBehaviourPunCallbacks
 {
+    PlayerController target;
+    public Image fillImage;
+    public Vector3 offset = new Vector3(0, 0, 0);
+
     public Transform[] spawnPoints; // 인원 수 만큼 위치 설정
     SkillCooldownUI skillUI;
     // 인덱스에 대응하는 프리팹 이름 리스트
     private readonly string[] championNames = { "Ryze", "Sion", "Tryn", "Vayne" };
-    private readonly string[] championUI = { "RyzeCanvas", "SionCanvas", "TrynCanvas", "VayneCanvas" };
 
     [SerializeField] private GameObject[] canvasUIs;
     void Start()
     {
-        SpawnMyChampion();        
+        SpawnMyChampion();
     }
+    [PunRPC]
+    public void HPBar()
+    {
+        float ratio = Mathf.Clamp01(target.character.CurHP / target.character.HP);
+        fillImage.fillAmount = ratio;
 
-
+        transform.position = target.transform.position + offset;
+        transform.forward = Camera.main.transform.forward;
+    }
     void SpawnMyChampion()
     {
         int champIndex = MatchManager.myChampionIndex;
@@ -75,15 +86,8 @@ public class InGameManager : MonoBehaviourPunCallbacks
                 {
                     uiScript.targetController = controller;
                 }
-                else
-                {
-                    Debug.LogError("PlayerController를 부모에서 찾지 못했습니다.");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("SkillCooldownUI 컴포넌트를 찾을 수 없습니다.");
             }
         }
+        
     }
 }
