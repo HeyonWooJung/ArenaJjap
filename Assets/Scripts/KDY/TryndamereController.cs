@@ -285,19 +285,16 @@ public class TryndamereController : PlayerController
     {
         if (character.CurRCool <= 0)
         {
-            //StopAllCoroutines();
-            //canAttack = true;
-
             if (isImmortal) return; // 이미 무적이면 실행 안 함
 
             isImmortal = true; // 무적 상태 활성화
-            character.SetState(State.Invincible); // 캐릭터 상태를 무적으로 설정
+            character.SetState(State.Invincible,5f); // 캐릭터 상태를 무적으로 설정
 
             if (anim == null) anim = GetComponentInChildren<Animator>();
             anim.SetTrigger("UseR"); // 애니메이션 실행
             rEffectObject.SetActive(true); // 궁극기 이펙트 활성화
 
-            StartCoroutine(EndRSkill());            // 5초 후 무적 해제 및 이펙트 제거
+            StartCoroutine(EndRSkill()); // 5초 후 무적 해제 및 이펙트 제거
 
             character.SetRCooldown();
             Debug.Log("R 사용");
@@ -310,7 +307,6 @@ public class TryndamereController : PlayerController
         yield return new WaitForSeconds(5f); // 무적 지속 시간
 
         isImmortal = false; // 무적 해제
-        character.SetState(State.Neutral); // 상태 복구
 
         if (rEffectObject != null)
         {

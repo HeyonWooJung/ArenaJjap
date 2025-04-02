@@ -214,13 +214,9 @@ public class VayneState : PlayerController
             {
                 if (hit.collider.CompareTag("Wall"))
                 {
-                    Debug.Log("벽 충돌 감지");
-                    target.character.SetState(State.Stun);
-                    yield return new WaitForSeconds(1.5f);
-                    target.character.SetState(State.Neutral);
-
+                    target.character.SetState(State.Stun,1.5f);
                     target.character.TakeDamage(character, 285 + (character.ATK * 0.75f), false, character.Lethality, character.ArmorPenetration);
-                    yield break;
+                    yield return null;
                 }
             }
 
