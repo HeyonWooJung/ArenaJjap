@@ -47,11 +47,15 @@ public class GameManager : MonoBehaviour
     public void AddBlueTeam(int pn)
     {
         blueAlive.Add(pn, false);
+        Debug.Log(blueAlive.Count);
+
     }
 
     public void AddRedTeam(int pn)
     {
         redAlive.Add(pn, false);
+        Debug.Log(redAlive.Count);
+
     }
 
     public void AddBlueChamp(int viewID, PlayerController playerController)
@@ -66,8 +70,9 @@ public class GameManager : MonoBehaviour
 
     public void PlayerDeath(int pn)
     {
+        
         if(blueAlive.ContainsKey(pn))
-        {
+        {            
             blueAlive[pn] = false;
         }
         else if(redAlive.ContainsKey(pn))
@@ -80,14 +85,17 @@ public class GameManager : MonoBehaviour
 
     public void ResetRound()
     {
+        Debug.Log("ResetRound");
         foreach(var blue in blueChamps)
         {
+            Debug.Log(blue.Value + "레드 초기화");
             blue.Value.character.ResetState();
             blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
         }
 
         foreach (var red in redChamps)
         {
+            Debug.Log(red.Value + "레드 초기화");
             red.Value.character.ResetState();
             red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr].position;
         }

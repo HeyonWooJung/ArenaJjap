@@ -71,7 +71,11 @@ public class VayneState : PlayerController
             ChangeState(new UltTumbleState(location));
         }
     }
-
+    public override void Death()
+    {
+        base.Death();
+        anim.SetTrigger("Dead");
+    }
     public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
         if (character.CurECool <= 0)
@@ -148,6 +152,7 @@ public class VayneState : PlayerController
 
         VayneWSkill(target);
     }
+    
 
     public void VayneWSkill(PlayerController target)
     {

@@ -275,6 +275,7 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 6288504876180169047}
   - {fileID: 7713908103131131104}
+  - {fileID: 1574700593781910164}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -3229,6 +3230,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d489fc3d65827b544939a1e4b96ef392, type: 3}
+--- !u!114 &1574700593781910164 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3784050272082380872, guid: d489fc3d65827b544939a1e4b96ef392, type: 3}
+  m_PrefabInstance: {fileID: 2403181075905340124}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eac00eb53697bc48b8f3050e40c3d9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &5720277945078987874 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7943032593998962366, guid: d489fc3d65827b544939a1e4b96ef392, type: 3}

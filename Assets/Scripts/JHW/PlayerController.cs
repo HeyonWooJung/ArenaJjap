@@ -246,7 +246,6 @@ public class PlayerController : MonoBehaviour, IPunObservable
         //CommandBase command = DeserializeCommandInfo(stream);
         //command.Execute();
         curCommand?.Execute();
-        Debug.Log("발사발사");
     }
 
     [PunRPC]

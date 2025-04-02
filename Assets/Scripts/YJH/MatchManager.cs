@@ -87,7 +87,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
                 {
                     GameManager.Instance.AddBlueTeam(p.ActorNumber);
                 }
-            }
+            } 
             else
             {
                 playerIndex = redteam.IndexOf(p) + blueteam.Count; // 레드팀이면 블루팀 개수만큼 추가한 위치
@@ -101,6 +101,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
             {
                 nickNameTexts[playerIndex].text = p.NickName;
             }
+
         }
     }
 

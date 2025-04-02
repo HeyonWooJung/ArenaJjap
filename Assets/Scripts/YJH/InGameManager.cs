@@ -57,14 +57,9 @@ public class InGameManager : MonoBehaviourPunCallbacks
         {
             healthBar.target = player;
             healthBar.useLocalData = view.IsMine;
-            Debug.Log($"[HealthBar 연결] 대상: {player.name}, 내 캐릭터 여부: {view.IsMine}");
         }
 
         // 체력바 네트워크 동기화 설정 (ViewID는 건드리지 않음!)
         HealthBarNetworkSync sync = bar.GetComponent<HealthBarNetworkSync>();
-        if (sync == null)
-        {
-            Debug.LogWarning("HealthBarNetworkSync가 체력바에 붙어 있지 않습니다.");
-        }
     }    
 }
