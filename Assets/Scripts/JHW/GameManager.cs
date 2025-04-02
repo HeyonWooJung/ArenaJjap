@@ -13,11 +13,11 @@ public class GameManager : MonoBehaviour
     public WinLoseUI wlUi;
     public InGameManager inGameManager;
 
-    Dictionary<int, bool> blueAlive; //actorNum, 생존여부
-    Dictionary<int, bool> redAlive;
+    Dictionary<int, bool> blueAlive = new Dictionary<int, bool>(); //actorNum, 생존여부
+    Dictionary<int, bool> redAlive = new Dictionary<int, bool>();
 
-    Dictionary<int, PlayerController> blueChamps; //viewid, 플레이어컨트롤러
-    Dictionary<int, PlayerController> redChamps;
+    Dictionary<int, PlayerController> blueChamps = new Dictionary<int, PlayerController>(); //viewid, 플레이어컨트롤러
+    Dictionary<int, PlayerController> redChamps = new Dictionary<int, PlayerController>();
 
     public int round = 0;
 
