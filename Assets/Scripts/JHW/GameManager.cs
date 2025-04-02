@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     }
 
     public WinLoseUI wlUi;
+    public InGameManager inGameManager;
 
     Dictionary<int, bool> blueAlive; //actorNum, 생존여부
     Dictionary<int, bool> redAlive;
@@ -82,11 +83,13 @@ public class GameManager : MonoBehaviour
         foreach(var blue in blueChamps)
         {
             blue.Value.character.ResetState();
+            blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
         }
 
         foreach (var red in redChamps)
         {
             red.Value.character.ResetState();
+            red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr].position;
         }
     }
 

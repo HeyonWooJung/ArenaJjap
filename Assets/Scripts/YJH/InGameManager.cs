@@ -18,6 +18,10 @@ public class InGameManager : MonoBehaviourPunCallbacks
     void Start()
     {
         SpawnMyChampion();
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.inGameManager = this;
+        }
     }
     [PunRPC]
     public void HPBar()

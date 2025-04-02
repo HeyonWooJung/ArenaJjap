@@ -15,6 +15,7 @@ public class InGameCamera : MonoBehaviour
     void Start()
     {
         Cursor.lockState = CursorLockMode.Confined; //마우스 못나가게 하기
+        
     }
 
     public void Init(GameObject player)
