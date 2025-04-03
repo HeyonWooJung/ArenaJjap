@@ -216,11 +216,11 @@ public class SionSkill : PlayerController
         }
         if (isPassiveNow)
         {
-            enemy.character.TakeDamage(character, baseAttackDamage + (enemy.character.HP * 0.1f), false, character.Lethality, character.ArmorPenetration);
+            //enemy.character.TakeDamage(character, baseAttackDamage + (enemy.character.HP * 0.1f), false, character.Lethality, character.ArmorPenetration);
         }
         else
         {
-            enemy.character.TakeDamage(character, baseAttackDamage, false, character.Lethality, character.ArmorPenetration);
+            //enemy.character.TakeDamage(character, baseAttackDamage, false, character.Lethality, character.ArmorPenetration);
         }
         StartCoroutine(AAHandle());
 
@@ -442,7 +442,7 @@ public class SionSkill : PlayerController
 
         while (isPassiveNow && character.CurHP > 0)
         {
-            character.TakeDamage(character, -(1.3f + (passiveCount * 0.7f)), true, 0, 0);
+           //character.TakeDamage(character, -(1.3f + (passiveCount * 0.7f)), true, 0, 0);
             passiveCount++;
             yield return passiveDecreaseHPTime;
         }
@@ -671,7 +671,7 @@ public class SionSkill : PlayerController
         foreach(Collider enemy in hits)
         {
             PlayerController x = enemy.GetComponent<PlayerController>();
-            x.character.TakeDamage(character, wExlosionFixedDamage + (character.ATK * wExlosionAddDamage) + (x.character.HP * wExlosionAddEnemyHealth), false, character.Lethality, character.ArmorPenetration);
+            //x.character.TakeDamage(character, wExlosionFixedDamage + (character.ATK * wExlosionAddDamage) + (x.character.HP * wExlosionAddEnemyHealth), false, character.Lethality, character.ArmorPenetration);
             Debug.Log(enemy);
         }
         anim.SetTrigger("WBoom");
@@ -741,7 +741,7 @@ public class SionSkill : PlayerController
         if (hits.Length > 0)
         {
             var x = hits[0].GetComponent<PlayerController>();
-            x.character.TakeDamage(character, eSkillDamage + (character.ATK * 0.55f), false, character.Lethality, character.ArmorPenetration);
+           // x.character.TakeDamage(character, eSkillDamage + (character.ATK * 0.55f), false, character.Lethality, character.ArmorPenetration);
             StartCoroutine(SettingEnemyState(x, State.Slow, 2.5f, false, (int)(character.MoveSpeed * 0.6f)));
             StartCoroutine(ESkillArmorDown(x));
         }
@@ -871,7 +871,7 @@ public class SionSkill : PlayerController
             {
                 PlayerController target = collider.GetComponent<PlayerController>();
                 
-                target.character.TakeDamage(character,rSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
+                //target.character.TakeDamage(character,rSkillCurDamage, false, character.Lethality, character.ArmorPenetration);
                 int x = (int)(target.character.MoveSpeed * rSkillSlowPercent);
                 StartCoroutine(SettingEnemyState(target, State.Slow, 1f, false, x));
             }
