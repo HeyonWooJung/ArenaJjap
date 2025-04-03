@@ -12,7 +12,6 @@ public class SionSkill : PlayerController
     [SerializeField] Animator anim;
     [SerializeField] LayerMask hitLayer;
     [SerializeField] LayerMask wallLayer;
-    [SerializeField] bool debuggingMode;
     readonly WaitForSeconds skillCheckTime = new WaitForSeconds(0.05f);
     [SerializeField] float attackSpeedAnimFloat;
     [SerializeField] float moveSpeedAnimFloat;
@@ -142,7 +141,6 @@ public class SionSkill : PlayerController
         //agent = GetComponent<NavMeshAgent>();
         qSkillOriginalPanelA = qSkillPanel.color;
         hitLayer = 1 << LayerMask.NameToLayer(enemyTag);
-        if(debuggingMode) PhotonNetwork.OfflineMode = true;//디버깅용
         if(barrierColor == null) barrierColor = barrierPrefab.GetComponent<Renderer>();
 
         rSkillOriginalColor = rSkillExplosiveImage.color;
@@ -990,7 +988,6 @@ public class SionSkill : PlayerController
    
     void OnDrawGizmos()
     {
-        if (!debuggingMode) return;
 
         //비율 0~1
         float chargeRatio = Mathf.Clamp01(qSkillTimer / 1f);

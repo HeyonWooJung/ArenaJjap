@@ -655,7 +655,6 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 1024
-  debuggingMode: 1
   attackSpeedAnimFloat: 0
   moveSpeedAnimFloat: 0
   powerOfAirborne: 5

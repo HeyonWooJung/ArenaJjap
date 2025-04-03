@@ -252,8 +252,6 @@ MonoBehaviour:
   IsUlt: 0
   ultTime: 12
   anim: {fileID: 7895303522347208664}
-  firstHit: {fileID: 4378755112605827103, guid: a0961c67e69291b40a4223710d789203, type: 3}
-  secondHit: {fileID: 1242958332719442850, guid: 549faaf96b1f4ba4ba9b9b6bf33e6ee6, type: 3}
 --- !u!114 &6866306012869594619
 MonoBehaviour:
   m_ObjectHideFlags: 0

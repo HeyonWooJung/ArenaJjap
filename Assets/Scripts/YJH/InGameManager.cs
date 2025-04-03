@@ -14,7 +14,7 @@ public class InGameManager : MonoBehaviourPunCallbacks
 
     [SerializeField] private GameObject[] canvasUIs;
 
-
+    AugmentManager AM;
     void Start()
     {
         SpawnMyChampion();
@@ -22,6 +22,7 @@ public class InGameManager : MonoBehaviourPunCallbacks
         {
             GameManager.Instance.inGameManager = this;
         }
+        AM.SetUpAugment();
     }
     void SpawnMyChampion()
     {
