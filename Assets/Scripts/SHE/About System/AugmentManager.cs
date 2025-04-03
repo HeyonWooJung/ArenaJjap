@@ -102,6 +102,13 @@ public class AugmentManager : MonoBehaviour
             }
 
             yield return new WaitUntil(() => augmentPanel.activeSelf != true);
+            foreach (GameObject activated in statAugmentPrefabs)
+            {
+                if (activated.activeSelf)
+                {
+                    activated.SetActive(false);
+                }
+            }
             num++;
         }
         

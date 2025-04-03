@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gold_CriticalC
   m_EditorClassIdentifier: 
   statName: "\uCE58\uBA85\uD0C0 \uD655\uB960"
-  statPlusInt: 40
+  statPlusFloat: 0.4
   icon: {fileID: 21300000, guid: f5d48f52f8b4863428be829d81598d6e, type: 3}
   statDescription: "\uCE58\uBA85\uD0C0 \uD655\uB960\uC744 40%\uB9CC\uD07C \uC5BB\uC2B5\uB2C8\uB2E4"
   statType: 4

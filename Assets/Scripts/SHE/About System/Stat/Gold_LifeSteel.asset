@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gold_LifeSteel
   m_EditorClassIdentifier: 
   statName: "\uBAA8\uB4E0 \uD53C\uD574 \uD761\uD608 \uD30C\uD3B8"
-  statPlusInt: 10
+  statPlusFloat: 0.1
   icon: {fileID: 21300000, guid: 3da653c08f73b494a8cf103bbb002989, type: 3}
   statDescription: "\uBAA8\uB4E0 \uD53C\uD574 \uD761\uD608\uC744 10% \uC5BB\uC2B5\uB2C8\uB2E4"
   statType: 6

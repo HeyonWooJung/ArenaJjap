@@ -73,12 +73,12 @@ public class PlayerController : MonoBehaviour, IPunObservable
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         //StartCoroutine(HpRegen());
         StartCoroutine(Execution());
-        if (pv.IsMine)
-        {
-            Camera.main.GetComponent<InGameCamera>().player = gameObject;
-            Camera.main.GetComponent<InGameCamera>().Init(gameObject);
-            PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
-        }
+        //if (pv.IsMine)
+        //{
+        //    Camera.main.GetComponent<InGameCamera>().player = gameObject;
+        //    Camera.main.GetComponent<InGameCamera>().Init(gameObject);
+        //    PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
+        //}
     }
 
     [PunRPC]

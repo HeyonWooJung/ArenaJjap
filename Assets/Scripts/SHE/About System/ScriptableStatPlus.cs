@@ -23,7 +23,7 @@ public enum StatType
 public class ScriptableStatPlus : ScriptableObject
 {
     public string statName;
-    public int statPlusInt;
+    public float statPlusFloat;
     public Sprite icon;
     public string statDescription;
     public StatType statType;

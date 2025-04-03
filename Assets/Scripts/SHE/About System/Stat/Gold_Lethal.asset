@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gold_Lethal
   m_EditorClassIdentifier: 
   statName: "\uACE0\uC815 \uBC29\uC5B4\uAD6C \uAD00\uD1B5\uB825 \uD30C\uD3B8"
-  statPlusInt: 22
-  icon: {fileID: 21300000, guid: 02b0094dc1ef8a34dbdbf194a98077a0, type: 3}
-  statDescription: "\uBC29\uC5B4\uAD6C \uAD00\uD1B5\uB825\uC744 18 \uC5BB\uC2B5\uB2C8\uB2E4"
+  statPlusFloat: 22
+  icon: {fileID: 21300000, guid: eb49c4c3b3ec6d042986ae1cf27ad51c, type: 3}
+  statDescription: "\uBC29\uC5B4\uAD6C \uAD00\uD1B5\uB825\uC744 22 \uC5BB\uC2B5\uB2C8\uB2E4"
   statType: 10
