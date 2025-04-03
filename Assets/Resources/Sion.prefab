@@ -650,7 +650,7 @@ MonoBehaviour:
   rDelay: 0
   rTarget: 0
   rChannel: 0
-  anim: {fileID: 0}
+  anim: {fileID: 2982085147311716511}
   hitLayer:
     serializedVersion: 2
     m_Bits: 64

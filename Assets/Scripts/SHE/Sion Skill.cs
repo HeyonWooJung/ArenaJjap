@@ -137,7 +137,7 @@ public class SionSkill : PlayerController
         //characterDictionary.Add("Blue", charcter);
         //qSkillcol = GetComponent<BoxCollider>();
         //qSkillOriginalCenterPos = qSkillcol.center;
-        anim = GetComponentInChildren<Animator>();
+        anim = GetComponent<Animator>();
         //playerController = GetComponent<PlayerController>();
         //agent = GetComponent<NavMeshAgent>();
         qSkillOriginalPanelA = qSkillPanel.color;
@@ -394,16 +394,7 @@ public class SionSkill : PlayerController
             }
             if (rSkillOn)
             {
-
                 RSkillCheckingHit();
-                
-                //Vector3 screenPosition = Input.mousePosition;
-                //screenPosition.z = 5f; // UI가 카메라에서 일정 거리 유지
-                //rSkillCursor.position = Camera.main.ScreenToWorldPoint(screenPosition);
-                //Vector3 cursorRotation = new Vector3(0 ,0, -transform.eulerAngles.y);
-                //rSkillCursor.eulerAngles = cursorRotation;
-
-                
             }
 
 
@@ -787,41 +778,30 @@ public class SionSkill : PlayerController
         character.SetState(State.Unstoppable,8);
         anim.SetTrigger("R");
         anim.SetBool("RRunnig",false);
- 
+
         while (rSkillOn == true && rSkillTimer < 8 && character.CurHP > 0)
         {
             Debug.Log(rSkillTimer);
             rSkillTimer += 0.05f;
             // 사이온의 현재 위치 + 전방 방향으로 박스 중심 설정
             Vector3 boxCenter = transform.position + transform.forward * 0.5f; // 적절한 거리 조정
-
             // 박스 크기 설정
             Vector3 halfExtents = new Vector3(0.8f, 1.5f, 0.8f); //반절 크기를 사용하니 반절
-
             // 박스 방향 설정
             Quaternion boxRotation = transform.rotation;
-
-            // OverlapBox 실행
             Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, boxRotation, hitLayer);
-
             RSkillRotation();
-           
-
             if (hits.Length > 0)
             {
                 anim.SetTrigger("RHit");
                 agent.SetDestination(transform.position);
                 RSkillExplosion();
             }
-           
             if(rSkillTimer >= 2 && anim.GetBool("RRunning") == false)
             {
                 anim.SetBool("RRunning", true);
                 anim.SetFloat("MoveSpeed", 2f);
             }
-
-
-            
             if(character.MoveSpeed <= 950)
             {
                 character.AdjustMoveSpeed(rSkillIncreasing);
@@ -834,16 +814,12 @@ public class SionSkill : PlayerController
             {
                 anim.SetTrigger("RStop");
             }
-            
             yield return skillCheckTime;
         }
         if(rSkillTimer >= 8)
         {
             anim.SetTrigger("RStop");
         }
-
-        
-
     }
 
 
