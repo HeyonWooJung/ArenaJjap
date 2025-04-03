@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class GameManager : MonoBehaviour
 
     public WinLoseUI wlUi;
     public InGameManager inGameManager;
+    public RoundCheck RC;
 
     Dictionary<int, bool> blueAlive = new Dictionary<int, bool>(); //actorNum, 생존여부
     Dictionary<int, bool> redAlive = new Dictionary<int, bool>();
@@ -46,14 +48,14 @@ public class GameManager : MonoBehaviour
 
     public void AddBlueTeam(int pn)
     {
-        blueAlive.Add(pn, false);
+        blueAlive.Add(pn, true);
         Debug.Log(blueAlive.Count);
 
     }
 
     public void AddRedTeam(int pn)
     {
-        redAlive.Add(pn, false);
+        redAlive.Add(pn, true);
         Debug.Log(redAlive.Count);
 
     }
@@ -84,26 +86,31 @@ public class GameManager : MonoBehaviour
     }
 
     public void ResetRound()
-    {
-        foreach(var blue in blueChamps)
+    {        
+        foreach (var blue in blueChamps)
         {
             Debug.Log(blue.Value + "블루 초기화");
             blue.Value.character.ResetState();
-            blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
+            blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr -1].position;
+            blueAlive[blue.Value.pv.ControllerActorNr] = true;
         }
 
         foreach (var red in redChamps)
         {
             Debug.Log(red.Value + "레드 초기화");
             red.Value.character.ResetState();
-            red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr].position;
+            red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr -1].position;
+            redAlive[red.Value.pv.ControllerActorNr] = true;
         }
+        CheckRound();
     }
 
     public void CheckWin()
     {
         int teamAliveCount = blueAlive.Count;
-        foreach(var blue in blueAlive)
+        Debug.Log(teamAliveCount + "처음");
+
+        foreach (var blue in blueAlive)
         {
             if(blue.Value == false)
             {
@@ -113,6 +120,8 @@ public class GameManager : MonoBehaviour
 
         if(teamAliveCount <= 0)
         {
+            Debug.Log("레드 이김");
+            Debug.Log(teamAliveCount + "두번째");
             RedWin();
             return;
         }
@@ -129,6 +138,8 @@ public class GameManager : MonoBehaviour
 
         if (teamAliveCount <= 0)
         {
+            Debug.Log("블루 이김");
+
             BlueWin();
             return;
         }
@@ -161,7 +172,11 @@ public class GameManager : MonoBehaviour
             RedVictory();
         }
     }
-
+    public void CheckRound()
+    {
+        RC.RoundChecking();
+    }
+    
     public void BlueVictory()
     {
         wlUi.AnnounceResult("Blue");

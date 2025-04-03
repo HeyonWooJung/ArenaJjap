@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -23,17 +24,22 @@ public class VayneState : PlayerController
     public Animator anim;
 
     //마지막으로 때린놈
-    GameObject lastAttackedTarget = null;
-    GameObject firstHitEffect = null;
-    GameObject secondHitEffect = null;
+    //GameObject lastAttackedTarget = null;
+    //GameObject firstHitEffect = null;
+    //GameObject secondHitEffect = null;
 
-    [SerializeField] GameObject firstHit;
-    [SerializeField] GameObject secondHit;
+    //[SerializeField] GameObject firstHit;
+    //[SerializeField] GameObject secondHit;
     int hitCount = 0;
     public override void Start()
     {
         base.Start();
-        ChangeState(new DefaultState());        
+        ChangeState(new DefaultState());    
+        
+        if(PhotonNetwork.IsConnected)
+        {
+            Debug.Log("dd");
+        }
     }
 
     public override void Update()
@@ -150,57 +156,55 @@ public class VayneState : PlayerController
         OnAutoAttackGlobal?.Invoke();
         base.AutoAttack(target);
 
-        VayneWSkill(target);
+        //VayneWSkill(target);
     }
     
 
-    public void VayneWSkill(PlayerController target)
-    {
-        GameObject currentTarget = target.gameObject;
+    //public void VayneWSkill(PlayerController target)
+    //{
+    //    GameObject currentTarget = target.gameObject;
 
-        if (lastAttackedTarget != currentTarget)
-        {
-            if (firstHitEffect != null)
-            {
-                Destroy(firstHitEffect);
-            }
-            if (secondHitEffect != null)
-            {
-                Destroy(secondHitEffect);
-            }
+    //    if (lastAttackedTarget != currentTarget)
+    //    {
+    //        if (firstHitEffect != null)
+    //        {
+    //        }
+    //        if (secondHitEffect != null)
+    //        {
+    //        }
 
-            hitCount = 1;
-            firstHitEffect = Instantiate(firstHit, target.transform);
-            secondHitEffect = null;
-            lastAttackedTarget = currentTarget;
-            return;
-        }
+    //        hitCount = 1;
+    //        firstHitEffect = Instantiate(firstHit, target.transform);
+    //        secondHitEffect = null;
+    //        lastAttackedTarget = currentTarget;
+    //        return;
+    //    }
 
-        // 같은 대상이면 히트 누적
-        hitCount++;
+    //    // 같은 대상이면 히트 누적
+    //    hitCount++;
 
-        if (hitCount == 2)
-        {
-            if (secondHitEffect != null)
-            {
-                Destroy(secondHitEffect);
-            }
-            secondHitEffect = Instantiate(secondHit, target.transform);
-        }
-        else if (hitCount == 3)
-        {
-            target.character.TakeDamage(character, target.character.HP * 0.1f, true, 0, 0);
-            Debug.Log("추뎀적용");
+    //    if (hitCount == 2)
+    //    {
+    //        if (secondHitEffect != null)
+    //        {
+    //            Destroy(secondHitEffect);
+    //        }
+    //        secondHitEffect = Instantiate(secondHit, target.transform);
+    //    }
+    //    else if (hitCount == 3)
+    //    {
+    //        target.character.TakeDamage(character, target.character.HP * 0.1f, true, 0, 0);
+    //        Debug.Log("추뎀적용");
 
-            // 초기화
-            hitCount = 0;
-            if (firstHitEffect != null) Destroy(firstHitEffect);
-            if (secondHitEffect != null) Destroy(secondHitEffect);
-            firstHitEffect = null;
-            secondHitEffect = null;
-            lastAttackedTarget = null;
-        }
-    }
+    //        // 초기화
+    //        hitCount = 0;
+    //        if (firstHitEffect != null) Destroy(firstHitEffect);
+    //        if (secondHitEffect != null) Destroy(secondHitEffect);
+    //        firstHitEffect = null;
+    //        secondHitEffect = null;
+    //        lastAttackedTarget = null;
+    //    }
+    //}
     private IEnumerator WallCheck(PlayerController target, Vector3 dir, float distance, float speed)
     {
         float pushed = 0f;

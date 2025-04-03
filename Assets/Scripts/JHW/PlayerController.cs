@@ -73,13 +73,31 @@ public class PlayerController : MonoBehaviour, IPunObservable
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         //StartCoroutine(HpRegen());
         StartCoroutine(Execution());
-        //if (pv.IsMine)
-        //{
-        //    Camera.main.GetComponent<InGameCamera>().player = gameObject;
-        //    Camera.main.GetComponent<InGameCamera>().Init(gameObject);
-        //    PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
-        //}
+        if (pv.IsMine)
+        {
+            pv.RPC("AddToGM", RpcTarget.MasterClient, pv.ViewID);
+            Camera.main.GetComponent<InGameCamera>().player = gameObject;
+            Camera.main.GetComponent<InGameCamera>().Init(gameObject);
+            PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
+        }
     }
+
+    [PunRPC]
+    public void AddToGM(int viewId)
+    {
+        if(GameManager.Instance != null)
+        {
+            PlayerController pc = PhotonView.Find(viewId).GetComponent<PlayerController>();
+            if (tag == "Blue")
+            {
+                GameManager.Instance.AddBlueChamp(viewId, pc);
+            }
+            else
+            {
+                GameManager.Instance.AddRedChamp(viewId, pc);
+            }
+        }
+    } 
 
     [PunRPC]
     public void SetMyTag(int tag)
@@ -286,7 +304,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
     // Update is called once per frame
     public virtual void Update()
     {
-        if (pv.IsMine)
+        if (pv != null && pv.IsMine)
         {
             if ((character.CurState == State.Stun || character.CurState == State.Airborne) == false)
             {
