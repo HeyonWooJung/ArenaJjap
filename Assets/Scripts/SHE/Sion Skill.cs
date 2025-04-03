@@ -768,7 +768,7 @@ public class SionSkill : PlayerController
 
     IEnumerator CastRSkill()
     {
-        //character.SetState(State.Unstoppable,8);
+        character.SetState(State.Unstoppable,8);
         anim.SetTrigger("R");
         anim.SetBool("RRunnig",false);
  
