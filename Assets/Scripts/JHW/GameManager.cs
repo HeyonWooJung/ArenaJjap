@@ -46,14 +46,14 @@ public class GameManager : MonoBehaviour
 
     public void AddBlueTeam(int pn)
     {
-        blueAlive.Add(pn, false);
+        blueAlive.Add(pn, true);
         Debug.Log(blueAlive.Count);
 
     }
 
     public void AddRedTeam(int pn)
     {
-        redAlive.Add(pn, false);
+        redAlive.Add(pn, true);
         Debug.Log(redAlive.Count);
 
     }
@@ -85,11 +85,13 @@ public class GameManager : MonoBehaviour
 
     public void ResetRound()
     {
+        Debug.Log("리셋");
         foreach(var blue in blueChamps)
-        {
+        {            
             Debug.Log(blue.Value + "블루 초기화");
             blue.Value.character.ResetState();
             blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
+            blueAlive[blue.Value.pv.ControllerActorNr] = true;
         }
 
         foreach (var red in redChamps)
@@ -97,13 +99,17 @@ public class GameManager : MonoBehaviour
             Debug.Log(red.Value + "레드 초기화");
             red.Value.character.ResetState();
             red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr].position;
+            redAlive[red.Value.pv.ControllerActorNr] = true;
         }
     }
 
     public void CheckWin()
     {
+
         int teamAliveCount = blueAlive.Count;
-        foreach(var blue in blueAlive)
+        Debug.Log(teamAliveCount + "처음");
+
+        foreach (var blue in blueAlive)
         {
             if(blue.Value == false)
             {
@@ -113,6 +119,8 @@ public class GameManager : MonoBehaviour
 
         if(teamAliveCount <= 0)
         {
+            Debug.Log("레드 이김");
+            Debug.Log(teamAliveCount + "두번째");
             RedWin();
             return;
         }
@@ -129,6 +137,8 @@ public class GameManager : MonoBehaviour
 
         if (teamAliveCount <= 0)
         {
+            Debug.Log("블루 이김");
+
             BlueWin();
             return;
         }
