@@ -75,11 +75,28 @@ public class PlayerController : MonoBehaviour, IPunObservable
         StartCoroutine(Execution());
         if (pv.IsMine)
         {
+            pv.RPC("AddToGM", RpcTarget.MasterClient, pv.ViewID, this);
             Camera.main.GetComponent<InGameCamera>().player = gameObject;
             Camera.main.GetComponent<InGameCamera>().Init(gameObject);
             PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
         }
     }
+
+    [PunRPC]
+    public void AddToGM(int viewId, PlayerController pc)
+    {
+        if(GameManager.Instance != null)
+        {
+            if(tag == "Blue")
+            {
+                GameManager.Instance.AddBlueChamp(viewId, pc);
+            }
+            else
+            {
+                GameManager.Instance.AddRedChamp(viewId, pc);
+            }
+        }
+    } 
 
     [PunRPC]
     public void SetMyTag(int tag)
