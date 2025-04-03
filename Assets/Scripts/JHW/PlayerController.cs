@@ -304,7 +304,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
     // Update is called once per frame
     public virtual void Update()
     {
-        if (pv.IsMine)
+        if (pv != null && pv.IsMine)
         {
             if ((character.CurState == State.Stun || character.CurState == State.Airborne) == false)
             {

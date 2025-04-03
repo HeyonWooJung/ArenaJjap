@@ -91,7 +91,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log(blue.Value + "블루 초기화");
             blue.Value.character.ResetState();
-            blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
+            blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr -1].position;
             blueAlive[blue.Value.pv.ControllerActorNr] = true;
         }
 
@@ -99,7 +99,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log(red.Value + "레드 초기화");
             red.Value.character.ResetState();
-            red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr].position;
+            red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr -1].position;
             redAlive[red.Value.pv.ControllerActorNr] = true;
         }
         CheckRound();
