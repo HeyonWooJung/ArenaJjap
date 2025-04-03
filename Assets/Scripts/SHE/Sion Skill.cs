@@ -88,6 +88,7 @@ public class SionSkill : PlayerController
     [SerializeField] float eSkillArmorDownPercent;
     [SerializeField] float eSkillSpeed;
     [SerializeField] float eSkillTimer;
+    GameObject copyPrefab;
     SionE findEPrefab;
     bool checkingEPrefab = false; 
     [Header("R스킬")]
@@ -146,6 +147,8 @@ public class SionSkill : PlayerController
 
         rSkillOriginalColor = rSkillExplosiveImage.color;
         wExplosiveOriginalColor = wExplosionColor.color;
+
+
     }
     private void OnEnable()
     {
@@ -701,6 +704,10 @@ public class SionSkill : PlayerController
 
     public override void SkillE(bool isTargeting, bool isChanneling, PlayerController target, Vector3 location)
     {
+
+        
+        if (qSkillCharging && rSkillOn) return;
+        GetMouseCursorPos();
         if (!checkingEPrefab)
         {
             findEPrefab = FindObjectOfType<SionE>();
@@ -710,9 +717,6 @@ public class SionSkill : PlayerController
             }
             checkingEPrefab = true;
         }
-        if (eSkillPrefab.activeSelf) return;
-        if (qSkillCharging && rSkillOn) return;
-        GetMouseCursorPos();
         eSkillPrefab.gameObject.SetActive(true);
         StartCoroutine(CastESkill());
         character.SetECooldown();
@@ -730,7 +734,7 @@ public class SionSkill : PlayerController
             eSkillTimer += Time.deltaTime;
             eSkillPrefab.transform.Translate((targetPos * eSkillSpeed) * Time.deltaTime);
             hits = Physics.OverlapSphere(eSkillPrefab.transform.position, 1, hitLayer);
-            
+
             yield return skillCheckTime;
         }
         if (hits.Length > 0)
@@ -741,6 +745,7 @@ public class SionSkill : PlayerController
             StartCoroutine(ESkillArmorDown(x));
         }
         eSkillPrefab.SetActive(false);
+    
     }
     IEnumerator ESkillArmorDown(PlayerController enemy)
     {

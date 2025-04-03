@@ -469,7 +469,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a0ffd94ff8dcb384f962a6f172e0a6a4, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 911bd07a66a2fdd45810b5766056c587, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -648,7 +648,7 @@ MonoBehaviour:
   rDelay: 0
   rTarget: 0
   rChannel: 0
-  anim: {fileID: 0}
+  anim: {fileID: 187064129596075218}
   hitLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -1039,6 +1039,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 5954450502249418530}
   m_SourcePrefab: {fileID: 100100000, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
+--- !u!95 &187064129596075218 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
+  m_PrefabInstance: {fileID: 6048897783313338691}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6086818311272101544 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
@@ -1061,4 +1066,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd125ed6b592fee43878d922a9544aee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sion: {fileID: 0}
+  sion: {fileID: 1882766259231687992}
