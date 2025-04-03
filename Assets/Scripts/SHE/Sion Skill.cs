@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 public class SionSkill : PlayerController
 {
-    Animator anim;
+    [SerializeField] Animator anim;
     [SerializeField] LayerMask hitLayer;
     [SerializeField] LayerMask wallLayer;
     [SerializeField] bool debuggingMode;
@@ -232,7 +232,7 @@ public class SionSkill : PlayerController
     public override void Update()
     {
 
-        if (debuggingMode == true)//여기 원래 pv.Mine
+        if (pv != null &&pv.IsMine)
         {
             if ((character.CurState == State.Stun || character.CurState == State.Airborne || qSkillCharging || rSkillOn) == false)
             {
@@ -768,7 +768,7 @@ public class SionSkill : PlayerController
 
     IEnumerator CastRSkill()
     {
-        //character.SetState(State.Unstoppable,8);
+        character.SetState(State.Unstoppable,8);
         anim.SetTrigger("R");
         anim.SetBool("RRunnig",false);
  

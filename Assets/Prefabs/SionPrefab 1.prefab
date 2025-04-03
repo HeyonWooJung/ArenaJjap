@@ -704,7 +704,7 @@ MonoBehaviour:
   barrierColor: {fileID: 5197959566381607267}
   wExplosionPrefab: {fileID: 8363666573550473488}
   wExplosionColor: {fileID: 8732260174790310027}
-  eSkillPrefab: {fileID: 0}
+  eSkillPrefab: {fileID: 3837493526826118205, guid: 7dd8e857940d3ac42a582628de314cf0, type: 3}
   eSkillDamage: 140
   eSkillSlowPercent: 55
   eSkillArmorDownPercent: 20
@@ -1057,6 +1057,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6859942852068584466}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e70b64631aa9c5f49a133f9c1c4a4fe2, type: 3}
+  m_Script: {fileID: 11500000, guid: bd125ed6b592fee43878d922a9544aee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sion: {fileID: 0}

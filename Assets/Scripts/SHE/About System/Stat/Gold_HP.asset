@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gold_HP
   m_EditorClassIdentifier: 
   statName: "\uCCB4\uB825 \uD30C\uD3B8"
-  statPlusInt: 500
+  statPlusFloat: 500
   icon: {fileID: 21300000, guid: 53ab0e24e227c854eb0e540568ad5f22, type: 3}
   statDescription: "\uCCB4\uB825\uC744 500 \uC5BB\uC2B5\uB2C8\uB2E4"
   statType: 0
