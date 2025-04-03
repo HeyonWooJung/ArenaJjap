@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class GameManager : MonoBehaviour
 
     public WinLoseUI wlUi;
     public InGameManager inGameManager;
+    public RoundCheck RC;
 
     Dictionary<int, bool> blueAlive = new Dictionary<int, bool>(); //actorNum, 생존여부
     Dictionary<int, bool> redAlive = new Dictionary<int, bool>();
@@ -84,10 +86,9 @@ public class GameManager : MonoBehaviour
     }
 
     public void ResetRound()
-    {
-        Debug.Log("리셋");
-        foreach(var blue in blueChamps)
-        {            
+    {        
+        foreach (var blue in blueChamps)
+        {
             Debug.Log(blue.Value + "블루 초기화");
             blue.Value.character.ResetState();
             blue.Value.transform.position = inGameManager.spawnPoints[blue.Value.pv.ControllerActorNr].position;
@@ -101,11 +102,11 @@ public class GameManager : MonoBehaviour
             red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr].position;
             redAlive[red.Value.pv.ControllerActorNr] = true;
         }
+        CheckRound();
     }
 
     public void CheckWin()
     {
-
         int teamAliveCount = blueAlive.Count;
         Debug.Log(teamAliveCount + "처음");
 
@@ -171,7 +172,11 @@ public class GameManager : MonoBehaviour
             RedVictory();
         }
     }
-
+    public void CheckRound()
+    {
+        RC.RoundChecking();
+    }
+    
     public void BlueVictory()
     {
         wlUi.AnnounceResult("Blue");
