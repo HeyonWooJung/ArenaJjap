@@ -6,7 +6,7 @@ public class HealthBar : MonoBehaviour
     public PlayerController target;
     public Image fillImage;
     public Vector3 offset = new Vector3(0, 0, 0); // 머리 위 위치
-    public bool useLocalData = false;
+    public bool useLocalData = true;
 
     private float curHP;
     private float maxHP;

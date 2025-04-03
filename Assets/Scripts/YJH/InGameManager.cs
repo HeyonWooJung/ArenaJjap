@@ -5,78 +5,81 @@ using System.Collections;
 
 public class InGameManager : MonoBehaviourPunCallbacks
 {
-    PlayerController target;
+    GameObject barPrefab;
+    PlayerController myPlayer;
 
     public Transform[] spawnPoints; // 인원 수 만큼 위치 설정
-    SkillCooldownUI skillUI;
+    [SerializeField] private GameObject[] canvasUIs;
 
     private readonly string[] championNames = { "Ryze", "Sion", "Tryn", "Vayne" };
 
-    [SerializeField] private GameObject[] canvasUIs;
-
-    AugmentManager AM;
     void Start()
     {
+        barPrefab = Resources.Load<GameObject>("HealthBarCanvas");
+
         SpawnMyChampion();
-        if(GameManager.Instance != null)
+
+        if (GameManager.Instance != null)
         {
             GameManager.Instance.inGameManager = this;
         }
-        AM.SetUpAugment();
+
+        StartCoroutine(SetupAllHealthBars());
     }
+
     void SpawnMyChampion()
     {
         int champIndex = MatchManager.myChampionIndex;
-
         string prefabName = championNames[champIndex];
-        int actorIndex = PhotonNetwork.LocalPlayer.ActorNumber - 1;
 
+        int actorIndex = PhotonNetwork.LocalPlayer.ActorNumber - 1;
         Vector3 spawnPos = spawnPoints[actorIndex].position;
 
         GameObject champObj = PhotonNetwork.Instantiate(prefabName, spawnPos, Quaternion.identity);
-        PlayerController player = champObj.GetComponent<PlayerController>();
-        PhotonView view = player.GetComponent<PhotonView>();
+        myPlayer = champObj.GetComponent<PlayerController>();
+        PhotonView view = myPlayer.GetComponent<PhotonView>();
 
+        // UI 활성화
+        if (champIndex >= 0 && champIndex < canvasUIs.Length)
+        {
+            canvasUIs[champIndex].SetActive(true);
+        }
 
-        if(champIndex == 0)
-        {
-            canvasUIs[0].gameObject.SetActive(true);
-        }
-        else if(champIndex == 1)
-        {
-            canvasUIs[1].gameObject.SetActive(true);
-        }
-        else if(champIndex == 2)
-        {
-            canvasUIs[2].gameObject.SetActive(true);
-        }
-        else
-        {
-            canvasUIs[3].gameObject.SetActive(true);
-        }
         // 태그 설정
         if (actorIndex == 0 || actorIndex == 1)
         {
-            view.RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 1);
+            view.RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 1); // 블루팀
         }
         else if (actorIndex == 2 || actorIndex == 3)
         {
-            view.RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 2);
+            view.RPC("SetMyTag", RpcTarget.AllBufferedViaServer, 2); // 레드팀
         }
-        // 체력바 프리팹 로드
-        GameObject barPrefab = Resources.Load<GameObject>("HealthBarCanvas");
-        if (barPrefab == null)  return;
+    }
 
-        // 체력바 생성 및 연결
-        GameObject bar = Instantiate(barPrefab);
-        HealthBar healthBar = bar.GetComponent<HealthBar>();
-        if (healthBar != null)
+    IEnumerator SetupAllHealthBars()
+    {
+        yield return new WaitForSeconds(1f); // 모든 캐릭터가 생성될 때까지 잠깐 대기
+
+        PlayerController[] allPlayers = FindObjectsOfType<PlayerController>();
+
+        foreach (var player in allPlayers)
         {
-            healthBar.target = player;
-            healthBar.useLocalData = view.IsMine;
-        }
+            // 중복 생성 방지
+            if (player.GetComponentInChildren<HealthBar>() != null)
+                continue;
 
-        // 체력바 네트워크 동기화 설정 (ViewID는 건드리지 않음!)
-        HealthBarNetworkSync sync = bar.GetComponent<HealthBarNetworkSync>();
-    }    
+            GameObject bar = Instantiate(barPrefab);
+            HealthBar healthBar = bar.GetComponent<HealthBar>();
+            PhotonView view = player.GetComponent<PhotonView>();
+
+            if (healthBar != null)
+            {
+                healthBar.target = player;
+                healthBar.useLocalData = view.IsMine;
+            }
+
+            // 동기화 컴포넌트도 같이 활성화됨
+            bar.GetComponent<HealthBarNetworkSync>();
+        }
+    }
 }

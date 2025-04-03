@@ -16,7 +16,7 @@ MonoBehaviour:
   _HPRegen: 23.8
   _atk: 22.48147
   _def: 114.5
-  _moveSpeed: 1080
+  _moveSpeed: 350
   _atkSpeed: 1.071
   _range: 175
   qCoolDown: 12

@@ -24,22 +24,18 @@ public class VayneState : PlayerController
     public Animator anim;
 
     //마지막으로 때린놈
-    //GameObject lastAttackedTarget = null;
-    //GameObject firstHitEffect = null;
-    //GameObject secondHitEffect = null;
+    GameObject lastAttackedTarget = null;
+    GameObject firstHitEffect = null;
+    GameObject secondHitEffect = null;
 
-    //[SerializeField] GameObject firstHit;
-    //[SerializeField] GameObject secondHit;
+    [SerializeField] GameObject firstHit;
+    [SerializeField] GameObject secondHit;
     int hitCount = 0;
     public override void Start()
     {
         base.Start();
         ChangeState(new DefaultState());    
         
-        if(PhotonNetwork.IsConnected)
-        {
-            Debug.Log("dd");
-        }
     }
 
     public override void Update()
@@ -50,7 +46,6 @@ public class VayneState : PlayerController
         if (IsUlt)
         {
             ultTime -= Time.deltaTime;
-            Debug.Log(ultTime);
         }        
     }
 
@@ -112,24 +107,8 @@ public class VayneState : PlayerController
                 }
 
                 //character.SetECooldown();
-
+                               
                 
-                if(currentState is UltState)
-                {
-                    anim.SetTrigger("UltIdle");
-                }
-                else if(currentState is UltTumbleState)
-                {
-                    anim.SetTrigger("UltTumbleIdle");
-                }
-                else if(currentState is TumbleState)
-                {
-                    anim.SetTrigger("TumbleIdle");
-                }
-                else
-                {
-                    anim.SetTrigger("Idle");
-                }
             }
         }
     }
@@ -156,55 +135,55 @@ public class VayneState : PlayerController
         OnAutoAttackGlobal?.Invoke();
         base.AutoAttack(target);
 
-        //VayneWSkill(target);
+        VayneWSkill(target);
     }
-    
 
-    //public void VayneWSkill(PlayerController target)
-    //{
-    //    GameObject currentTarget = target.gameObject;
 
-    //    if (lastAttackedTarget != currentTarget)
-    //    {
-    //        if (firstHitEffect != null)
-    //        {
-    //        }
-    //        if (secondHitEffect != null)
-    //        {
-    //        }
+    public void VayneWSkill(PlayerController target)
+    {
+        GameObject currentTarget = target.gameObject;
 
-    //        hitCount = 1;
-    //        firstHitEffect = Instantiate(firstHit, target.transform);
-    //        secondHitEffect = null;
-    //        lastAttackedTarget = currentTarget;
-    //        return;
-    //    }
+        if (lastAttackedTarget != currentTarget)
+        {
+            if (firstHitEffect != null)
+            {
+            }
+            if (secondHitEffect != null)
+            {
+            }
 
-    //    // 같은 대상이면 히트 누적
-    //    hitCount++;
+            hitCount = 1;
+            firstHitEffect = Instantiate(firstHit, target.transform);
+            secondHitEffect = null;
+            lastAttackedTarget = currentTarget;
+            return;
+        }
 
-    //    if (hitCount == 2)
-    //    {
-    //        if (secondHitEffect != null)
-    //        {
-    //            Destroy(secondHitEffect);
-    //        }
-    //        secondHitEffect = Instantiate(secondHit, target.transform);
-    //    }
-    //    else if (hitCount == 3)
-    //    {
-    //        target.character.TakeDamage(character, target.character.HP * 0.1f, true, 0, 0);
-    //        Debug.Log("추뎀적용");
+        // 같은 대상이면 히트 누적
+        hitCount++;
 
-    //        // 초기화
-    //        hitCount = 0;
-    //        if (firstHitEffect != null) Destroy(firstHitEffect);
-    //        if (secondHitEffect != null) Destroy(secondHitEffect);
-    //        firstHitEffect = null;
-    //        secondHitEffect = null;
-    //        lastAttackedTarget = null;
-    //    }
-    //}
+        if (hitCount == 2)
+        {
+            if (secondHitEffect != null)
+            {
+                Destroy(secondHitEffect);
+            }
+            secondHitEffect = Instantiate(secondHit, target.transform);
+        }
+        else if (hitCount == 3)
+        {
+            target.character.TakeDamage(character, target.character.HP * 0.1f, true, 0, 0);
+            Debug.Log("추뎀적용");
+
+            // 초기화
+            hitCount = 0;
+            if (firstHitEffect != null) Destroy(firstHitEffect);
+            if (secondHitEffect != null) Destroy(secondHitEffect);
+            firstHitEffect = null;
+            secondHitEffect = null;
+            lastAttackedTarget = null;
+        }
+    }
     private IEnumerator WallCheck(PlayerController target, Vector3 dir, float distance, float speed)
     {
         float pushed = 0f;

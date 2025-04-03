@@ -10,7 +10,7 @@ public class InGameCamera : MonoBehaviour
     public float moveLimit;
     public float speed;
 
-    bool followPlayer = false;
+    bool followPlayer = true;
     // Start is called before the first frame update
     void Start()
     {

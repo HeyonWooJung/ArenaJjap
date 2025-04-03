@@ -61,11 +61,11 @@ public class AugmentManager : MonoBehaviour
 
     public void ApplyStatAugment<T>(StatType statType, T value)
     {
-       if(typeof(T)  == typeof(float) && augmentActions.TryGetValue(statType, out var actionFloat))
+        if(typeof(T)  == typeof(float) && augmentActions.TryGetValue(statType, out var actionFloat))
         {
             actionFloat.Invoke(Convert.ToSingle(value));
         }
-       else if(typeof(T) == typeof(int) && augmentIntActions.TryGetValue(statType, out var actionInt))
+        else if(typeof(T) == typeof(int) && augmentIntActions.TryGetValue(statType, out var actionInt))
         {
             actionInt.Invoke(Convert.ToInt32(value));
             
