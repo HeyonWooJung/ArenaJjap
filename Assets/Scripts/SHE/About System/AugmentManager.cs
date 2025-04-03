@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class AugmentManager : MonoBehaviour
 {
-    [SerializeField] Character localPlayer;
+    [SerializeField] PlayerController localPlayer;
     [SerializeField] Dictionary<StatType, Action<float>> augmentActions;
     [SerializeField] Dictionary<StatType, Action<int>> augmentIntActions;
     [SerializeField] GameObject[] statAugmentPrefabs;
@@ -22,21 +22,21 @@ public class AugmentManager : MonoBehaviour
 
         augmentActions = new Dictionary<StatType, Action<float>>()
         {
-            { StatType.Atk, localPlayer.AdjustATK},
-            { StatType.AtkSpeed, localPlayer.AdjustAtkSpeed},
-            { StatType.Critical, localPlayer.AdjustCritChance },
-            { StatType.CirtDamage, localPlayer.AdjustCritDmg },
-            { StatType.HP, localPlayer.AdjustHP },
-            { StatType.Def, localPlayer.AdjustDef },
-            { StatType.LifeSteel, localPlayer.AdjustLifeSteal },
+            { StatType.Atk, localPlayer.character.AdjustATK},
+            { StatType.AtkSpeed, localPlayer.character.AdjustAtkSpeed},
+            { StatType.Critical, localPlayer.character.AdjustCritChance },
+            { StatType.CirtDamage, localPlayer.character.AdjustCritDmg },
+            { StatType.HP, localPlayer.character.AdjustHP },
+            { StatType.Def, localPlayer.character.AdjustDef },
+            { StatType.LifeSteel, localPlayer.character.AdjustLifeSteal },
             
         };
         augmentIntActions = new Dictionary<StatType, Action<int>>()
         {
-            {StatType.MoveSpeed, localPlayer.AdjustMoveSpeed},
-            {StatType.AbilityHaste, localPlayer.AdjustAbilityHaste},
-            {StatType.ArmorPen, localPlayer.AdjustArmorPen},
-            {StatType.Lethal, localPlayer.AdjustLethality},
+            {StatType.MoveSpeed, localPlayer.character.AdjustMoveSpeed},
+            {StatType.AbilityHaste, localPlayer.character.AdjustAbilityHaste},
+            {StatType.ArmorPen, localPlayer.character.AdjustArmorPen},
+            {StatType.Lethal, localPlayer.character.AdjustLethality},
         };
 
 
@@ -46,7 +46,7 @@ public class AugmentManager : MonoBehaviour
     public void FindLocalPlayer()
     {
         // 현재 로컬 플레이어의 PhotonView 찾기
-        localPlayer = PhotonNetwork.LocalPlayer.TagObject as Character;
+        localPlayer = PhotonNetwork.LocalPlayer.TagObject as PlayerController;
         if(localPlayer != null )
         {
            

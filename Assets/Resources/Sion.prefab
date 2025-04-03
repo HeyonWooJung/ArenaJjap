@@ -593,6 +593,8 @@ GameObject:
   - component: {fileID: 8901045766484894831}
   - component: {fileID: 2126119102606510530}
   - component: {fileID: 7542546350001467479}
+  - component: {fileID: 8679884756876696191}
+  - component: {fileID: 2982085147311716511}
   m_Layer: 0
   m_Name: Sion
   m_TagString: Untagged
@@ -648,7 +650,7 @@ MonoBehaviour:
   rDelay: 0
   rTarget: 0
   rChannel: 0
-  anim: {fileID: 187064129596075218}
+  anim: {fileID: 0}
   hitLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -773,6 +775,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 1882766259231687992}
+  - {fileID: 8679884756876696191}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -803,6 +806,108 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &8679884756876696191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6465160358065800614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters:
+  - Type: 9
+    SynchronizeType: 0
+    Name: Q
+  - Type: 9
+    SynchronizeType: 0
+    Name: E
+  - Type: 9
+    SynchronizeType: 0
+    Name: WBoom
+  - Type: 9
+    SynchronizeType: 0
+    Name: R
+  - Type: 4
+    SynchronizeType: 0
+    Name: RRunning
+  - Type: 9
+    SynchronizeType: 0
+    Name: RStop
+  - Type: 9
+    SynchronizeType: 0
+    Name: RHit
+  - Type: 9
+    SynchronizeType: 0
+    Name: Passive
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack
+  - Type: 4
+    SynchronizeType: 0
+    Name: Walking
+  - Type: 3
+    SynchronizeType: 0
+    Name: Stun
+  - Type: 4
+    SynchronizeType: 0
+    Name: Death
+  - Type: 9
+    SynchronizeType: 0
+    Name: QShort
+  - Type: 9
+    SynchronizeType: 0
+    Name: QLong
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack1
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack2
+  - Type: 9
+    SynchronizeType: 0
+    Name: Attack3
+  - Type: 9
+    SynchronizeType: 0
+    Name: Critical
+  - Type: 1
+    SynchronizeType: 0
+    Name: AttackSpeed
+  - Type: 1
+    SynchronizeType: 0
+    Name: MoveSpeed
+  - Type: 4
+    SynchronizeType: 0
+    Name: Slow
+  m_SynchronizeLayers:
+  - SynchronizeType: 0
+    LayerIndex: 0
+--- !u!95 &2982085147311716511
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6465160358065800614}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
+  m_Controller: {fileID: 9100000, guid: 32ee057d7edfb314683c777b265e9076, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6595195751605240421
 GameObject:
   m_ObjectHideFlags: 0
@@ -1021,7 +1126,8 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 32ee057d7edfb314683c777b265e9076, type: 2}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5866666021909216657, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
@@ -1038,11 +1144,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 5954450502249418530}
   m_SourcePrefab: {fileID: 100100000, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
---- !u!95 &187064129596075218 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
-  m_PrefabInstance: {fileID: 6048897783313338691}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6086818311272101544 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
