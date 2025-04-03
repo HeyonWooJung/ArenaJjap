@@ -102,7 +102,7 @@ public class GameManager : MonoBehaviour
             red.Value.transform.position = inGameManager.spawnPoints[red.Value.pv.ControllerActorNr -1].position;
             redAlive[red.Value.pv.ControllerActorNr] = true;
         }
-        CheckRound();
+        //CheckRound();
     }
 
     public void CheckWin()
@@ -172,10 +172,10 @@ public class GameManager : MonoBehaviour
             RedVictory();
         }
     }
-    public void CheckRound()
-    {
-        RC.RoundChecking();
-    }
+    //public void CheckRound()
+    //{
+    //    RC.RoundChecking();
+    //}
     
     public void BlueVictory()
     {
