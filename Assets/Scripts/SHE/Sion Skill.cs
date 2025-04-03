@@ -154,7 +154,7 @@ public class SionSkill : PlayerController
     {
         canActivePassive = true;
     }
-
+    [PunRPC]
     public override void Death()
     {
         if (canActivePassive)
@@ -422,6 +422,7 @@ public class SionSkill : PlayerController
             return false;
         }
     }
+    [PunRPC]
     IEnumerator PassiveOn()
     {
         agent.SetDestination(transform.position);
@@ -461,6 +462,7 @@ public class SionSkill : PlayerController
         base.Death();
 
     }
+    [PunRPC]
     IEnumerator PassiveSkill()
     {
         usedPassiveSkill = true;
@@ -488,7 +490,7 @@ public class SionSkill : PlayerController
             StartCoroutine(QSkillCharge());
         }
     }
-
+    [PunRPC]
     IEnumerator QSkillCharge()
     {
         qSkillTimer = 0;
@@ -553,7 +555,7 @@ public class SionSkill : PlayerController
         //qSkillcol.enabled = true;
         #endregion
     }
-
+    [PunRPC]
     void CastQSkill()
     {
         qSkillPanel.gameObject.SetActive(false);
@@ -620,14 +622,15 @@ public class SionSkill : PlayerController
         }
         
     }
-
+    [PunRPC]
     IEnumerator CastWSkill()
     {
         wTimer = 0;
         Color x = barrierColor.material.color;
         x.a = 0.4f;
         barrierColor.material.color = x;
-        
+        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+        pv.RPC("SkillEnqeuer", RpcTarget.All, 2, wDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
         barrierPrefab.SetActive(true);
         while(wSkillOn == true && wTimer <= wTimerMax && character.Barrier > 0)
         {
@@ -662,10 +665,13 @@ public class SionSkill : PlayerController
             yield break;
         }
     }
-
+    [PunRPC]
     public void WSkillExplosion()
     {
+        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+       
         wSkillOn = false;
+        pv.RPC("SkillEnqeuer", RpcTarget.All, 2, wDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
         Collider[] hits = Physics.OverlapSphere(transform.position, wExlosiveWidth, hitLayer);
         wExplosionPrefab.transform.position = transform.position;
         wExplosionColor.color = wExplosiveOriginalColor;
@@ -681,13 +687,17 @@ public class SionSkill : PlayerController
 
 
     }
+    [PunRPC]
     IEnumerator WExplosionFade()
     {
         float x = 0f;
         Color c = wExplosiveOriginalColor;
         Vector3 fixedPosition = wExplosionPrefab.transform.position;
+        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+        
         while (4f > x)
         {
+            pv.RPC("SkillEnqeuer", RpcTarget.All, 2, wDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
             wExplosionPrefab.transform.position = fixedPosition;
             wExplosionPrefab.transform.localRotation = Quaternion.Euler(0f,0f,0f);   
 
@@ -722,7 +732,7 @@ public class SionSkill : PlayerController
         character.SetECooldown();
         anim.SetTrigger("E");
     }
-
+    [PunRPC]
     IEnumerator CastESkill()
     {
         eSkillPrefab.transform.position = transform.position;
@@ -744,9 +754,13 @@ public class SionSkill : PlayerController
             StartCoroutine(SettingEnemyState(x, State.Slow, 2.5f, false, (int)(character.MoveSpeed * 0.6f)));
             StartCoroutine(ESkillArmorDown(x));
         }
+       
         eSkillPrefab.SetActive(false);
-    
+        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
+        pv.RPC("SkillEnqeuer", RpcTarget.All, 2, wDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+
     }
+    [PunRPC]
     IEnumerator ESkillArmorDown(PlayerController enemy)
     {
         float x = enemy.character.DEF * 0.2f;
@@ -767,7 +781,7 @@ public class SionSkill : PlayerController
             return;
         }
     }
-
+    [PunRPC]
     IEnumerator CastRSkill()
     {
         character.SetState(State.Unstoppable,8);
@@ -832,8 +846,8 @@ public class SionSkill : PlayerController
 
     }
 
-    
 
+    [PunRPC]
     void RSkillCheckingHit()
     {
         if(Physics.Raycast(transform.position, transform.forward, out RaycastHit wallHit, rSkillCheckDistance, wallLayer))
@@ -846,6 +860,7 @@ public class SionSkill : PlayerController
             StartCoroutine(SettingEnemyState(this, State.Stun, 0.2f, false, 0));
         }
     }
+    [PunRPC]
     void RSkillRotation()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -858,7 +873,7 @@ public class SionSkill : PlayerController
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rSkillRotationSpeed * Time.deltaTime);
         }
     }
-
+    [PunRPC]
     public void RSkillExplosion()
     {
         rSkillExplosiveImage.color = rSkillOriginalColor;
@@ -903,14 +918,18 @@ public class SionSkill : PlayerController
         rSkillCurDamage = 0;
         rSkillCurStun = 0;
     }
-
+    [PunRPC]
     IEnumerator RSKillExplosiveFade()
     {
+        PhotonView enemyTemp = hit.transform.GetComponent<PhotonView>();
         float x = 0;
         Vector3 fixedPosition = rSkillExplosiveImage.transform.position;
         Color c = rSkillOriginalColor;
         while(3 > x)
         {
+           
+            pv.RPC("SkillEnqeuer", RpcTarget.All, 2, wDelay, false, true, enemyTemp != null ? enemyTemp.ViewID : 0, hit.point);
+
             rSkillExplosiveImage.transform.position = fixedPosition;
             rSkillExplosiveImage.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
 
@@ -922,7 +941,7 @@ public class SionSkill : PlayerController
         rSkillExplosiveImage.gameObject.SetActive(false);
     }
 
-    
+
     /// <summary>
     /// 적에게 부여할 상태이상과 그 시간을 작성하여 넣을 것, 다중이면 True 하고 마지막 CC에 False 넣을 것
     /// 슬로우는 마지막에 넣으셈 없다면 0
@@ -930,7 +949,7 @@ public class SionSkill : PlayerController
     /// <param name="state"></param>
     /// <param name="time"></param>
     /// <returns></returns>
-
+    [PunRPC]
     IEnumerator SettingEnemyState(PlayerController target ,State state, float time, bool multipleCC, int slow)
     {
         if(slow != 0)
@@ -951,7 +970,7 @@ public class SionSkill : PlayerController
         }
         
     }
-
+    [PunRPC]
     IEnumerator ApplyAirborne(Rigidbody rb, float totalAirborneTime)
     {
         float airborneTime = totalAirborneTime / 2; // 떠 있는 시간 (절반)
