@@ -69,17 +69,17 @@ public class PlayerController : MonoBehaviour, IPunObservable
         character.OnHeal += ApplyHeal;
         character.OnStateChanged += ApplyState;
         character.OnDie += Death;
-
+        PhotonNetwork.OfflineMode = true;
         //Cursor.SetCursor(cursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
         //StartCoroutine(HpRegen());
         StartCoroutine(Execution());
-        if (pv.IsMine)
-        {
-            pv.RPC("AddToGM", RpcTarget.MasterClient, pv.ViewID);
-            Camera.main.GetComponent<InGameCamera>().player = gameObject;
-            Camera.main.GetComponent<InGameCamera>().Init(gameObject);
-            PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
-        }
+        //if (pv.IsMine)
+        //{
+        //    pv.RPC("AddToGM", RpcTarget.MasterClient, pv.ViewID);
+        //    Camera.main.GetComponent<InGameCamera>().player = gameObject;
+        //    Camera.main.GetComponent<InGameCamera>().Init(gameObject);
+        //    PhotonNetwork.LocalPlayer.TagObject = this.gameObject;
+        //}
     }
 
     [PunRPC]
@@ -304,7 +304,7 @@ public class PlayerController : MonoBehaviour, IPunObservable
     // Update is called once per frame
     public virtual void Update()
     {
-        if (pv != null && pv.IsMine)
+        if (pv)
         {
             if ((character.CurState == State.Stun || character.CurState == State.Airborne) == false)
             {

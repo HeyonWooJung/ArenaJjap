@@ -65,6 +65,23 @@ MonoBehaviour:
   - UpdateHPBar
   - AddToGM
   - ShowRound
+  - CastESkill
+  - CastWSkill
+  - QSkillCharge
+  - RSKillExplosiveFade
+  - WExplosionFade
+  - ApplyAirborne
+  - SettingEnemyState
+  - CastQSkill
+  - CastRSkill
+  - Death
+  - ESkillArmorDown
+  - PassiveOn
+  - PassiveSkill
+  - RSkillCheckingHit
+  - RSkillExplosion
+  - RSkillRotation
+  - WSkillExplosion
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -1205,10 +1205,22 @@ PrefabInstance:
       propertyPath: debuggingMode
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1882766259231687992, guid: 2ecd9dcf164035348922aa24aa02008c, type: 3}
+      propertyPath: wallLayer.m_Bits
+      value: 1536
+      objectReference: {fileID: 0}
     - target: {fileID: 2126119102606510530, guid: 2ecd9dcf164035348922aa24aa02008c, type: 3}
       propertyPath: sceneViewId
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2126119102606510530, guid: 2ecd9dcf164035348922aa24aa02008c, type: 3}
+      propertyPath: ObservedComponents.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2982085147311716511, guid: 2ecd9dcf164035348922aa24aa02008c, type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: d1b087381299a3d469bd3fbf2b8a8af4, type: 3}
     - target: {fileID: 3634681651194642963, guid: 2ecd9dcf164035348922aa24aa02008c, type: 3}
       propertyPath: m_IsActive
       value: 0
