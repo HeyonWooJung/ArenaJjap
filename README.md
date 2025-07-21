@@ -19,7 +19,7 @@ Photon 기반의 4인 매칭 시스템과 팀 나누기,
 
 ## 🎮 Contributors 핵심 구현 기능
 
-### jonghyun109 
+### jonghyun109(팀장)
 ###  매칭 시스템
 - **Photon Callbacks**를 활용한 **4인 랜덤 매칭**
 - **마스터 클라이언트 기준으로 팀 나누기 구현**
