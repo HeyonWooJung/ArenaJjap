@@ -35,6 +35,15 @@ Photon 기반의 4인 매칭 시스템과 팀 나누기,
 - 아웃게임 UI → 인게임까지 이어지는 **전체 게임 흐름 설계 및 구현**
 ---
 
+### HeyonWooJung
+
+---
+### Camembertkimchi
+
+---
+### KIMDONGYEON8406
+
+---
 ## 🛠️ 기술 스택
 
 - **Unity 2022.3 (URP)**
