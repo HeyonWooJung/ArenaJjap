@@ -19,7 +19,7 @@ Photon 기반의 4인 매칭 시스템과 팀 나누기,
 
 ## 🎮 Contributors 핵심 구현 기능
 
-## jonghyun109 
+### jonghyun109 
 ###  매칭 시스템
 - **Photon Callbacks**를 활용한 **4인 랜덤 매칭**
 - **마스터 클라이언트 기준으로 팀 나누기 구현**
@@ -43,8 +43,3 @@ Photon 기반의 4인 매칭 시스템과 팀 나누기,
 - **Amplify Shader Editor (시야 제한 셰이더 제작)**
 
 ---
-
-## ▶ 실행 방법
-
-```bash
-git clone https://github.com/jonghyun109/YourRepoName.git
